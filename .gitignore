@@ -1,0 +1,117 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.history
+.svn/
+migrate_working_dir/
+
+# IDEs and editors
+*.iml
+*.ipr
+*.iws
+.idea/
+.vscode/
+
+# Flutter/Dart/Pub related
+.dart_tool/
+.packages
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+build/
+**/doc/api/
+**/ios/Flutter/.last_build_id
+
+# Symbolication and obfuscation
+app.*.symbols
+app.*.map.json
+
+# Android specific
+android/.gradle/
+android/captures/
+android/app/debug
+android/app/profile
+android/app/release
+android/local.properties
+*.jks
+
+# iOS specific
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/.symlinks/
+ios/Pods/
+ios/.flutter-plugins
+ios/.flutter-plugins-dependencies
+ios/.dart_tool/
+ios/Flutter/Generated.xcconfig
+ios/Runner.xcworkspace/
+
+# Web specific
+web/.dart_tool/
+
+# macOS specific
+macos/.flutter-plugins
+macos/.flutter-plugins-dependencies
+macos/Flutter/GeneratedPluginRegistrant.swift
+
+# Windows specific
+windows/runner/GeneratedPluginRegistrant.*
+windows/.flutter-plugins
+windows/.flutter-plugins-dependencies
+
+# Linux specific
+linux/runner/GeneratedPluginRegistrant.*
+linux/.flutter-plugins
+linux/.flutter-plugins-dependencies
+
+
+# # Miscellaneous
+# *.class
+# *.log
+# *.pyc
+# *.swp
+# .DS_Store
+# .atom/
+# .build/
+# .buildlog/
+# .history
+# .svn/
+# .swiftpm/
+# migrate_working_dir/
+
+# # IntelliJ related
+# *.iml
+# *.ipr
+# *.iws
+# .idea/
+
+# # The .vscode folder contains launch configuration and tasks you configure in
+# # VS Code which you may wish to be included in version control, so this line
+# # is commented out by default.
+# #.vscode/
+
+# # Flutter/Dart/Pub related
+# **/doc/api/
+# **/ios/Flutter/.last_build_id
+# .dart_tool/
+# .flutter-plugins
+# .flutter-plugins-dependencies
+# .pub-cache/
+# .pub/
+# /build/
+
+# # Symbolication related
+# app.*.symbols
+
+# # Obfuscation related
+# app.*.map.json
+
+# # Android Studio will place build artifacts here
+# /android/app/debug
+# /android/app/profile
+# /android/app/release
