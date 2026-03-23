@@ -463,6 +463,52 @@ class ServiceProvider extends ChangeNotifier {
     return ServiceProviderLoginDataUserMessageModel.fromJson(m2.first);
   }
 
+  Map<String, dynamic> _buildBackendStatusRequest() {
+    return {
+      'ChannelName': 'GERYON_General',
+      'Action': 'Get:Status',
+      'pParams': <String, dynamic>{},
+    };
+  }
+
+  Map<String, dynamic> _buildSubscribeChannelRequest() {
+    final List<String> sChannels = [];
+    for (final ServiceProviderChannel channel in channels) {
+      sChannels.add(channel.name);
+    }
+
+    return {
+      'Action': 'Subscribe_Channel',
+      'ChannelsName': sChannels,
+      'pParams': <String, dynamic>{},
+    };
+  }
+
+  Map<String, dynamic> _buildLoginRequest({
+    required LoginModel login,
+  }) {
+    return {
+      'ChannelName': 'GERYON_General',
+      'Action': 'CustomRequest',
+      'pParams': <String, dynamic>{
+        'JSON_Data': true,
+        'UserRememberMe': login.rememberMe,
+        'UserDNI': login.dni,
+        'UserEmail': "",
+        'UserPassword': "",
+        'UserPreferredLanguage': "es-AR",
+        'ActionRequest': 'Auth:Login',
+        'FormAction': '',
+        'GRecaptchaResponse': '',
+        'Lang': "es-AR",
+        'Location': '',
+        'LocalParams': {
+          'Target': "customers",
+        },
+      },
+    };
+  }
+
   Future<ErrorHandler?> _onData(Map<String, dynamic> data) async {
     const String functionName = '_onData';
     const logFunctionName = '.::$functionName::.';
@@ -875,12 +921,7 @@ class ServiceProvider extends ChangeNotifier {
     }
     initStageAdditionalMsg = initStage.typeDsc;
     updateListeners(calledFrom: functionName);
-
-    Map<String, dynamic> pRequest = {};
-    pRequest['ChannelName'] = 'GERYON_General';
-    pRequest['Action'] = 'Get:Status';
-    Map<String, dynamic> pParams = {};
-    pRequest['pParams'] = pParams;
+    final Map<String, dynamic> pRequest = _buildBackendStatusRequest();
     if (debug) {
       developer.log(
         '${LogIcons.arrowRight} Requesting backend status...',
@@ -1737,12 +1778,7 @@ class ServiceProvider extends ChangeNotifier {
       initStageAdditionalMsg = initStage.typeDsc;
       updateListeners(calledFrom: functionName);
 
-      Map<String, dynamic> pRequest = {};
-      pRequest['Action'] = 'Subscribe_Channel';
-      List<String> sChannels = [];
-      for (ServiceProviderChannel channel in channels) {
-        //if (channel.isSubscribed) continue;
-        sChannels.add(channel.name);
+      for (final ServiceProviderChannel channel in channels) {
         if (debug) {
           developer.log(
             'Adding ${channel.name} to subscription list',
@@ -1750,9 +1786,10 @@ class ServiceProvider extends ChangeNotifier {
           );
         }
       }
-      pRequest['ChannelsName'] = sChannels;
-      Map<String, dynamic> pParams = {};
-      pRequest['pParams'] = pParams;
+
+      final Map<String, dynamic> pRequest = _buildSubscribeChannelRequest();
+      final List<String> sChannels =
+          (pRequest['ChannelsName'] as List<dynamic>).cast<String>();
       if (debug) {
         developer.log(
           'SubscribeChannel => Requesting subscription to channels: $sChannels',
@@ -2131,26 +2168,9 @@ class ServiceProvider extends ChangeNotifier {
         name: '$logClassName - $logFunctionName',
       );
     }
-    Map<String, dynamic> pRequest = {};
-    pRequest['ChannelName'] = 'GERYON_General';
-    pRequest['Action'] = 'CustomRequest';
-    Map<String, dynamic> pParams = {};
-    pParams['JSON_Data'] = true;
-    pParams['UserRememberMe'] = pLogin.rememberMe;
-    pParams['UserDNI'] = pLogin.dni;
-    pParams['UserEmail'] = "";
-    pParams['UserPassword'] = "";
-    pParams['UserPreferredLanguage'] = "es-AR";
-    pParams['ActionRequest'] = 'Auth:Login';
-    pParams['FormAction'] = '';
-    pParams['GRecaptchaResponse'] = '';
-    pParams['Lang'] = "es-AR";
-    pParams['Location'] = '';
-    pParams['LocalParams'] = {
-      'Target': "customers",
-    };
-
-    pRequest['pParams'] = pParams;
+    final Map<String, dynamic> pRequest = _buildLoginRequest(
+      login: pLogin,
+    );
     if (debug) {
       developer.log(
         '${LogIcons.arrowRight} Requesting backend status...',
