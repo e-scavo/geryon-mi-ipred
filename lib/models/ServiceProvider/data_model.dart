@@ -575,6 +575,196 @@ class ServiceProvider extends ChangeNotifier {
     );
   }
 
+  Future<ErrorHandler?> _handleTrackedCallbackOrCleanup({
+    required ServiceProviderWholeMessageModel message,
+    required Map<String, dynamic> rawData,
+    required String functionName,
+    required String logFunctionName,
+  }) async {
+    if (wssMessagesTrackingV2.hasCallback(message.data.messageID)) {
+      if (debug) {
+        developer.log(
+          '$logClassName - $logFunctionName - Calling CallBack function for MessageID: ${message.data.messageID}',
+        );
+      }
+
+      bool rCall = await wssMessagesTrackingV2.execute(
+        key: message.data.messageID,
+        pMessageID: message.data.messageID,
+        paramCallBack: rawData,
+      );
+
+      if (rCall) {
+        return null;
+      } else {
+        return ErrorHandler(
+          errorCode: 7890,
+          errorDsc:
+              "Error al ejecutar función callback.\r\nMensaje ID: ${message.data.messageID}\r\nStatus: ${message.data.status}",
+          propertyName: "CallbackFunction",
+          className: className,
+        );
+      }
+    } else {
+      await wssMessagesTrackingV2.remove(message.data.messageID);
+      return null;
+    }
+  }
+
+  Future<void> _syncTrackedIncomingStatus({
+    required ServiceProviderWholeMessageModel message,
+  }) async {
+    CommonRPCMessageResponse? cMessageStatusV2 =
+        wssMessagesTrackingV2.get(message.data.messageID);
+
+    if (cMessageStatusV2 != null) {
+      if (cMessageStatusV2.status == "local_discard") {
+        await wssMessagesTrackingV2.remove(message.data.messageID);
+      }
+    }
+
+    String status = message.data.status;
+    if (status == "ok") {
+      status = "processing";
+    }
+
+    await wssMessagesTrackingV2.status(
+      message.data.messageID,
+      status,
+    );
+  }
+
+  Future<ErrorHandler?> _handleApiV2TrackedIncomingMessage({
+    required ServiceProviderWholeMessageModel message,
+    required Map<String, dynamic> rawData,
+    required String functionName,
+    required String logFunctionName,
+  }) async {
+    await _syncTrackedIncomingStatus(
+      message: message,
+    );
+
+    switch (message.data.status) {
+      case "ok":
+        return await _handleTrackedCallbackOrCleanup(
+          message: message,
+          rawData: rawData,
+          functionName: functionName,
+          logFunctionName: logFunctionName,
+        );
+      case "queued":
+        return await _handleTrackedCallbackOrCleanup(
+          message: message,
+          rawData: rawData,
+          functionName: functionName,
+          logFunctionName: logFunctionName,
+        );
+      default:
+        return ErrorHandler(
+          errorCode: 7891,
+          errorDsc:
+              "Error del estado del mensaje recibido.\r\nMensaje ID:${message.data.messageID}\r\nStatus: ${message.data.status}",
+          propertyName: "Status",
+          className: className,
+        );
+    }
+  }
+
+  Future<ErrorHandler?> _handleTrackedIncomingMessage({
+    required ServiceProviderWholeMessageModel message,
+    required Map<String, dynamic> rawData,
+    required String functionName,
+    required String logFunctionName,
+  }) async {
+    if (message.data.messageID.isEmpty) {
+      updateListeners(calledFrom: functionName);
+      return ErrorHandler(
+        errorCode: 7892,
+        errorDsc: "Recibimos un ID de Mensaje vacío.",
+        propertyName: 'MessageID',
+        propertyValue: message.data.messageID,
+        className: className,
+        functionName: functionName,
+        stacktrace: StackTrace.current,
+      );
+    }
+
+    if (message.data.apiVersion != 2) {
+      updateListeners(calledFrom: functionName);
+      return ErrorHandler(
+        errorCode: 7893,
+        errorDsc: '''Recibimos un mensaje con una versión de API no soportada.
+                Mensaje ID: ${message.data.messageID}
+                API Version: ${message.data.apiVersion}
+                ''',
+        propertyName: 'API Version',
+        propertyValue: message.data.apiVersion.toString(),
+        className: className,
+        functionName: functionName,
+        stacktrace: StackTrace.current,
+      );
+    }
+
+    return await _handleApiV2TrackedIncomingMessage(
+      message: message,
+      rawData: rawData,
+      functionName: functionName,
+      logFunctionName: logFunctionName,
+    );
+  }
+
+  Future<ErrorHandler?> _handleHandshakeIncomingMessage({
+    required ServiceProviderWholeMessageModel message,
+    required String functionName,
+    required String logFunctionName,
+  }) async {
+    if (debug) {
+      developer.log(
+        'OnData: Received [NEW] data, processing.',
+        name: '$logClassName - $logFunctionName',
+      );
+    }
+
+    final String tokenID = message.data.tokenID ?? "";
+
+    final ErrorHandler? rTokenValidation = _validateHandshakeToken(
+      tokenID: tokenID,
+      functionName: functionName,
+    );
+
+    if (rTokenValidation != null) {
+      updateListeners(calledFrom: functionName);
+      return rTokenValidation;
+    }
+
+    _applySessionToken(
+      tokenID: tokenID,
+    );
+
+    final ErrorHandler? rInit = await _continueInitializationAfterHandshake(
+      functionName: functionName,
+    );
+
+    if (rInit != null && rInit.errorCode != 0) {
+      if (debug) {
+        developer.log(
+          'OnData: Error continuing initialization after handshake: ${rInit.toString()}',
+          name: '$logClassName - $logFunctionName',
+        );
+      }
+      return rInit;
+    }
+
+    if (debug) {
+      developer.log(
+        'OnData: Channels subscribed successfully.',
+        name: '$logClassName - $logFunctionName',
+      );
+    }
+
+    return rInit;
+  }
+
   Future<ErrorHandler?> _onData(Map<String, dynamic> data) async {
     const String functionName = '_onData';
     const logFunctionName = '.::$functionName::.';
@@ -588,51 +778,12 @@ class ServiceProvider extends ChangeNotifier {
     ServiceProviderWholeMessageModel pData;
     try {
       pData = ServiceProviderWholeMessageModel.fromJson(data);
-
       if (_isHandshakeMessage(pData)) {
-        if (debug) {
-          developer.log(
-            'OnData: Received [NEW] data, processing.',
-            name: '$logClassName - $logFunctionName',
-          );
-        }
-
-        final String tokenID = pData.data.tokenID ?? "";
-        final ErrorHandler? rTokenValidation = _validateHandshakeToken(
-          tokenID: tokenID,
+        return await _handleHandshakeIncomingMessage(
+          message: pData,
           functionName: functionName,
+          logFunctionName: logFunctionName,
         );
-        if (rTokenValidation != null) {
-          updateListeners(calledFrom: functionName);
-          return rTokenValidation;
-        }
-
-        _applySessionToken(
-          tokenID: tokenID,
-        );
-
-        final ErrorHandler? rInit = await _continueInitializationAfterHandshake(
-          functionName: functionName,
-        );
-
-        if (rInit != null && rInit.errorCode != 0) {
-          if (debug) {
-            developer.log(
-              'OnData: Error continuing initialization after handshake: ${rInit.toString()}',
-              name: '$logClassName - $logFunctionName',
-            );
-          }
-          return rInit;
-        }
-
-        if (debug) {
-          developer.log(
-            'OnData: Channels subscribed successfully.',
-            name: '$logClassName - $logFunctionName',
-          );
-        }
-
-        return rInit;
       } else {
         if (debug) {
           developer.log(
@@ -640,116 +791,13 @@ class ServiceProvider extends ChangeNotifier {
             name: '$logClassName - $logFunctionName',
           );
         }
-        if (pData.data.messageID.isNotEmpty) {
-          // APIVersion 2
-          if (pData.data.apiVersion == 2) {
-            CommonRPCMessageResponse? cMessageStatusV2 =
-                wssMessagesTrackingV2.get(pData.data.messageID);
-            if (cMessageStatusV2 != null) {
-              if (cMessageStatusV2.status == "local_discard") {
-                await wssMessagesTrackingV2.remove(pData.data.messageID);
-              }
-            }
-            String status = pData.data.status;
-            if (status == "ok") {
-              status = "processing";
-            }
-            await wssMessagesTrackingV2.status(
-              pData.data.messageID,
-              status,
-            );
-            switch (pData.data.status) {
-              case "ok":
-                if (wssMessagesTrackingV2.hasCallback(pData.data.messageID)) {
-                  // Si tiene Callback function, la remoción del mensaje debe ser llevada adelante por ldicha función
-                  if (debug) {
-                    developer.log(
-                        '$logClassName - $logFunctionName - Calling CallBack function for MessageID: ${pData.data.messageID}');
-                  }
-                  bool rCall = await wssMessagesTrackingV2.execute(
-                    key: pData.data.messageID,
-                    pMessageID: pData.data.messageID,
-                    paramCallBack: data,
-                  );
-                  if (rCall) {
-                    return null;
-                  } else {
-                    return ErrorHandler(
-                      errorCode: 7890,
-                      errorDsc:
-                          "Error al ejecutar función callback.\r\nMensaje ID: ${pData.data.messageID}\r\nStatus: ${pData.data.status}",
-                      propertyName: "CallbackFunction",
-                      className: className,
-                    );
-                  }
-                } else {
-                  await wssMessagesTrackingV2.remove(pData.data.messageID);
-                  return null;
-                }
-              case "queued":
-                if (wssMessagesTrackingV2.hasCallback(pData.data.messageID)) {
-                  // Si tiene Callback function, la remoción del mensaje debe ser llevada adelante por ldicha función
-                  if (debug) {
-                    developer.log(
-                        '$logClassName - $logFunctionName - Calling CallBack function for MessageID: ${pData.data.messageID}');
-                  }
-                  bool rCall = await wssMessagesTrackingV2.execute(
-                    key: pData.data.messageID,
-                    pMessageID: pData.data.messageID,
-                    paramCallBack: data,
-                  );
-                  if (rCall) {
-                    return null;
-                  } else {
-                    return ErrorHandler(
-                      errorCode: 7890,
-                      errorDsc:
-                          "Error al ejecutar función callback.\r\nMensaje ID: ${pData.data.messageID}\r\nStatus: ${pData.data.status}",
-                      propertyName: "CallbackFunction",
-                      className: className,
-                    );
-                  }
-                } else {
-                  await wssMessagesTrackingV2.remove(pData.data.messageID);
-                  return null;
-                }
-              default:
-                return ErrorHandler(
-                  errorCode: 7891,
-                  errorDsc:
-                      "Error del estado del mensaje recibido.\r\nMensaje ID:${pData.data.messageID}\r\nStatus: ${pData.data.status}",
-                  propertyName: "Status",
-                  className: className,
-                );
-            }
-          } else {
-            updateListeners(calledFrom: functionName);
-            return ErrorHandler(
-              errorCode: 7893,
-              errorDsc:
-                  '''Recibimos un mensaje con una versión de API no soportada.
-                Mensaje ID: ${pData.data.messageID}
-                API Version: ${pData.data.apiVersion}
-                ''',
-              propertyName: 'API Version',
-              propertyValue: pData.data.apiVersion.toString(),
-              className: className,
-              functionName: functionName,
-              stacktrace: StackTrace.current,
-            );
-          }
-        } else {
-          updateListeners(calledFrom: functionName);
-          return ErrorHandler(
-            errorCode: 7892,
-            errorDsc: "Recibimos un ID de Mensaje vacío.",
-            propertyName: 'MessageID',
-            propertyValue: pData.data.messageID,
-            className: className,
-            functionName: functionName,
-            stacktrace: StackTrace.current,
-          );
-        }
+
+        return await _handleTrackedIncomingMessage(
+          message: pData,
+          rawData: data,
+          functionName: functionName,
+          logFunctionName: logFunctionName,
+        );
       }
     } catch (e, stacktrace) {
       if (e is ErrorHandler) {
@@ -765,12 +813,9 @@ class ServiceProvider extends ChangeNotifier {
       initStageAdditionalMsg = "Catched an error on $logFunctionName";
       isReady = false;
       if (!isProgress) {
-        /// If this is not main framework (already inside the app)
-        /// I SHOW a PopUp Message, ALSO.
         if (navigatorKey.currentState != null) {
           navigatorKey.currentState?.push(
               ModelGeneralPoPUpErrorMessageDialog(error: initStageError!));
-          //return initSta
         }
       }
       updateListeners(calledFrom: functionName);
