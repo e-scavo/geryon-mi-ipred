@@ -6,7 +6,7 @@ import 'package:geryon_web_app_ws_v2/common_vars.dart';
 import 'package:geryon_web_app_ws_v2/models/CommonFileDescriptorModel/common_file_descriptor_model.dart';
 import 'package:geryon_web_app_ws_v2/models/CommonRPCMessageResponse/common_rpc_message_response.dart';
 import 'package:geryon_web_app_ws_v2/models/GeneralLoadingProgress/popup_model.dart';
-import 'package:geryon_web_app_ws_v2/models/GeryonSocket/geryonsocket_model.dart';
+import 'package:geryon_web_app_ws_v2/core/transport/geryonsocket_model.dart';
 import 'package:geryon_web_app_ws_v2/models/LogIcons/model.dart';
 import 'package:geryon_web_app_ws_v2/models/Login/model.dart';
 import 'package:geryon_web_app_ws_v2/models/Login/widget.dart';
