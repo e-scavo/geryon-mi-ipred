@@ -418,6 +418,51 @@ class ServiceProvider extends ChangeNotifier {
     return null;
   }
 
+  void _finalizeTrackedCallbackResponse({
+    required CommonRPCMessageResponse messageResponse,
+    required ErrorHandler response,
+  }) {
+    messageResponse.finalResponse = response;
+    messageResponse.status = "ok";
+  }
+
+  ServiceProviderLoginDataUserMessageModel _extractLoginUserFromWholeMessage({
+    required ServiceProviderWholeMessageModel message,
+    required String functionName,
+  }) {
+    if (message.data.data is! Map<String, dynamic>) {
+      throw ErrorHandler(
+        errorCode: 10002,
+        errorDsc: 'Invalid data format received from backend.',
+        className: className,
+        functionName: functionName,
+      );
+    }
+
+    final Map<String, dynamic> m1 = message.data.data as Map<String, dynamic>;
+
+    if (m1["Records"] is! List<dynamic>) {
+      throw ErrorHandler(
+        errorCode: 10002,
+        errorDsc: 'Invalid data format received from backend.',
+        className: className,
+        functionName: functionName,
+      );
+    }
+
+    final List<dynamic> m2 = m1["Records"] as List<dynamic>;
+    if (m2.isEmpty) {
+      throw ErrorHandler(
+        errorCode: 10001,
+        errorDsc: 'No records found in response data.',
+        className: className,
+        functionName: functionName,
+      );
+    }
+
+    return ServiceProviderLoginDataUserMessageModel.fromJson(m2.first);
+  }
+
   Future<ErrorHandler?> _onData(Map<String, dynamic> data) async {
     const String functionName = '_onData';
     const logFunctionName = '.::$functionName::.';
@@ -1603,34 +1648,14 @@ class ServiceProvider extends ChangeNotifier {
         return initStageError!;
       }
       //loginError = null;
-      ServiceProviderLoginDataUserMessageModel? rDataData;
-      if (pData.data.data is Map<String, dynamic>) {
-        var m1 = pData.data.data as Map<String, dynamic>;
-        if (m1["Records"] is List<dynamic>) {
-          var m2 = m1["Records"] as List<dynamic>;
-          if (m2.isNotEmpty) {
-            rDataData =
-                ServiceProviderLoginDataUserMessageModel.fromJson(m2.first);
-          } else {
-            return ErrorHandler(
-              errorCode: 10001,
-              errorDsc: 'No records found in response data.',
-              className: className,
-              functionName: functionName,
-            );
-          }
-        } else {
-          return ErrorHandler(
-            errorCode: 10002,
-            errorDsc: 'Invalid data format received from backend.',
-            className: className,
-            functionName: functionName,
-          );
-        }
-      }
+      final ServiceProviderLoginDataUserMessageModel rDataData =
+          _extractLoginUserFromWholeMessage(
+        message: pData,
+        functionName: functionName,
+      );
 
       _applyAuthenticatedUserContext(
-        user: rDataData!,
+        user: rDataData,
       );
       updateListeners(calledFrom: functionName);
       if (debug) {
@@ -1639,6 +1664,10 @@ class ServiceProvider extends ChangeNotifier {
           name: '$logClassName - $logFunctionName',
         );
       }
+      _finalizeTrackedCallbackResponse(
+        messageResponse: rMessageResponse,
+        response: initStageError!,
+      );
       return ErrorHandler(
         errorCode: 0,
         errorDsc: 'Logged user checked successfully.',
@@ -1920,8 +1949,10 @@ class ServiceProvider extends ChangeNotifier {
             name: '$logClassName - $logFunctionName',
           );
         }
-        rMessageResponse.finalResponse = initStageError!;
-        rMessageResponse.status = "ok";
+        _finalizeTrackedCallbackResponse(
+          messageResponse: rMessageResponse,
+          response: initStageError!,
+        );
         return initStageError!;
       }
       int channelIndex = channels
@@ -1944,8 +1975,10 @@ class ServiceProvider extends ChangeNotifier {
           stacktrace: StackTrace.current,
         );
         updateListeners(calledFrom: functionName);
-        rMessageResponse.finalResponse = initStageError!;
-        rMessageResponse.status = "ok";
+        _finalizeTrackedCallbackResponse(
+          messageResponse: rMessageResponse,
+          response: initStageError!,
+        );
         return initStageError!;
       } else {
         if (debug) {
@@ -1978,8 +2011,10 @@ class ServiceProvider extends ChangeNotifier {
             functionName: functionName,
           );
           updateListeners(calledFrom: functionName);
-          rMessageResponse.finalResponse = initStageError!;
-          rMessageResponse.status = "ok";
+          _finalizeTrackedCallbackResponse(
+            messageResponse: rMessageResponse,
+            response: initStageError!,
+          );
           return initStageError!;
         } else {
           if (debug) {
@@ -2006,8 +2041,10 @@ class ServiceProvider extends ChangeNotifier {
               functionName: functionName,
             );
             updateListeners(calledFrom: functionName);
-            rMessageResponse.finalResponse = initStageError!;
-            rMessageResponse.status = "ok";
+            _finalizeTrackedCallbackResponse(
+              messageResponse: rMessageResponse,
+              response: initStageError!,
+            );
             return initStageError!;
           } else {
             if (debug) {
@@ -2035,8 +2072,10 @@ class ServiceProvider extends ChangeNotifier {
                 name: '$logClassName - $logFunctionName',
               );
             }
-            rMessageResponse.finalResponse = initStageError!;
-            rMessageResponse.status = "ok";
+            _finalizeTrackedCallbackResponse(
+              messageResponse: rMessageResponse,
+              response: initStageError!,
+            );
             return initStageError!;
           }
         }
@@ -2249,31 +2288,11 @@ class ServiceProvider extends ChangeNotifier {
       if (pData.data.status == "ok") {
         //
       }
-      ServiceProviderLoginDataUserMessageModel? rDataData;
-      if (pData.data.data is Map<String, dynamic>) {
-        var m1 = pData.data.data as Map<String, dynamic>;
-        if (m1["Records"] is List<dynamic>) {
-          var m2 = m1["Records"] as List<dynamic>;
-          if (m2.isNotEmpty) {
-            rDataData =
-                ServiceProviderLoginDataUserMessageModel.fromJson(m2.first);
-          } else {
-            return ErrorHandler(
-              errorCode: 10001,
-              errorDsc: 'No records found in response data.',
-              className: className,
-              functionName: functionName,
-            );
-          }
-        } else {
-          return ErrorHandler(
-            errorCode: 10002,
-            errorDsc: 'Invalid data format received from backend.',
-            className: className,
-            functionName: functionName,
-          );
-        }
-      }
+      final ServiceProviderLoginDataUserMessageModel rDataData =
+          _extractLoginUserFromWholeMessage(
+        message: pData,
+        functionName: functionName,
+      );
 
       var rError = ErrorHandler(
         errorCode: 0,
@@ -2285,8 +2304,10 @@ class ServiceProvider extends ChangeNotifier {
       // isUserLoggedIn = true;
       // loggedUser = pData.data.data.records.first;
       updateListeners(calledFrom: functionName);
-      rMessageResponse.finalResponse = rError;
-      rMessageResponse.status = "ok";
+      _finalizeTrackedCallbackResponse(
+        messageResponse: rMessageResponse,
+        response: rError,
+      );
       if (debug) {
         developer.log(
           'DoLoginCallback => Backend status checked successfully.',
