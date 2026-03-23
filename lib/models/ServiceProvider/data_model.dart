@@ -173,6 +173,192 @@ class ServiceProvider extends ChangeNotifier {
     return await init();
   }
 
+  ErrorHandler _buildTrackedMessageNotFoundError({
+    required String messageID,
+    required String functionName,
+  }) {
+    return ErrorHandler(
+      errorCode: 400000,
+      errorDsc:
+          'No pudimos encontrar la referencia al mensaje enviado al backend',
+      messageID: messageID,
+      className: className,
+      functionName: functionName,
+      propertyName: 'MessageID',
+      propertyValue: null,
+      stacktrace: StackTrace.current,
+    );
+  }
+
+  void _prepareTrackedMessageForWaiting(
+    CommonRPCMessageResponse messageResponse,
+  ) {
+    messageResponse.replyWithError = false;
+    messageResponse.localError = null;
+  }
+
+  Future<ErrorHandler?> _waitForTrackedMessageCompletion({
+    required CommonRPCMessageResponse messageResponse,
+    required String functionName,
+    required String logFunctionName,
+    bool inclusiveTimeout = true,
+  }) async {
+    whileLoop:
+    while (true) {
+      if (messageResponse.recordOldHash != messageResponse.recordNew.hashCode) {
+        break;
+      } else {
+        switch (messageResponse.status) {
+          case "init":
+            if (debug) {
+              developer.log(
+                '${LogIcons.arrowLeft} Message ${messageResponse.messageID} is initialized but not sent yet to backend.',
+                name: '$logClassName - $logFunctionName',
+              );
+            }
+            break;
+          case "sent":
+            if (debug) {
+              developer.log(
+                '${LogIcons.arrowLeft} Message ${messageResponse.messageID} sent to backend. Waiting response from server',
+                name: '$logClassName - $logFunctionName',
+              );
+            }
+            break;
+          case "queued":
+            if (debug) {
+              developer.log(
+                '${LogIcons.arrowLeft} Message ${messageResponse.messageID} queued for processing. Waiting response from server',
+                name: '$logClassName - $logFunctionName',
+              );
+            }
+            break;
+          case "processing":
+            if (debug) {
+              developer.log(
+                '${LogIcons.arrowLeft} Message ${messageResponse.messageID} replied from backend. Processing reply received',
+                name: '$logClassName - $logFunctionName',
+              );
+            }
+            break;
+          case "ok":
+            if (debug) {
+              developer.log(
+                '${LogIcons.arrowLeft} Message ${messageResponse.messageID} processed from backend.',
+                name: '$logClassName - $logFunctionName',
+              );
+            }
+            break whileLoop;
+          default:
+            return ErrorHandler(
+              errorCode: 400001,
+              errorDsc:
+                  'Se produjo un error al leer el estado de respuesta del mensaje enviado al backend.',
+              messageID: messageResponse.messageID,
+              className: className,
+              functionName: functionName,
+              propertyName: 'Status',
+              propertyValue: messageResponse.status,
+              stacktrace: StackTrace.current,
+            );
+        }
+      }
+
+      await Future.delayed(const Duration(milliseconds: 100));
+      messageResponse.timeElapsed += const Duration(milliseconds: 100);
+      final Duration pRealTimeout = messageResponse.timeOut;
+
+      final bool didTimeout = inclusiveTimeout
+          ? messageResponse.timeElapsed >= pRealTimeout
+          : messageResponse.timeElapsed > pRealTimeout;
+
+      if (didTimeout) {
+        if (debug) {
+          developer.log(
+            '${LogIcons.arrowLeft} Message ${messageResponse.messageID} timed out after ${pRealTimeout.inSeconds} seconds.',
+            name: '$logClassName - $logFunctionName',
+          );
+        }
+
+        switch (messageResponse.status) {
+          case "init":
+          case "sent":
+          case "queued":
+            if (debug) {
+              developer.log(
+                'Message ${messageResponse.messageID} is [${messageResponse.status}] but a timeout occured',
+                name: '$logClassName - $logFunctionName',
+              );
+            }
+            messageResponse.localError = ErrorHandler(
+              errorCode: 4000029999,
+              errorDsc:
+                  'Ocurrió un error de timeout del mensaje con estado [${messageResponse.status}]',
+              propertyName: 'Status => timeout',
+              propertyValue: messageResponse.status,
+              className: className,
+              functionName: functionName,
+              stacktrace: StackTrace.current,
+            );
+            break whileLoop;
+          case "processing":
+            if (debug) {
+              developer.log(
+                'Message ${messageResponse.messageID} is [${messageResponse.status}] but a timeout occured',
+                name: '$logClassName - $logFunctionName',
+              );
+            }
+            messageResponse.localError = ErrorHandler(
+              errorCode: 400009,
+              errorDsc:
+                  'Ocurrió un error de timeout del mensaje con estado [${messageResponse.status}]',
+              propertyName: 'Status => timeout',
+              propertyValue: messageResponse.status,
+              className: className,
+              functionName: functionName,
+              stacktrace: StackTrace.current,
+            );
+            break whileLoop;
+          case "ok":
+            if (debug) {
+              developer.log(
+                'Message ${messageResponse.messageID} proccessed from backend.',
+                name: '$logClassName - $logFunctionName',
+              );
+            }
+            break whileLoop;
+          default:
+            return ErrorHandler(
+              errorCode: 400010,
+              errorDsc:
+                  'Se produjo un error al leer el estado de respuesta del mensaje enviado al backend.',
+              messageID: messageResponse.messageID,
+              propertyName: 'Status',
+              propertyValue: messageResponse.status,
+              className: className,
+              functionName: functionName,
+              stacktrace: StackTrace.current,
+            );
+        }
+      }
+    }
+
+    return null;
+  }
+
+  Future<void> _waitUntilTrackedWorkIsDone(
+    CommonRPCMessageResponse messageResponse,
+  ) async {
+    if (messageResponse.isWorkInProgress) {
+      while (true) {
+        if (!messageResponse.isWorkInProgress) {
+          break;
+        }
+        await Future.delayed(const Duration(milliseconds: 100));
+      }
+    }
+  }
+
   Future<ErrorHandler?> _onData(Map<String, dynamic> data) async {
     const String functionName = '_onData';
     const logFunctionName = '.::$functionName::.';
@@ -619,173 +805,28 @@ class ServiceProvider extends ChangeNotifier {
     CommonRPCMessageResponse? rMessageResponse =
         wssMessagesTrackingV2.get(rSendMessage.messageID);
     if (rMessageResponse == null) {
-      var rSendMessageReturn = ErrorHandler(
-        errorCode: 400000,
-        errorDsc:
-            'No pudimos encontrar la referencia al mensaje enviado al backend',
+      final rSendMessageReturn = _buildTrackedMessageNotFoundError(
         messageID: rSendMessage.messageID,
-        className: className,
         functionName: functionName,
-        propertyName: 'MessageID',
-        propertyValue: null,
-        stacktrace: StackTrace.current,
       );
       initStage = ServiceProviderInitStages.errorRequestingBackend;
       initStageError = rSendMessageReturn;
       updateListeners(calledFrom: functionName);
       return rSendMessageReturn;
     }
-    rMessageResponse.replyWithError = false;
-    rMessageResponse.localError = null;
-    whileLoop:
-    while (true) {
-      if (rMessageResponse.recordOldHash !=
-          rMessageResponse.recordNew.hashCode) {
-        break;
-      } else {
-        switch (rMessageResponse.status) {
-          case "init":
-            if (debug) {
-              developer.log(
-                '${LogIcons.arrowLeft} Message ${rMessageResponse.messageID} is initialized but not sent yet to backend.',
-                name: '$logClassName - $logFunctionName',
-              );
-            }
-            break;
-          case "sent":
-            if (debug) {
-              developer.log(
-                '${LogIcons.arrowLeft} Message ${rMessageResponse.messageID} sent to backend. Waiting response from server',
-                name: '$logClassName - $logFunctionName',
-              );
-            }
-            break;
-          case "queued":
-            if (debug) {
-              developer.log(
-                '${LogIcons.arrowLeft} Message ${rMessageResponse.messageID} queued for processing. Waiting response from server',
-                name: '$logClassName - $logFunctionName',
-              );
-            }
-            break;
-          case "processing":
-            if (debug) {
-              developer.log(
-                '${LogIcons.arrowLeft} Message ${rMessageResponse.messageID} replied from backend. Processing reply received',
-                name: '$logClassName - $logFunctionName',
-              );
-            }
-            break;
-          case "ok":
-            if (debug) {
-              developer.log(
-                '${LogIcons.arrowLeft} Message ${rMessageResponse.messageID} processed from backend.',
-                name: '$logClassName - $logFunctionName',
-              );
-            }
-            break whileLoop;
-          default:
-            return ErrorHandler(
-              errorCode: 400001,
-              errorDsc:
-                  'Se produjo un error al leer el estado de respuesta del mensaje enviado al backend.',
-              messageID: rMessageResponse.messageID,
-              className: className,
-              functionName: functionName,
-              propertyName: 'Status',
-              propertyValue: rMessageResponse.status,
-              stacktrace: StackTrace.current,
-            );
-        } // switch (rMessageResponse.status)
-      } // if (rMessageResponse.recordOldHash != rMessageResponse.recordNew.hashCode)
-      /// Wait for [data] to be updated
-      ///
-      await Future.delayed(const Duration(milliseconds: 100));
-      rMessageResponse.timeElapsed += const Duration(milliseconds: 100);
-      Duration pRealTimeout = rMessageResponse.timeOut;
-      if (rMessageResponse.timeElapsed >= pRealTimeout) {
-        if (debug) {
-          developer.log(
-            '${LogIcons.arrowLeft} Message ${rMessageResponse.messageID} timed out after ${pRealTimeout.inSeconds} seconds.',
-            name: '$logClassName - $logFunctionName',
-          );
-        }
-        switch (rMessageResponse.status) {
-          case "init":
-          case "sent":
-          case "queued":
-            if (debug) {
-              if (debug) {
-                developer.log(
-                  'Message ${rMessageResponse.messageID} is [${rMessageResponse.status}] but a timeout occured',
-                  name: '$logClassName - $logFunctionName',
-                );
-              }
-            }
-            rMessageResponse.localError = ErrorHandler(
-              errorCode: 4000029999,
-              errorDsc:
-                  'Ocurrió un error de timeout del mensaje con estado [${rMessageResponse.status}]',
-              propertyName: 'Status => timeout',
-              propertyValue: rMessageResponse.status,
-              className: className,
-              functionName: functionName,
-              stacktrace: StackTrace.current,
-            );
-            break whileLoop;
-          case "processing":
-            if (debug) {
-              if (debug) {
-                developer.log(
-                  'Message ${rMessageResponse.messageID} is [${rMessageResponse.status}] but a timeout occured',
-                  name: '$logClassName - $logFunctionName',
-                );
-              }
-            }
-            rMessageResponse.localError = ErrorHandler(
-              errorCode: 400009,
-              errorDsc:
-                  'Ocurrió un error de timeout del mensaje con estado [${rMessageResponse.status}]',
-              propertyName: 'Status => timeout',
-              propertyValue: rMessageResponse.status,
-              className: className,
-              functionName: functionName,
-              stacktrace: StackTrace.current,
-            );
-            break whileLoop;
-          case "ok":
-            if (debug) {
-              developer.log(
-                'Message ${rMessageResponse.messageID} proccessed from backend.',
-                name: '$logClassName - $logFunctionName',
-              );
-            }
-            break whileLoop;
-          default:
-            return ErrorHandler(
-              errorCode: 400010,
-              errorDsc:
-                  'Se produjo un error al leer el estado de respuesta del mensaje enviado al backend.',
-              messageID: rMessageResponse.messageID,
-              propertyName: 'Status',
-              propertyValue: rMessageResponse.status,
-              className: className,
-              functionName: functionName,
-              stacktrace: StackTrace.current,
-            );
-        } // switch (rMessageResponse.status)
-      } // Wait for [data] to be updated
-    } // while (true)
+    _prepareTrackedMessageForWaiting(rMessageResponse);
+    final ErrorHandler? rWaitError = await _waitForTrackedMessageCompletion(
+      messageResponse: rMessageResponse,
+      functionName: functionName,
+      logFunctionName: logFunctionName,
+      inclusiveTimeout: true,
+    );
+    if (rWaitError != null) {
+      return rWaitError;
+    }
     ErrorHandler rFinalResponse = rMessageResponse.finalResponse;
     if (rMessageResponse.status == "ok") {
-      if (rMessageResponse.isWorkInProgress) {
-        while (true) {
-          if (!rMessageResponse.isWorkInProgress) {
-            break;
-          }
-          await Future.delayed(const Duration(milliseconds: 100));
-        }
-      }
+      await _waitUntilTrackedWorkIsDone(rMessageResponse);
       await wssMessagesTrackingV2.remove(rSendMessage.messageID);
     }
     if (rFinalResponse.errorCode != 0) {
@@ -2207,171 +2248,26 @@ class ServiceProvider extends ChangeNotifier {
     CommonRPCMessageResponse? rMessageResponse =
         wssMessagesTrackingV2.get(rSendMessage.messageID);
     if (rMessageResponse == null) {
-      var rSendMessageReturn = ErrorHandler(
-        errorCode: 400000,
-        errorDsc:
-            'No pudimos encontrar la referencia al mensaje enviado al backend',
+      final rSendMessageReturn = _buildTrackedMessageNotFoundError(
         messageID: rSendMessage.messageID,
-        className: className,
         functionName: functionName,
-        propertyName: 'MessageID',
-        propertyValue: null,
-        stacktrace: StackTrace.current,
       );
       updateListeners(calledFrom: functionName);
       return rSendMessageReturn;
     }
-    rMessageResponse.replyWithError = false;
-    rMessageResponse.localError = null;
-    whileLoop:
-    while (true) {
-      if (rMessageResponse.recordOldHash !=
-          rMessageResponse.recordNew.hashCode) {
-        break;
-      } else {
-        switch (rMessageResponse.status) {
-          case "init":
-            if (debug) {
-              developer.log(
-                '${LogIcons.arrowLeft} Message ${rMessageResponse.messageID} is initialized but not sent yet to backend.',
-                name: '$logClassName - $logFunctionName',
-              );
-            }
-            break;
-          case "sent":
-            if (debug) {
-              developer.log(
-                '${LogIcons.arrowLeft} Message ${rMessageResponse.messageID} sent to backend. Waiting response from server',
-                name: '$logClassName - $logFunctionName',
-              );
-            }
-            break;
-          case "queued":
-            if (debug) {
-              developer.log(
-                '${LogIcons.arrowLeft} Message ${rMessageResponse.messageID} queued for processing. Waiting response from server',
-                name: '$logClassName - $logFunctionName',
-              );
-            }
-            break;
-          case "processing":
-            if (debug) {
-              developer.log(
-                '${LogIcons.arrowLeft} Message ${rMessageResponse.messageID} replied from backend. Processing reply received',
-                name: '$logClassName - $logFunctionName',
-              );
-            }
-            break;
-          case "ok":
-            if (debug) {
-              developer.log(
-                '${LogIcons.arrowLeft} Message ${rMessageResponse.messageID} processed from backend.',
-                name: '$logClassName - $logFunctionName',
-              );
-            }
-            break whileLoop;
-          default:
-            return ErrorHandler(
-              errorCode: 400001,
-              errorDsc:
-                  'Se produjo un error al leer el estado de respuesta del mensaje enviado al backend.',
-              messageID: rMessageResponse.messageID,
-              className: className,
-              functionName: functionName,
-              propertyName: 'Status',
-              propertyValue: rMessageResponse.status,
-              stacktrace: StackTrace.current,
-            );
-        } // switch (rMessageResponse.status)
-      } // if (rMessageResponse.recordOldHash != rMessageResponse.recordNew.hashCode)
-      /// Wait for [data] to be updated
-      ///
-      await Future.delayed(const Duration(milliseconds: 100));
-      rMessageResponse.timeElapsed += const Duration(milliseconds: 100);
-      Duration pRealTimeout = rMessageResponse.timeOut;
-      if (rMessageResponse.timeElapsed >= pRealTimeout) {
-        if (debug) {
-          developer.log(
-            '${LogIcons.arrowLeft} Message ${rMessageResponse.messageID} timed out after ${pRealTimeout.inSeconds} seconds.',
-            name: '$logClassName - $logFunctionName',
-          );
-        }
-        switch (rMessageResponse.status) {
-          case "init":
-          case "sent":
-          case "queued":
-            if (debug) {
-              if (debug) {
-                developer.log(
-                  'Message ${rMessageResponse.messageID} is [${rMessageResponse.status}] but a timeout occured',
-                  name: '$logClassName - $logFunctionName',
-                );
-              }
-            }
-            rMessageResponse.localError = ErrorHandler(
-              errorCode: 4000029999,
-              errorDsc:
-                  'Ocurrió un error de timeout del mensaje con estado [${rMessageResponse.status}]',
-              propertyName: 'Status => timeout',
-              propertyValue: rMessageResponse.status,
-              className: className,
-              functionName: functionName,
-              stacktrace: StackTrace.current,
-            );
-            break whileLoop;
-          case "processing":
-            if (debug) {
-              if (debug) {
-                developer.log(
-                  'Message ${rMessageResponse.messageID} is [${rMessageResponse.status}] but a timeout occured',
-                  name: '$logClassName - $logFunctionName',
-                );
-              }
-            }
-            rMessageResponse.localError = ErrorHandler(
-              errorCode: 400009,
-              errorDsc:
-                  'Ocurrió un error de timeout del mensaje con estado [${rMessageResponse.status}]',
-              propertyName: 'Status => timeout',
-              propertyValue: rMessageResponse.status,
-              className: className,
-              functionName: functionName,
-              stacktrace: StackTrace.current,
-            );
-            break whileLoop;
-          case "ok":
-            if (debug) {
-              developer.log(
-                'Message ${rMessageResponse.messageID} proccessed from backend.',
-                name: '$logClassName - $logFunctionName',
-              );
-            }
-            break whileLoop;
-          default:
-            return ErrorHandler(
-              errorCode: 400010,
-              errorDsc:
-                  'Se produjo un error al leer el estado de respuesta del mensaje enviado al backend.',
-              messageID: rMessageResponse.messageID,
-              propertyName: 'Status',
-              propertyValue: rMessageResponse.status,
-              className: className,
-              functionName: functionName,
-              stacktrace: StackTrace.current,
-            );
-        } // switch (rMessageResponse.status)
-      } // Wait for [data] to be updated
-    } // while (true)
+    _prepareTrackedMessageForWaiting(rMessageResponse);
+    final ErrorHandler? rWaitError = await _waitForTrackedMessageCompletion(
+      messageResponse: rMessageResponse,
+      functionName: functionName,
+      logFunctionName: logFunctionName,
+      inclusiveTimeout: true,
+    );
+    if (rWaitError != null) {
+      return rWaitError;
+    }
     ErrorHandler rFinalResponse = rMessageResponse.finalResponse;
     if (rMessageResponse.status == "ok") {
-      if (rMessageResponse.isWorkInProgress) {
-        while (true) {
-          if (!rMessageResponse.isWorkInProgress) {
-            break;
-          }
-          await Future.delayed(const Duration(milliseconds: 100));
-        }
-      }
+      await _waitUntilTrackedWorkIsDone(rMessageResponse);
       await wssMessagesTrackingV2.remove(rSendMessage.messageID);
     }
     if (rFinalResponse.errorCode != 0) {
