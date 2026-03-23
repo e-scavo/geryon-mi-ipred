@@ -33,12 +33,18 @@ This folder contains the living technical documentation for **Mi IP·RED**.
   - proposed target project structure for staged refactor
 - `refactor-plan.md`
   - staged refactor roadmap
+- `legacy.md`
+  - legacy, superseded, disabled, and quarantine candidate inventory
+- `cleanup-checklist.md`
+  - operational checklist for low-risk cleanup and repository hygiene
 
 ### Audit Phases
 - `phase1_audit.md`
   - initial technical audit of the current codebase
 - `phase2_structural_plan.md`
   - structural planning, refactor boundaries, and cleanup candidates
+- `phase3_cleanup_hygiene.md`
+  - repository hygiene phase and low-risk cleanup plan
 
 ---
 
@@ -48,19 +54,18 @@ This documentation exists to make the project portable between conversations and
 
 Each major step should be reflected in a new phase document, for example:
 
-- `phase3_service_provider_split.md`
-- `phase4_connection_hardening.md`
-- `phase5_feature_x.md`
+- `phase4_infra_normalization.md`
+- `phase5_service_provider_decomposition.md`
+- `phase6_feature_reorganization.md`
 
 ---
 
 ## 🚦 Current Phase
 
-**Phase 2 — Documentation alignment and structural planning**
+**Phase 3 — Low-risk cleanup and repository hygiene**
 
 Goals:
-- deepen the architecture documentation
-- inventory current modules
-- define target refactor boundaries
-- identify safe cleanup opportunities
-- prepare a staged refactor roadmap
+- identify safe cleanup actions
+- classify legacy and disabled files
+- define quarantine strategy
+- prepare the repository for structural refactor without changing runtime behavior

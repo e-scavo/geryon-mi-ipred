@@ -52,22 +52,27 @@ Risk:
 ## Phase 3
 ### Low-risk cleanup and repository hygiene
 Scope:
-- quarantine or mark legacy files
-- identify dead/commented files
-- normalize obvious file naming inconsistencies
-- create a dedicated `docs/legacy.md` if needed
+- classify legacy and disabled files
+- quarantine or remove obvious unused files
+- improve repository clarity before deeper refactor
+- document cleanup procedures and safety checks
 
-Recommended candidates:
+Deliverables:
+- `legacy.md`
+- `cleanup-checklist.md`
+- `phase3_cleanup_hygiene.md`
+
+Primary candidates:
 - old socket files
 - old session storage file
 - old login data model
-- experimental theme file
+- experimental theme/demo file
 - old utility file
 - unused websocket service file
 - disabled config UI files
 
 Risk:
-- low, if removal is postponed until one more validation pass
+- low, if performed with validation after each step
 
 ---
 
