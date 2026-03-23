@@ -359,6 +359,65 @@ class ServiceProvider extends ChangeNotifier {
     }
   }
 
+  ErrorHandler _buildTrackedCallbackMessageNotFoundError({
+    required String messageID,
+    required String functionName,
+  }) {
+    return ErrorHandler(
+      errorCode: 400003,
+      errorDsc:
+          'No pudimos encontrar la referencia al mensaje enviado al backend',
+      messageID: messageID,
+      className: className,
+      functionName: functionName,
+      propertyName: 'MessageID',
+      propertyValue: null,
+      stacktrace: StackTrace.current,
+    );
+  }
+
+  ErrorHandler _buildNoError({
+    required String functionName,
+    String errorDsc = 'No error',
+  }) {
+    return ErrorHandler(
+      errorCode: 0,
+      errorDsc: errorDsc,
+      className: className,
+      functionName: functionName,
+    );
+  }
+
+  CommonRPCMessageResponse? _getTrackedMessageResponse(
+    String messageID,
+  ) {
+    return wssMessagesTrackingV2.get(messageID);
+  }
+
+  ServiceProviderWholeMessageModel _parseWholeMessageFromCallback(
+    dynamic pParams,
+  ) {
+    return ServiceProviderWholeMessageModel.fromJson(pParams);
+  }
+
+  ErrorHandler? _handleQueuedCallbackMessage({
+    required ServiceProviderWholeMessageModel message,
+    required String logFunctionName,
+    required String queuedLogMessage,
+    required String functionName,
+  }) {
+    if (message.data.status == "queued") {
+      if (debug) {
+        developer.log(
+          queuedLogMessage,
+          name: '$logClassName - $logFunctionName',
+        );
+      }
+      return _buildNoError(functionName: functionName);
+    }
+    return null;
+  }
+
   Future<ErrorHandler?> _onData(Map<String, dynamic> data) async {
     const String functionName = '_onData';
     const logFunctionName = '.::$functionName::.';
@@ -962,36 +1021,24 @@ class ServiceProvider extends ChangeNotifier {
     }
     CommonRPCMessageResponse? rMessageResponse;
     try {
-      ErrorHandler noError = ErrorHandler(
-        errorCode: 0,
-        errorDsc: 'No error',
-        className: className,
-        functionName: functionName,
-      );
-      rMessageResponse = wssMessagesTrackingV2.get(pMessageID);
+      rMessageResponse = _getTrackedMessageResponse(pMessageID);
       if (rMessageResponse == null) {
-        return ErrorHandler(
-          errorCode: 400003,
-          errorDsc:
-              'No pudimos encontrar la referencia al mensaje enviado al backend',
+        return _buildTrackedCallbackMessageNotFoundError(
           messageID: pMessageID,
-          className: className,
           functionName: functionName,
-          propertyName: 'MessageID',
-          propertyValue: null,
-          stacktrace: StackTrace.current,
         );
       }
-      ServiceProviderWholeMessageModel pData;
-      pData = ServiceProviderWholeMessageModel.fromJson(pParams);
-      if (pData.data.status == "queued") {
-        if (debug) {
-          developer.log(
+      final ServiceProviderWholeMessageModel pData =
+          _parseWholeMessageFromCallback(pParams);
+      final ErrorHandler? rQueued = _handleQueuedCallbackMessage(
+        message: pData,
+        logFunctionName: logFunctionName,
+        queuedLogMessage:
             'GetBackendStatusCallback => Message is queued, waiting for processing.',
-            name: '$logClassName - $logFunctionName',
-          );
-          return noError;
-        }
+        functionName: functionName,
+      );
+      if (rQueued != null) {
+        return rQueued;
       }
       if (pData.errorCode != 0) {
         switch (pData.data.severity) {
@@ -1808,36 +1855,24 @@ class ServiceProvider extends ChangeNotifier {
       );
     }
     try {
-      ErrorHandler noError = ErrorHandler(
-        errorCode: 0,
-        errorDsc: 'No error',
-        className: className,
-        functionName: functionName,
-      );
-      rMessageResponse = wssMessagesTrackingV2.get(pMessageID);
+      rMessageResponse = _getTrackedMessageResponse(pMessageID);
       if (rMessageResponse == null) {
-        return ErrorHandler(
-          errorCode: 400003,
-          errorDsc:
-              'No pudimos encontrar la referencia al mensaje enviado al backend',
+        return _buildTrackedCallbackMessageNotFoundError(
           messageID: pMessageID,
-          className: className,
           functionName: functionName,
-          propertyName: 'MessageID',
-          propertyValue: null,
-          stacktrace: StackTrace.current,
         );
       }
-      ServiceProviderWholeMessageModel pData;
-      pData = ServiceProviderWholeMessageModel.fromJson(pParams);
-      if (pData.data.status == "queued") {
-        if (debug) {
-          developer.log(
+      final ServiceProviderWholeMessageModel pData =
+          _parseWholeMessageFromCallback(pParams);
+      final ErrorHandler? rQueued = _handleQueuedCallbackMessage(
+        message: pData,
+        logFunctionName: logFunctionName,
+        queuedLogMessage:
             'SubscribeChannelCallback => Message is queued, waiting for processing.',
-            name: '$logClassName - $logFunctionName',
-          );
-          return noError;
-        }
+        functionName: functionName,
+      );
+      if (rQueued != null) {
+        return rQueued;
       }
       if (pData.errorCode != 0) {
         switch (pData.data.severity) {
@@ -2153,36 +2188,24 @@ class ServiceProvider extends ChangeNotifier {
     }
     CommonRPCMessageResponse? rMessageResponse;
     try {
-      ErrorHandler noError = ErrorHandler(
-        errorCode: 0,
-        errorDsc: 'No error',
-        className: className,
-        functionName: functionName,
-      );
-      rMessageResponse = wssMessagesTrackingV2.get(pMessageID);
+      rMessageResponse = _getTrackedMessageResponse(pMessageID);
       if (rMessageResponse == null) {
-        return ErrorHandler(
-          errorCode: 400003,
-          errorDsc:
-              'No pudimos encontrar la referencia al mensaje enviado al backend',
+        return _buildTrackedCallbackMessageNotFoundError(
           messageID: pMessageID,
-          className: className,
           functionName: functionName,
-          propertyName: 'MessageID',
-          propertyValue: null,
-          stacktrace: StackTrace.current,
         );
       }
-      ServiceProviderWholeMessageModel pData;
-      pData = ServiceProviderWholeMessageModel.fromJson(pParams);
-      if (pData.data.status == "queued") {
-        if (debug) {
-          developer.log(
+      final ServiceProviderWholeMessageModel pData =
+          _parseWholeMessageFromCallback(pParams);
+      final ErrorHandler? rQueued = _handleQueuedCallbackMessage(
+        message: pData,
+        logFunctionName: logFunctionName,
+        queuedLogMessage:
             'DoLoginCallback => Message is queued, waiting for processing.',
-            name: '$logClassName - $logFunctionName',
-          );
-          return noError;
-        }
+        functionName: functionName,
+      );
+      if (rQueued != null) {
+        return rQueued;
       }
       if (pData.errorCode != 0) {
         switch (pData.data.severity) {
