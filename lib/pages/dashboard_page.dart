@@ -10,7 +10,7 @@ import 'package:geryon_web_app_ws_v2/pages/FrameWithScroll/widget.dart';
 import 'package:geryon_web_app_ws_v2/pages/copyable_list_tile_page.dart';
 import 'package:geryon_web_app_ws_v2/pages/infocard_page.dart';
 import 'package:geryon_web_app_ws_v2/core/session/session_storage.dart';
-import 'package:geryon_web_app_ws_v2/utils/utils.dart';
+import 'package:geryon_web_app_ws_v2/core/utils/utils.dart';
 //import 'package:geryon_web_app_ws_v2/providers/user_provider.dart';
 
 class DashboardPage extends ConsumerWidget {

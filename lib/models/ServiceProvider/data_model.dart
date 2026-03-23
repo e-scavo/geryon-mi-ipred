@@ -22,8 +22,7 @@ import 'package:geryon_web_app_ws_v2/models/child_popup_error_message.dart';
 import 'package:geryon_web_app_ws_v2/models/error_handler.dart';
 import 'package:geryon_web_app_ws_v2/models/tbl_Empresas/model.dart';
 //import 'package:geryon_web_app_ws_v2/services/websocket_client.dart';
-import 'package:geryon_web_app_ws_v2/utils/utils.dart';
-
+import 'package:geryon_web_app_ws_v2/core/utils/utils.dart';
 import 'package:geryon_web_app_ws_v2/core/files/file_saver.dart';
 
 class ServiceProvider extends ChangeNotifier {

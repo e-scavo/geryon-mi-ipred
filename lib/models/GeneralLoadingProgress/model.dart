@@ -6,7 +6,7 @@ import 'package:geryon_web_app_ws_v2/common_vars.dart';
 import 'package:geryon_web_app_ws_v2/models/CommonDateTimeModel/model.dart';
 import 'package:geryon_web_app_ws_v2/models/ServiceProvider/data_model.dart';
 import 'package:geryon_web_app_ws_v2/models/ServiceProvider/init_stages_enum_model.dart';
-import 'package:geryon_web_app_ws_v2/utils/utils.dart';
+import 'package:geryon_web_app_ws_v2/core/utils/utils.dart';
 
 class ModelGeneralLoadingProgress extends ConsumerStatefulWidget {
   const ModelGeneralLoadingProgress({

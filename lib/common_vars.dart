@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geryon_web_app_ws_v2/models/ServiceProvider/data_model.dart';
 import 'package:geryon_web_app_ws_v2/models/ServiceProviderConfig/model.dart';
-import 'package:geryon_web_app_ws_v2/utils/utils.dart';
+import 'package:geryon_web_app_ws_v2/core/utils/utils.dart';
 
 GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 bool debug = false; // Set to false in production

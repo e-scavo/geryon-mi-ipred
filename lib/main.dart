@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geryon_web_app_ws_v2/common_vars.dart';
 import 'package:geryon_web_app_ws_v2/models/GeneralLoadingProgress/popup_model.dart';
 import 'package:geryon_web_app_ws_v2/pages/dashboard_page.dart';
-import 'package:geryon_web_app_ws_v2/utils/utils.dart';
+import 'package:geryon_web_app_ws_v2/core/utils/utils.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
