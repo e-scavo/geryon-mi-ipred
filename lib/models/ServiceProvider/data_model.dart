@@ -25,6 +25,36 @@ import 'package:geryon_web_app_ws_v2/models/tbl_Empresas/model.dart';
 import 'package:geryon_web_app_ws_v2/core/utils/utils.dart';
 import 'package:geryon_web_app_ws_v2/core/files/file_saver.dart';
 
+class _PreparedTrackedMessageResult {
+  final CommonRPCMessageResponse? messageResponse;
+  final ErrorHandler? error;
+
+  const _PreparedTrackedMessageResult._({
+    required this.messageResponse,
+    required this.error,
+  });
+
+  factory _PreparedTrackedMessageResult.success(
+    CommonRPCMessageResponse messageResponse,
+  ) {
+    return _PreparedTrackedMessageResult._(
+      messageResponse: messageResponse,
+      error: null,
+    );
+  }
+
+  factory _PreparedTrackedMessageResult.failure(
+    ErrorHandler error,
+  ) {
+    return _PreparedTrackedMessageResult._(
+      messageResponse: null,
+      error: error,
+    );
+  }
+
+  bool get hasError => error != null;
+}
+
 class ServiceProvider extends ChangeNotifier {
   static final String className = "ServiceProvider";
   static final String logClassName = '.::$className::.';
@@ -509,6 +539,42 @@ class ServiceProvider extends ChangeNotifier {
     };
   }
 
+  _PreparedTrackedMessageResult _prepareTrackedMessageAfterSend({
+    required ErrorHandler sendMessageResult,
+    required String functionName,
+    bool setInitStageErrorOnNotFound = false,
+    bool updateListenersOnNotFound = false,
+  }) {
+    final CommonRPCMessageResponse? rMessageResponse =
+        _getTrackedMessageResponse(sendMessageResult.messageID);
+
+    if (rMessageResponse == null) {
+      final ErrorHandler rSendMessageReturn = _buildTrackedMessageNotFoundError(
+        messageID: sendMessageResult.messageID,
+        functionName: functionName,
+      );
+
+      if (setInitStageErrorOnNotFound) {
+        initStage = ServiceProviderInitStages.errorRequestingBackend;
+        initStageError = rSendMessageReturn;
+      }
+
+      if (updateListenersOnNotFound) {
+        updateListeners(calledFrom: functionName);
+      }
+
+      return _PreparedTrackedMessageResult.failure(
+        rSendMessageReturn,
+      );
+    }
+
+    _prepareTrackedMessageForWaiting(rMessageResponse);
+
+    return _PreparedTrackedMessageResult.success(
+      rMessageResponse,
+    );
+  }
+
   Future<ErrorHandler?> _onData(Map<String, dynamic> data) async {
     const String functionName = '_onData';
     const logFunctionName = '.::$functionName::.';
@@ -947,19 +1013,19 @@ class ServiceProvider extends ChangeNotifier {
       updateListeners(calledFrom: functionName);
       return rSendMessage;
     }
-    CommonRPCMessageResponse? rMessageResponse =
-        wssMessagesTrackingV2.get(rSendMessage.messageID);
-    if (rMessageResponse == null) {
-      final rSendMessageReturn = _buildTrackedMessageNotFoundError(
-        messageID: rSendMessage.messageID,
-        functionName: functionName,
-      );
-      initStage = ServiceProviderInitStages.errorRequestingBackend;
-      initStageError = rSendMessageReturn;
-      updateListeners(calledFrom: functionName);
-      return rSendMessageReturn;
+    final _PreparedTrackedMessageResult rPrepared =
+        _prepareTrackedMessageAfterSend(
+      sendMessageResult: rSendMessage,
+      functionName: functionName,
+      setInitStageErrorOnNotFound: true,
+      updateListenersOnNotFound: true,
+    );
+    if (rPrepared.hasError) {
+      return rPrepared.error!;
     }
-    _prepareTrackedMessageForWaiting(rMessageResponse);
+
+    final CommonRPCMessageResponse rMessageResponse =
+        rPrepared.messageResponse!;
     final ErrorHandler? rWaitError = await _waitForTrackedMessageCompletion(
       messageResponse: rMessageResponse,
       functionName: functionName,
@@ -1815,19 +1881,19 @@ class ServiceProvider extends ChangeNotifier {
         updateListeners(calledFrom: functionName);
         return rSendMessage;
       }
-      CommonRPCMessageResponse? rMessageResponse =
-          wssMessagesTrackingV2.get(rSendMessage.messageID);
-      if (rMessageResponse == null) {
-        final rSendMessageReturn = _buildTrackedMessageNotFoundError(
-          messageID: rSendMessage.messageID,
-          functionName: functionName,
-        );
-        initStage = ServiceProviderInitStages.errorRequestingBackend;
-        initStageError = rSendMessageReturn;
-        updateListeners(calledFrom: functionName);
-        return rSendMessageReturn;
+      final _PreparedTrackedMessageResult rPrepared =
+          _prepareTrackedMessageAfterSend(
+        sendMessageResult: rSendMessage,
+        functionName: functionName,
+        setInitStageErrorOnNotFound: true,
+        updateListenersOnNotFound: true,
+      );
+      if (rPrepared.hasError) {
+        return rPrepared.error!;
       }
-      _prepareTrackedMessageForWaiting(rMessageResponse);
+
+      final CommonRPCMessageResponse rMessageResponse =
+          rPrepared.messageResponse!;
       final ErrorHandler? rWaitError = await _waitForTrackedMessageCompletion(
         messageResponse: rMessageResponse,
         functionName: functionName,
@@ -2194,17 +2260,18 @@ class ServiceProvider extends ChangeNotifier {
       updateListeners(calledFrom: functionName);
       return rSendMessage;
     }
-    CommonRPCMessageResponse? rMessageResponse =
-        wssMessagesTrackingV2.get(rSendMessage.messageID);
-    if (rMessageResponse == null) {
-      final rSendMessageReturn = _buildTrackedMessageNotFoundError(
-        messageID: rSendMessage.messageID,
-        functionName: functionName,
-      );
-      updateListeners(calledFrom: functionName);
-      return rSendMessageReturn;
+    final _PreparedTrackedMessageResult rPrepared =
+        _prepareTrackedMessageAfterSend(
+      sendMessageResult: rSendMessage,
+      functionName: functionName,
+      updateListenersOnNotFound: true,
+    );
+    if (rPrepared.hasError) {
+      return rPrepared.error!;
     }
-    _prepareTrackedMessageForWaiting(rMessageResponse);
+
+    final CommonRPCMessageResponse rMessageResponse =
+        rPrepared.messageResponse!;
     final ErrorHandler? rWaitError = await _waitForTrackedMessageCompletion(
       messageResponse: rMessageResponse,
       functionName: functionName,
