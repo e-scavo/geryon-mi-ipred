@@ -91,6 +91,39 @@ class ServiceProvider extends ChangeNotifier {
       calledFrom: 'Constructor',
     );
   }
+  void _resetAuthenticatedRuntimeState({
+    bool clearLoggedUser = true,
+    bool notify = false,
+    String calledFrom = '',
+  }) {
+    isUserLoggedIn = false;
+    if (clearLoggedUser) {
+      loggedUser = null;
+    }
+    cEmpresa = TableEmpresaModel.fromDefault();
+
+    if (notify) {
+      updateListeners(calledFrom: calledFrom);
+    }
+  }
+
+  void _applyAuthenticatedUserContext({
+    required ServiceProviderLoginDataUserMessageModel user,
+    bool notify = false,
+    String calledFrom = '',
+  }) {
+    loggedUser = user;
+    cEmpresa = TableEmpresaModel.fromKey(
+      pCodEmp: loggedUser!.codEmp,
+      pRazonSocial: loggedUser!.razonSocial,
+      pEnvironment: "Unknown",
+    );
+    isUserLoggedIn = true;
+
+    if (notify) {
+      updateListeners(calledFrom: calledFrom);
+    }
+  }
 
   Future<ErrorHandler?> _onData(Map<String, dynamic> data) async {
     const String functionName = '_onData';
@@ -790,13 +823,8 @@ class ServiceProvider extends ChangeNotifier {
                     name: '$logClassName - $logFunctionName',
                   );
                 }
-                isUserLoggedIn = true;
-                loggedUser =
-                    rLogin.data as ServiceProviderLoginDataUserMessageModel?;
-                cEmpresa = TableEmpresaModel.fromKey(
-                  pCodEmp: loggedUser!.codEmp,
-                  pRazonSocial: loggedUser!.razonSocial,
-                  pEnvironment: "Unknown",
+                _applyAuthenticatedUserContext(
+                  user: rLogin.data as ServiceProviderLoginDataUserMessageModel,
                 );
                 initStage = ServiceProviderInitStages.connected;
                 initStageAdditionalMsg = 'User logged in successfully.';
@@ -809,9 +837,7 @@ class ServiceProvider extends ChangeNotifier {
             }
           }
         } else {
-          isUserLoggedIn = false;
-          loggedUser = null;
-          cEmpresa = TableEmpresaModel.fromDefault();
+          _resetAuthenticatedRuntimeState();
           initStage = ServiceProviderInitStages.errorRequestingBackend;
           initStageError = rCheckLoggedUser;
           updateListeners(calledFrom: functionName);
@@ -1028,8 +1054,7 @@ class ServiceProvider extends ChangeNotifier {
         functionName: functionName,
       );
     }
-    isUserLoggedIn = false;
-    cEmpresa = TableEmpresaModel.fromDefault();
+    _resetAuthenticatedRuntimeState(clearLoggedUser: false);
     return ErrorHandler(
       errorCode: -1001,
       errorDsc: 'User is not logged in. <<FORCED>>',
@@ -1475,13 +1500,9 @@ class ServiceProvider extends ChangeNotifier {
         }
       }
 
-      loggedUser = rDataData;
-      cEmpresa = TableEmpresaModel.fromKey(
-        pCodEmp: loggedUser!.codEmp,
-        pRazonSocial: loggedUser!.razonSocial,
-        pEnvironment: "Unknown",
+      _applyAuthenticatedUserContext(
+        user: rDataData!,
       );
-      isUserLoggedIn = true;
       updateListeners(calledFrom: functionName);
       if (debug) {
         developer.log(
@@ -2579,9 +2600,7 @@ class ServiceProvider extends ChangeNotifier {
   }
 
   void logout() {
-    isUserLoggedIn = false;
-    loggedUser = null;
-    cEmpresa = TableEmpresaModel.fromDefault();
+    _resetAuthenticatedRuntimeState();
     getBackendStatus();
   }
 
