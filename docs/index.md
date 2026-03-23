@@ -25,20 +25,23 @@ This folder contains the living technical documentation for **Mi IP·RED**.
 - `legacy.md`
 - `cleanup-checklist.md`
 - `infra-normalization.md`
+- `service-provider-decomposition.md`
 
 ### Audit Phases
 - `phase1_audit.md`
 - `phase2_structural_plan.md`
 - `phase3_cleanup_hygiene.md`
 - `phase4_infra_normalization.md`
+- `phase5_service_provider_decomposition.md`
 
 ---
 
 ## 🚦 Current Phase
 
-**Phase 4 — Infrastructure normalization**
+**Phase 5 — ServiceProvider internal decomposition**
 
 Goals:
-- normalize infrastructure folders
-- improve code organization without changing behavior
-- prepare base for ServiceProvider decomposition
+- reduce the internal responsibility concentration of `ServiceProvider`
+- split logic by responsibility without changing runtime behavior
+- preserve backend contract and current flows
+- prepare the codebase for later feature-first cleanup

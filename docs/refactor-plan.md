@@ -27,7 +27,7 @@ Each phase must be documentable and reversible.
 
 ---
 
-## 🚦Refactor Stages
+## 🚦 Refactor Stages
 
 ## Phase 2
 ### Documentation alignment and structural planning
@@ -99,22 +99,23 @@ Risk:
 Scope:
 - keep the same public behavior
 - split responsibilities into internal collaborators
+- reduce pressure on the main orchestration file
+- improve readability and maintainability of the runtime core
 
 Suggested extraction areas:
 - connection lifecycle
 - login/session lifecycle
-- RPC tracking
-- message sending
+- RPC tracking helpers
+- message sending orchestration
 - backend status flow
-- customer context state
+- customer context state transitions
 
 Important:
-The file may remain physically in the same place at first.  
-The first goal is **internal responsibility separation**, not immediate file relocation.
+The first goal is **internal responsibility separation**, not a behavioral rewrite.
 
 Risk:
 - high
-- this is the most sensitive stage
+- this is the most sensitive stage of the current roadmap
 
 ---
 
@@ -169,19 +170,18 @@ Before deep refactor, treat these as frozen:
 - login payload
 - handshake interpretation
 
-### B. Create small internal helpers before moving files
-For example:
+### B. Extract helpers before moving ownership
+Prefer extracting small helpers first, such as:
 - `_sendTrackedMessage(...)`
 - `_waitForTrackedResponse(...)`
 - `_handleHandshake(...)`
 - `_handleBackendStatusSuccess(...)`
 - `_handleLoginSuccess(...)`
+- `_resetSessionState(...)`
 
-This reduces pressure on the main class.
-
-### C. Separate UI-triggered popups from protocol logic later
-Currently the provider can trigger popups through `navigatorKey`.
-That works, but eventually UI navigation concerns should be separated from backend orchestration.
+### C. Keep UI-triggered popups stable for now
+If `ServiceProvider` currently triggers UI popups through `navigatorKey`, keep that behavior unchanged in Phase 5.
+Separation of UI navigation concerns can happen later.
 
 ---
 

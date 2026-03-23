@@ -1,8 +1,8 @@
-# Development
+# 🛠️ Development
 
-## Current development principle
+## 🎯 Current Development Principle
 
-The app is functional in production.
+Mi IP·RED is functional in production.
 
 Development must follow this rule:
 
@@ -10,7 +10,7 @@ Development must follow this rule:
 
 ---
 
-## Current targets
+## 🎯 Current Targets
 
 - Web
 - Android
@@ -20,7 +20,7 @@ Deferred:
 
 ---
 
-## Basic commands
+## ▶️ Basic Commands
 
 ### Install dependencies
 ```bash
@@ -39,7 +39,7 @@ flutter run -d android
 
 ---
 
-## Working conventions
+## 🧭 Working Conventions
 
 ### 1. Protect backend flow
 Do not change request/response structures casually.
@@ -53,14 +53,34 @@ Before cleaning old code, confirm whether it is still part of runtime behavior.
 ### 4. Keep platform abstractions aligned
 Whenever Web/IO code changes, both variants must be reviewed.
 
+### 5. Decompose critical classes internally before moving them
+For highly sensitive classes such as `ServiceProvider`, first reduce internal complexity while staying in the same file.
+
 ---
 
-## Recommended future engineering structure
+## 🧪 Validation Policy
 
-Planned future documentation and code phases:
+After every meaningful runtime-core change:
+
+- run `flutter analyze`
+- run Web target
+- run Android target
+- validate login
+- validate dashboard
+- validate billing/receipts
+- validate logout
+
+This is mandatory for ServiceProvider-focused work.
+
+---
+
+## 🗺️ Recommended Engineering Sequence
 
 1. Phase 1 — audit and baseline docs
-2. Phase 2 — repository/documentation alignment
-3. Phase 3 — ServiceProvider structural split
-4. Phase 4 — connection/session hardening
-5. Phase 5 — feature expansion and UI cleanup
+2. Phase 2 — structural planning
+3. Phase 3 — cleanup and hygiene
+4. Phase 4 — infrastructure normalization
+5. Phase 5 — ServiceProvider decomposition
+6. Phase 6 — presentation structure cleanup
+7. Phase 7 — domain model organization
+8. Phase 8 — session/config hardening
