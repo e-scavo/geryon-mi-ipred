@@ -125,6 +125,54 @@ class ServiceProvider extends ChangeNotifier {
     }
   }
 
+  bool _isHandshakeMessage(ServiceProviderWholeMessageModel message) {
+    return message.data.isNew;
+  }
+
+  ErrorHandler? _validateHandshakeToken({
+    required String tokenID,
+    required String functionName,
+  }) {
+    if (tokenID.isEmpty) {
+      return ErrorHandler(
+        errorCode: 10002,
+        errorDsc: '''Error #10001. 
+              Couldn't get communication private id from backend. 
+              Please try again later or contact support is the issue continues.
+              ''',
+        propertyName: 'TokenID',
+        propertyValue: '',
+        className: className,
+        functionName: functionName,
+        stacktrace: StackTrace.current,
+      );
+    }
+    return null;
+  }
+
+  void _applySessionToken({
+    required String tokenID,
+  }) {
+    sessionTokenID = tokenID;
+    isNew = false;
+  }
+
+  Future<ErrorHandler?> _continueInitializationAfterHandshake({
+    required String functionName,
+  }) async {
+    ErrorHandler rSubscribe = await subscribeChannel();
+    if (rSubscribe.errorCode != 0) {
+      initStage = ServiceProviderInitStages.errorRequestingBackend;
+      initStageError = rSubscribe;
+      isReady = false;
+      isProgress = false;
+      updateListeners(calledFrom: functionName);
+      return rSubscribe;
+    }
+
+    return await init();
+  }
+
   Future<ErrorHandler?> _onData(Map<String, dynamic> data) async {
     const String functionName = '_onData';
     const logFunctionName = '.::$functionName::.';
@@ -138,7 +186,8 @@ class ServiceProvider extends ChangeNotifier {
     ServiceProviderWholeMessageModel pData;
     try {
       pData = ServiceProviderWholeMessageModel.fromJson(data);
-      if (pData.data.isNew) {
+
+      if (_isHandshakeMessage(pData)) {
         if (debug) {
           developer.log(
             'OnData: Received [NEW] data, processing.',
@@ -146,50 +195,42 @@ class ServiceProvider extends ChangeNotifier {
           );
         }
 
-        /// If token receive is an empty string, we should getSessionTokenID
-        ///
-        String tokenID = pData.data.tokenID ?? "";
-        if (tokenID == '') {
-          ErrorHandler rError = ErrorHandler(
-            errorCode: 10002,
-            errorDsc: '''Error #10001. 
-              Couldn't get communication private id from backend. 
-              Please try again later or contact support is the issue continues.
-              ''',
-            propertyName: 'TokenID',
-            propertyValue: '',
-            className: className,
-            functionName: functionName,
-            stacktrace: StackTrace.current,
-          );
+        final String tokenID = pData.data.tokenID ?? "";
+        final ErrorHandler? rTokenValidation = _validateHandshakeToken(
+          tokenID: tokenID,
+          functionName: functionName,
+        );
+        if (rTokenValidation != null) {
           updateListeners(calledFrom: functionName);
-          return rError;
+          return rTokenValidation;
         }
-        sessionTokenID = tokenID;
-        isNew = false;
-        // Nos suscribimos a los canales
-        ErrorHandler rSubscribe = await subscribeChannel();
-        if (rSubscribe.errorCode != 0) {
+
+        _applySessionToken(
+          tokenID: tokenID,
+        );
+
+        final ErrorHandler? rInit = await _continueInitializationAfterHandshake(
+          functionName: functionName,
+        );
+
+        if (rInit != null && rInit.errorCode != 0) {
           if (debug) {
             developer.log(
-              'OnData: Error subscribing to channels: ${rSubscribe.toString()}',
+              'OnData: Error continuing initialization after handshake: ${rInit.toString()}',
               name: '$logClassName - $logFunctionName',
             );
           }
-          initStage = ServiceProviderInitStages.errorRequestingBackend;
-          initStageError = rSubscribe;
-          isReady = false;
-          isProgress = false;
-          updateListeners(calledFrom: functionName);
-          return rSubscribe;
+          return rInit;
         }
+
         if (debug) {
           developer.log(
             'OnData: Channels subscribed successfully.',
             name: '$logClassName - $logFunctionName',
           );
         }
-        return await init();
+
+        return rInit;
       } else {
         if (debug) {
           developer.log(
