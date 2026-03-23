@@ -1,51 +1,66 @@
-# Documentation Index
+# 📚 Documentation Index
 
 This folder contains the living technical documentation for **Mi IP·RED**.
 
 ---
 
-## Documents
+## 🧭 Core Documents
 
-### Core
+### Architecture
 - `architecture.md`
   - high-level architecture overview
+- `architecture-deep.md`
+  - detailed architectural breakdown by runtime layer and technical responsibility
+
+### Runtime and Product
 - `flows.md`
   - key runtime and business flows
-- `decisions.md`
-  - architectural decisions and constraints
-- `development.md`
-  - development notes and working conventions
 - `features.md`
-  - current feature inventory
+  - current functional inventory
 - `release.md`
   - current release/target status
 - `security.md`
   - security observations and repository handling notes
 
-### Audit phases
+### Engineering Governance
+- `decisions.md`
+  - architectural decisions and constraints
+- `development.md`
+  - development notes and working conventions
+- `module-inventory.md`
+  - inventory of the main modules and their current role
+- `target-structure.md`
+  - proposed target project structure for staged refactor
+- `refactor-plan.md`
+  - staged refactor roadmap
+
+### Audit Phases
 - `phase1_audit.md`
   - initial technical audit of the current codebase
+- `phase2_structural_plan.md`
+  - structural planning, refactor boundaries, and cleanup candidates
 
 ---
 
-## Documentation policy
+## 🧩 Documentation Policy
 
 This documentation exists to make the project portable between conversations and development sessions.
 
 Each major step should be reflected in a new phase document, for example:
 
-- `phase2_refactor_foundation.md`
-- `phase3_connection_hardening.md`
-- `phase4_feature_x.md`
+- `phase3_service_provider_split.md`
+- `phase4_connection_hardening.md`
+- `phase5_feature_x.md`
 
 ---
 
-## Current phase
+## 🚦 Current Phase
 
-**Phase 1 — Full audit and baseline documentation**
+**Phase 2 — Documentation alignment and structural planning**
 
 Goals:
-- understand current codebase
-- identify critical modules
-- document actual backend flow
-- create a safe refactor roadmap foundation
+- deepen the architecture documentation
+- inventory current modules
+- define target refactor boundaries
+- identify safe cleanup opportunities
+- prepare a staged refactor roadmap
