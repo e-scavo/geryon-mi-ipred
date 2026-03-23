@@ -3,7 +3,7 @@ import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geryon_web_app_ws_v2/models/ServiceProvider/data_model.dart';
-import 'package:geryon_web_app_ws_v2/models/ServiceProviderConfig/model.dart';
+import 'package:geryon_web_app_ws_v2/core/config/model.dart';
 import 'package:geryon_web_app_ws_v2/core/utils/utils.dart';
 
 GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();

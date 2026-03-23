@@ -1,11 +1,10 @@
-// File: lib/core/config/config_loader_io.dart
 import 'dart:convert';
 import 'dart:io';
+import 'package:geryon_web_app_ws_v2/core/config/model.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path_pkg;
 import 'dart:developer' as developer;
 
-import 'package:geryon_web_app_ws_v2/models/ServiceProviderConfig/model.dart';
 import 'package:geryon_web_app_ws_v2/models/error_handler.dart';
 
 class ConfigLoaderPlatform {

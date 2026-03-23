@@ -2,8 +2,7 @@
 import 'dart:convert';
 import 'package:web/web.dart' as web;
 import 'dart:developer' as developer;
-
-import 'package:geryon_web_app_ws_v2/models/ServiceProviderConfig/model.dart';
+import 'package:geryon_web_app_ws_v2/core/config/model.dart';
 import 'package:geryon_web_app_ws_v2/models/error_handler.dart';
 
 class ConfigLoaderPlatform {

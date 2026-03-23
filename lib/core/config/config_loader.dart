@@ -1,8 +1,8 @@
 // File: lib/core/config/config_loader.dart
 //import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:developer' as developer;
-import 'package:geryon_web_app_ws_v2/models/ServiceProviderConfig/model.dart';
 import 'package:geryon_web_app_ws_v2/models/error_handler.dart';
+import 'package:geryon_web_app_ws_v2/core/config/model.dart';
 
 // Web-specific loader
 import 'config_loader_web.dart' if (dart.library.io) 'config_loader_io.dart';
