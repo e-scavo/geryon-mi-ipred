@@ -644,30 +644,22 @@ class ServiceProvider extends ChangeNotifier {
       message: message,
     );
 
-    switch (message.data.status) {
-      case "ok":
-        return await _handleTrackedCallbackOrCleanup(
-          message: message,
-          rawData: rawData,
-          functionName: functionName,
-          logFunctionName: logFunctionName,
-        );
-      case "queued":
-        return await _handleTrackedCallbackOrCleanup(
-          message: message,
-          rawData: rawData,
-          functionName: functionName,
-          logFunctionName: logFunctionName,
-        );
-      default:
-        return ErrorHandler(
-          errorCode: 7891,
-          errorDsc:
-              "Error del estado del mensaje recibido.\r\nMensaje ID:${message.data.messageID}\r\nStatus: ${message.data.status}",
-          propertyName: "Status",
-          className: className,
-        );
+    if (_isTrackedCallbackDispatchStatus(message.data.status)) {
+      return await _handleTrackedCallbackOrCleanup(
+        message: message,
+        rawData: rawData,
+        functionName: functionName,
+        logFunctionName: logFunctionName,
+      );
     }
+
+    return ErrorHandler(
+      errorCode: 7891,
+      errorDsc:
+          "Error del estado del mensaje recibido.\r\nMensaje ID:${message.data.messageID}\r\nStatus: ${message.data.status}",
+      propertyName: "Status",
+      className: className,
+    );
   }
 
   Future<ErrorHandler?> _handleTrackedIncomingMessage({
@@ -763,6 +755,16 @@ class ServiceProvider extends ChangeNotifier {
     }
 
     return rInit;
+  }
+
+  bool _isTrackedCallbackDispatchStatus(String status) {
+    switch (status) {
+      case "ok":
+      case "queued":
+        return true;
+      default:
+        return false;
+    }
   }
 
   Future<ErrorHandler?> _onData(Map<String, dynamic> data) async {
