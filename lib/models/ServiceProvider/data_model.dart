@@ -1933,17 +1933,20 @@ class ServiceProvider extends ChangeNotifier {
           name: '$logClassName - $logFunctionName',
         );
       }
-      _finalizeTrackedCallbackResponse(
-        messageResponse: rMessageResponse,
-        response: initStageError!,
-      );
-      return ErrorHandler(
+      final ErrorHandler rSuccess = ErrorHandler(
         errorCode: 0,
         errorDsc: 'Logged user checked successfully.',
         className: className,
         functionName: functionName,
         data: loggedUser,
       );
+
+      _finalizeTrackedCallbackResponse(
+        messageResponse: rMessageResponse,
+        response: rSuccess,
+      );
+
+      return rSuccess;
     } catch (e, stacktrace) {
       if (debug) {
         developer.log(
@@ -2224,23 +2227,26 @@ class ServiceProvider extends ChangeNotifier {
         channels[channelIndex].isSubscribed =
             pData.errorCode == 0 ? true : false;
         rMessageResponse.counter++;
-        if (channels.where((element) => element.status != null).isEmpty) {
-          /// If all channels are subscribed, then we can set the initStage to subscribed
+        if (rMessageResponse.counter == channels.length) {
           if (debug) {
             developer.log(
-              'SubscribeChannelCallback => All channels subscribed successfully.',
+              'SubscribeChannelCallback => All channels processed successfully.',
               name: '$logClassName - $logFunctionName',
             );
           }
+
           initStage = ServiceProviderInitStages.subscribed;
-          initStageAdditionalMsg = "Suscritos a ${channels.length} canales.";
+          initStageAdditionalMsg =
+              "Suscritos a ${rMessageResponse.counter} de ${channels.length} canales.";
           initStageError = ErrorHandler(
             errorCode: 0,
-            errorDsc: 'All channels subscribed successfully.',
+            errorDsc:
+                "Suscritos a ${rMessageResponse.counter} de ${channels.length} canales.",
             className: className,
             functionName: functionName,
           );
           updateListeners(calledFrom: functionName);
+
           _finalizeTrackedCallbackResponse(
             messageResponse: rMessageResponse,
             response: initStageError!,
@@ -2249,65 +2255,28 @@ class ServiceProvider extends ChangeNotifier {
         } else {
           if (debug) {
             developer.log(
-              'SubscribeChannelCallback => Channel ${pData.data.channelName} subscribed successfully.',
+              'SubscribeChannelCallback => Channel ${pData.data.channelName} subscribed successfully, waiting remaining channels.',
               name: '$logClassName - $logFunctionName',
             );
           }
-          if (rMessageResponse.counter == channels.length) {
-            /// If all channels are at least proccessed, then we can set the initStage to subscribed
-            if (debug) {
-              developer.log(
-                'SubscribeChannelCallback => All channels PROCESADOS successfully.',
-                name: '$logClassName - $logFunctionName',
-              );
-            }
-            initStage = ServiceProviderInitStages.subscribed;
-            initStageAdditionalMsg = "All channels subscribed successfully.";
-            initStageError = ErrorHandler(
-              errorCode: 0,
-              errorDsc:
-                  "Suscritos a ${rMessageResponse.counter} de ${channels.length} canales.",
-              className: className,
-              functionName: functionName,
-            );
-            updateListeners(calledFrom: functionName);
-            _finalizeTrackedCallbackResponse(
-              messageResponse: rMessageResponse,
-              response: initStageError!,
-            );
-            return initStageError!;
-          } else {
-            if (debug) {
-              developer.log(
-                'SubscribeChannelCallback => Channel ${pData.data.channelName} subscribed successfully, but not all channels are subscribed yet.',
-                name: '$logClassName - $logFunctionName',
-              );
-            }
 
-            /// If not all channels are subscribed, then we can set the initStage to subscribing
-            initStage = ServiceProviderInitStages.subscribing;
-            initStageAdditionalMsg =
-                "Suscritos a ${rMessageResponse.counter} de ${channels.length} canales.";
-            initStageError = ErrorHandler(
-              errorCode: 0,
-              errorDsc:
-                  "Suscritos a ${rMessageResponse.counter} de ${channels.length} canales.",
-              className: className,
-              functionName: functionName,
-            );
-            updateListeners(calledFrom: functionName);
-            if (debug) {
-              developer.log(
-                'SubscribeChannelCallback => Not all channels are subscribed yet, waiting for more responses.',
-                name: '$logClassName - $logFunctionName',
-              );
-            }
-            _finalizeTrackedCallbackResponse(
-              messageResponse: rMessageResponse,
-              response: initStageError!,
-            );
-            return initStageError!;
-          }
+          initStage = ServiceProviderInitStages.subscribing;
+          initStageAdditionalMsg =
+              "Suscritos a ${rMessageResponse.counter} de ${channels.length} canales.";
+          initStageError = ErrorHandler(
+            errorCode: 0,
+            errorDsc:
+                "Suscritos a ${rMessageResponse.counter} de ${channels.length} canales.",
+            className: className,
+            functionName: functionName,
+          );
+          updateListeners(calledFrom: functionName);
+
+          _finalizeTrackedCallbackResponse(
+            messageResponse: rMessageResponse,
+            response: initStageError!,
+          );
+          return initStageError!;
         }
       } // if (channelIndex == -1)
     } catch (e, stacktrace) {
@@ -2370,60 +2339,26 @@ class ServiceProvider extends ChangeNotifier {
         name: '$logClassName - $logFunctionName',
       );
     }
-    ErrorHandler rSendMessage = await sendMessageV2(
-      pData: pRequest,
-      isAsync: true,
-      pNotifyListeners: true,
-      pShowWorkInProgress: false,
+    final ErrorHandler rFinalResponse = await _executeTrackedRequestFlow(
+      requestData: pRequest,
       callBackFunction: doLoginCallback,
-    );
-    if (rSendMessage.errorCode != 0) {
-      if (debug) {
-        developer.log(
-          '${LogIcons.arrowRight} Error sending status request: ${rSendMessage.toString()}',
-          name: '$logClassName - $logFunctionName',
-        );
-      }
-      updateListeners(calledFrom: functionName);
-      return rSendMessage;
-    }
-    final _PreparedTrackedMessageResult rPrepared =
-        _prepareTrackedMessageAfterSend(
-      sendMessageResult: rSendMessage,
-      functionName: functionName,
-      updateListenersOnNotFound: true,
-    );
-    if (rPrepared.hasError) {
-      return rPrepared.error!;
-    }
-
-    final CommonRPCMessageResponse rMessageResponse =
-        rPrepared.messageResponse!;
-    final ErrorHandler? rWaitError = await _waitForTrackedMessageCompletion(
-      messageResponse: rMessageResponse,
       functionName: functionName,
       logFunctionName: logFunctionName,
+      setInitStageErrorOnNotFound: false,
+      updateListenersOnNotFound: false,
+      notifyListenersOnSend: true,
+      showWorkInProgress: false,
       inclusiveTimeout: true,
+      removeOnOk: true,
+      removeOnlyWhenCounterMatchesChannels: false,
     );
-    if (rWaitError != null) {
-      return rWaitError;
+    if (rFinalResponse.errorCode != 0 && debug) {
+      developer.log(
+        '${LogIcons.arrowLeft} Error received from backend: ${rFinalResponse.toString()}',
+        name: '$logClassName - $logFunctionName',
+      );
     }
-    ErrorHandler rFinalResponse = rMessageResponse.finalResponse;
-    if (rMessageResponse.status == "ok") {
-      await _waitUntilTrackedWorkIsDone(rMessageResponse);
-      await wssMessagesTrackingV2.remove(rSendMessage.messageID);
-    }
-    if (rFinalResponse.errorCode != 0) {
-      if (debug) {
-        developer.log(
-          '${LogIcons.arrowLeft} Error received from backend: ${rFinalResponse.toString()}',
-          name: '$logClassName - $logFunctionName',
-        );
-      }
-      return rFinalResponse;
-    } else {
-      return rFinalResponse;
-    }
+    return rFinalResponse;
   }
 
   Future<ErrorHandler> doLoginCallback({
@@ -2506,6 +2441,10 @@ class ServiceProvider extends ChangeNotifier {
           _extractLoginUserFromWholeMessage(
         message: pData,
         functionName: functionName,
+      );
+
+      _applyAuthenticatedUserContext(
+        user: rDataData,
       );
 
       var rError = ErrorHandler(
