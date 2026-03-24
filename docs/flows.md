@@ -1,175 +1,148 @@
-# Flows
+# Runtime Flows
 
-## 1. Application startup flow
+## Overview
 
-```text
-main()
-  -> WidgetsFlutterBinding.ensureInitialized()
-  -> ProviderScope
-  -> MyApp
-  -> MyStartingPage
-      -> _initWork()
-      -> loading popup if app not ready
-      -> waits for ServiceProvider lifecycle
-      -> DashboardPage when ready
-```
+Mi IP·RED is driven by a backend-centric runtime model over WebSocket.
 
----
+The most important flows are:
 
-## 2. Connection bootstrap flow
+1. application bootstrap
+2. handshake and token negotiation
+3. channel subscription
+4. backend status request
+5. login state verification
+6. login execution
+7. dashboard/customer data usage
 
-```text
-notifierServiceProvider
-  -> waits for serviceProviderConfigProvider
-  -> builds ServiceProvider(config)
-
-MyStartingPage._initWork()
-  -> appStatus.isReady?
-    -> no: opens loading popup
-    -> ServiceProvider.init()
-```
+Phase 5 preserved all of these flows while reducing internal complexity in `ServiceProvider`.
 
 ---
 
-## 3. WebSocket initialization flow
+## 1. Startup flow
 
-```text
-ServiceProvider.init()
-  -> wssClient.init()
-  -> backend handshake
-  -> token reception
-  -> subscribeChannel()
-  -> getBackendStatus()
-  -> doCheckLogin()
-```
+    main.dart
+      -> ProviderScope
+      -> ServiceProvider creation
+      -> init()
+      -> socket connect
+      -> wait for first backend message
 
----
-
-## 4. Handshake flow
-
-When the backend sends a message marked as `isNew == true`, the app interprets it as a connection bootstrap/handshake response.
-
-Expected effects:
-- receive `TokenID`
-- mark connection as no longer new
-- subscribe to backend channels
-- continue initialization
-
-This is a critical flow and must remain stable.
+Key constraint:
+- startup visible behavior must remain stable
 
 ---
 
-## 5. Channel subscription flow
+## 2. Handshake flow
 
-Current subscribed channels:
+    _onData(...)
+      -> detect handshake message
+      -> validate token
+      -> apply session token
+      -> continue initialization
+          -> subscribeChannel()
+          -> init() continuation
 
-- `GERYON_General`
-- `GERYON_General_SCRUD`
-
-Flow:
-
-```text
-subscribeChannel()
-  -> send subscribe request
-  -> wait for callback(s)
-  -> mark channels as subscribed
-  -> continue initialization
-```
+Important notes:
+- handshake remains a special first-message path
+- token assignment behavior was preserved
+- Phase 5 only decomposed this flow into helpers
 
 ---
 
-## 6. Backend status flow
+## 3. Channel subscription flow
 
-After channel subscription, the app requests backend status.
+    subscribeChannel()
+      -> build subscribe request
+      -> execute tracked request flow
+      -> subscribeChannelCallback()
+          -> update per-channel status
+          -> advance counter
+          -> finalize when expected channels are processed
 
-Purpose:
-- confirm backend availability
-- move application into connected/ready state
-- trigger login status verification
-
----
-
-## 7. Login status verification flow
-
-Current implemented behavior:
-
-- if no in-memory logged user exists, return "not logged in"
-- if an in-memory user exists, current implementation still forces re-login
-- remote session validation code exists conceptually but is currently disabled/commented
-
-This means current startup behavior effectively expects login as part of the normal flow.
+Important notes:
+- completion remains counter-based
+- callback semantics remain unchanged
+- partial and final subscription stages were preserved
 
 ---
 
-## 8. Login flow
+## 4. Backend status flow
 
-UI entry:
-- `LoginPageWidget`
+    getBackendStatus()
+      -> build backend status request
+      -> execute tracked request flow
+      -> evaluate final response
+      -> doCheckLogin()
+          -> if user missing:
+               show login popup
+          -> if user available:
+               apply authenticated context
 
-User input:
-- DNI/CUIT
-- remember me flag
-
-Request:
-- `Auth:Login`
-- target = `customers`
-
-Successful result:
-- `loggedUser` is populated
-- company context is populated
-- dashboard becomes usable
-
----
-
-## 9. Dashboard flow
-
-```text
-DashboardPage
-  -> read loggedUser
-  -> derive current selected customer
-  -> show:
-     - document
-     - balance
-     - payment details
-     - latest payment
-     - status
-     - invoices
-     - receipts
-```
-
-If multiple customers exist for the same login, the current customer can be switched through the UI menu.
+Important notes:
+- the post-success flow of backend status was decomposed
+- login-popup fallback behavior remains unchanged
+- backend contract remains unchanged
 
 ---
 
-## 10. Billing flow
+## 5. Check-login flow
 
-`BillingWidget` is used to load customer billing-like data by type.
+    doCheckLogin()
+      -> request current login/session state
+      -> doCheckLoginCallback()
+          -> parse current logged user if available
+          -> apply authenticated context
+          -> finalize tracked response
 
-Observed active usage:
-- `FacturasVT`
-- `RecibosVT`
-
-Commented/deferred:
-- `CreditosVT`
-- `DebitosVT`
-
-The billing flow depends on:
-- current logged user
-- current selected customer
-- generic table/data abstractions
-- backend request/response processing through the central provider
+Important notes:
+- callback-driven state application remains the real behavior
+- success/failure semantics were preserved
 
 ---
 
-## 11. Logout flow
+## 6. Login flow
 
-```text
-logout button
-  -> SessionStorage.clear()
-  -> ServiceProvider.logout()
-  -> getBackendStatus()
-  -> login required again
-```
+    doLogin()
+      -> build login request
+      -> execute tracked request flow
+      -> doLoginCallback()
+          -> parse login result
+          -> apply authenticated context
+          -> finalize tracked response
 
-Note:
-Local remembered DNI is cleared during explicit logout.
+Important notes:
+- `doLogin()` is request orchestration
+- `doLoginCallback()` remains the place where authenticated user state is materialized
+- this was preserved intentionally
+
+---
+
+## 7. Tracked request flow
+
+This internal pattern is now explicit and reused:
+
+    build request
+      -> sendMessageV2(...)
+      -> prepare tracked response state
+      -> wait for tracked completion
+      -> read final response
+      -> wait until post-processing is done
+      -> cleanup tracking
+
+Applied in the most sensitive flows:
+- backend status
+- subscribe channel
+- login
+
+---
+
+## 8. Dashboard usage flow
+
+    provider ready
+      -> current user/company/customer context available
+      -> dashboard widgets consume provider data
+      -> billing and receipts flows remain available
+
+Important notes:
+- dashboard behavior was not redesigned in Phase 5
+- the purpose of this phase was to keep the provider runtime more maintainable without changing UI behavior

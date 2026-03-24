@@ -16,41 +16,41 @@ The codebase is organized around a central orchestration object named `ServicePr
 - backend RPC request/response tracking
 - customer context selection
 
+After Phase 5, the class still remains central, but its internal structure is now more explicitly decomposed around helpers and tracked-flow orchestration.
+
 ---
 
 ## High-level structure
 
-```text
-UI Layer
-  -> DashboardPage
-  -> BillingWidget
-  -> LoginPageWidget
-  -> reusable widgets
+    UI Layer
+      -> DashboardPage
+      -> BillingWidget
+      -> LoginPageWidget
+      -> reusable widgets
 
-App Shell / Global State
-  -> main.dart
-  -> common_vars.dart
-  -> Riverpod providers
-  -> navigatorKey
-  -> theme
+    App Shell / Global State
+      -> main.dart
+      -> common_vars.dart
+      -> Riverpod providers
+      -> navigatorKey
+      -> theme
 
-Backend Orchestration
-  -> ServiceProvider
+    Backend Orchestration
+      -> ServiceProvider
 
-Transport
-  -> WebSocketClient
-  -> platform-specific Web / IO implementations
+    Transport
+      -> WebSocketClient
+      -> platform-specific Web / IO implementations
 
-Config / Local Persistence
-  -> ServiceProviderConfig
-  -> SessionStorage
-  -> FileSaver
+    Config / Local Persistence
+      -> ServiceProviderConfig
+      -> SessionStorage
+      -> FileSaver
 
-Domain / Backend Models
-  -> Common* models
-  -> tbl_* models
-  -> GenericDataModel
-```
+    Domain / Backend Models
+      -> Common* models
+      -> tbl_* models
+      -> GenericDataModel
 
 ---
 
@@ -115,7 +115,8 @@ Responsibilities:
 ### 6. Presentation layer
 Primary files:
 - `lib/pages/*`
-- `lib/models/Login/widget.dart`
+- login and popup widgets
+- dashboard and billing widgets
 
 Responsibilities:
 - login screen
@@ -134,9 +135,17 @@ Responsibilities:
 - a connection/session controller
 - a global state holder
 - a message bus coordinator
-- a partial business context container
+- a business context container
 
-This is functional, but it is also the main source of future refactor complexity.
+This remains true after Phase 5.
+
+The difference is that the most fragile internal logic now follows a clearer decomposition pattern:
+- handshake helpers
+- tracked callback helpers
+- tracked request execution helper
+- auth/context helpers
+- request builders
+- post-send preparation helpers
 
 ---
 
@@ -147,12 +156,13 @@ This is functional, but it is also the main source of future refactor complexity
 - cross-platform abstractions already exist
 - strong typed model presence
 - real product behavior is already implemented
+- tracked request flow is now more consistently structured in the runtime core
 
 ### Weaknesses
-- oversized orchestration class
-- inconsistent module naming
-- legacy/commented code still present
-- insufficient separation between transport, session, and domain workflows
+- oversized orchestration class still exists
+- callback logic is still sensitive
+- some legacy naming and historical noise remain
+- transport, session, runtime state, and UI triggers are still partially mixed
 
 ---
 
@@ -160,8 +170,7 @@ This is functional, but it is also the main source of future refactor complexity
 
 The next refactor stages should preserve behavior while gradually separating:
 
-1. transport
-2. session/auth flow
-3. RPC tracking
-4. domain/table data loading
-5. UI state concerns
+1. presentation structure
+2. feature-specific UI flows
+3. domain/table organization
+4. optional later callback/runtime cleanup only if it is proven safe

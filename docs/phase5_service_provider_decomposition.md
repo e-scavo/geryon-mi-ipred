@@ -1,45 +1,43 @@
-# 🧠 Phase 5 — ServiceProvider Internal Decomposition
+# Phase 5 — ServiceProvider Internal Decomposition
 
-## 🎯 Phase Goal
+## Phase Goal
 
 Reduce the internal complexity of `ServiceProvider` without changing runtime behavior.
 
-This is the first phase that directly targets the most critical runtime class of Mi IP·RED.
+This phase directly targeted the most critical runtime class of Mi IP·RED.
 
 ---
 
-## 🧠 Why This Phase Exists
+## Phase Status
 
-At this point:
+**Completed**
 
-- the project is documented
-- infrastructure has been normalized
-- the backend flow is mapped
-- the repository is cleaner
+Phase 5 was completed as a controlled internal decomposition phase.
 
-The next bottleneck is now clear:
-
-> `ServiceProvider` is too large and too responsible.
-
-The application works, but future maintenance will remain expensive unless this class is decomposed internally.
+The class was not replaced, but the most fragile runtime paths were split into smaller helpers and the repeated tracked-request flow was safely reused where validated.
 
 ---
 
-## ✅ What This Phase Tries to Achieve
+## Why This Phase Existed
 
-This phase aims to:
+At this point in the project:
 
-- reduce mental load when reading `ServiceProvider`
-- separate concerns inside the class
-- isolate risky logic into smaller helpers
-- keep the same public interface and runtime behavior
-- prepare later extraction into more explicit runtime modules
+- the project was already documented
+- infrastructure had been normalized
+- the backend flow had been mapped
+- the repository had become cleaner
+
+The next bottleneck was clear:
+
+> `ServiceProvider` was too large and too responsible.
+
+The application already worked, but future maintenance would remain expensive unless this class was decomposed internally.
 
 ---
 
-## 🚫 What This Phase Must Not Do
+## What This Phase Did Not Do
 
-This phase must **not**:
+This phase did **not**:
 
 - change backend message contracts
 - change login request structure
@@ -49,68 +47,108 @@ This phase must **not**:
 - redesign billing flow
 - change dashboard usage of provider state
 
-This is decomposition, not redesign.
+This was decomposition, not redesign.
 
 ---
 
-## 🧱 Recommended Internal Breakdown
+## What Was Actually Completed
 
-The current `ServiceProvider` should be decomposed around these responsibility groups:
+### 1. Auth/context helper extraction
+The authenticated runtime state handling was isolated into helpers, reducing duplication around login and check-login flows.
 
-### 1. Connection bootstrap
-- socket creation
-- init stages
-- reconnect behavior
+Examples of extracted responsibility:
+- reset authenticated runtime state
+- apply authenticated user context
 
-### 2. Handshake handling
-- first message detection
-- token assignment
-- initialization continuation
+---
 
-### 3. Channel orchestration
-- required channel subscription
-- subscription bookkeeping
+### 2. Handshake helper extraction
+The handshake path was decomposed into smaller responsibilities:
 
-### 4. Backend status flow
-- request status
-- interpret response
-- progress init state
+- detect handshake message
+- validate token
+- apply session token
+- continue initialization after handshake
 
-### 5. Login/session flow
-- check current login state
+This made the first-message flow easier to read without changing semantics.
+
+---
+
+### 3. Tracked wait and callback support extraction
+Common internal support logic was extracted around:
+
+- tracked response lookup
+- callback payload parsing
+- queued-message handling
+- tracked callback finalization
+- tracked completion waiting
+- post-processing wait
+
+This reduced repeated low-level plumbing.
+
+---
+
+### 4. Request builder extraction
+Request construction was made more explicit for the main runtime request paths:
+
+- backend status request
+- subscribe channel request
 - login request
-- apply logged user
-- logout/reset
 
-### 6. RPC tracking flow
-- build tracked request
-- wait for tracked response
-- resolve callback states
-
-### 7. Customer/company context
-- assign current company
-- assign current customer
-- switch active customer
+This reduced noise in the outward runtime methods.
 
 ---
 
-## 🧭 Execution Rule
-
-The safest way to refactor `ServiceProvider` is:
-
-1. stay in the same file first
-2. extract private helpers
-3. preserve method call order
-4. preserve field names when possible
-5. validate after every small change
-
-This prevents large simultaneous failures.
+### 5. Post-send tracked request preparation extraction
+The logic that converts a send result into a tracked response object was isolated, making tracked request orchestration easier to follow.
 
 ---
 
-## 🔒 Frozen Runtime Behaviors
+### 6. `_onData(...)` decomposition
+The incoming-data handler was significantly cleaned up.
 
-These behaviors are formally frozen during Phase 5:
+It now operates more clearly as a dispatcher between:
+
+- handshake path
+- tracked incoming path
+- tracked callback-or-cleanup handling
+- error handling
+
+This was one of the most important structural improvements in the phase.
+
+---
+
+### 7. Reusable tracked request execution
+A reusable internal tracked request execution helper was introduced and successfully applied in:
+
+- `getBackendStatus()`
+- `subscribeChannel()`
+- `doLogin()`
+
+This reduced repeated logic for:
+- sending a tracked request
+- preparing tracked state
+- waiting for completion
+- reading final response
+- waiting for post-work completion
+- cleaning up tracking
+
+---
+
+### 8. Callback-side state alignment
+The phase also stabilized important callback-side behavior, including:
+
+- callback-driven auth context application
+- cleaner success finalization in login/check-login paths
+- subscription completion based on real tracked counters
+
+These were done while preserving the existing backend-driven semantics.
+
+---
+
+## Frozen Runtime Behaviors Preserved
+
+The following behaviors remained stable during the phase:
 
 - current startup experience
 - current login UX
@@ -122,53 +160,60 @@ These behaviors are formally frozen during Phase 5:
 
 ---
 
-## ⚠️ Sensitive Areas
+## What Was Intentionally Not Pursued
 
-The most fragile code paths are expected to be:
+The phase intentionally stopped before aggressive shared callback abstraction.
 
-- `init()`
-- `_onData(...)`
-- `doCheckLogin()`
-- `doLogin()`
-- `sendMessageV2(...)`
-- message tracking storage access
-- state reset on logout/disconnect
+In practice, this means it did **not** force:
 
-Any decomposition touching these methods should be done incrementally.
+- a generic callback framework
+- a shared callback bootstrap layer across all callbacks
+- a broad shared callback error framework
 
----
+This decision was deliberate.
 
-## 🧪 Recommended Technical Pattern
-
-For this phase, prefer:
-
-- small private extraction
-- no semantic rename of external methods
-- no API redesign
-- no new abstraction layer unless it reduces complexity immediately
-
-Examples of acceptable extractions:
-- `_handleHandshakeMessage(...)`
-- `_requestBackendStatusInternal(...)`
-- `_applyLoggedUser(...)`
-- `_resetProviderState(...)`
-- `_sendTrackedRequestInternal(...)`
+Even though several callbacks look similar, they still contain behavior-sensitive differences. The cost/risk ratio of forcing deeper abstraction at this stage was not favorable.
 
 ---
 
-## ✅ Expected Outcome
+## Validation Approach Used During the Phase
+
+The decomposition was done incrementally and validated in small steps.
+
+Validated paths included, at minimum:
+
+- handshake
+- backend status request
+- login flow
+- check-login flow
+- channel subscription flow
+- tracked message completion and cleanup
+
+The guiding rule was:
+
+> small extraction, immediate validation, no speculative redesign
+
+---
+
+## Outcome
 
 At the end of Phase 5:
 
-- `ServiceProvider` should still behave the same
-- its internal structure should be clearer
-- future changes will become safer
-- Phase 6 can then focus on presentation structure with less pressure on the runtime core
+- `ServiceProvider` still behaves the same from the product perspective
+- its internal structure is clearer
+- repeated tracked request flow is consolidated where safe
+- auth/context and handshake boundaries are clearer
+- the runtime core is in a safer condition for future work
 
 ---
 
-## 📌 Recommended Next Step After This Phase
+## Recommended Next Step After Phase 5
 
-> **Phase 5 execution — step-by-step guided decomposition of `ServiceProvider`**
+The recommended next step is **not** to keep forcing runtime-core abstractions.
 
-This should be performed carefully and validated after each internal extraction.
+The best direction after this phase is:
+
+1. move toward presentation and feature-oriented cleanup
+2. preserve backend-sensitive flows
+3. document real behavior continuously
+4. revisit deeper callback/runtime abstractions only when directly justified by a concrete need

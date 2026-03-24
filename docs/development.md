@@ -1,6 +1,6 @@
-# 🛠️ Development
+# Development
 
-## 🎯 Current Development Principle
+## Current Development Principle
 
 Mi IP·RED is functional in production.
 
@@ -10,7 +10,7 @@ Development must follow this rule:
 
 ---
 
-## 🎯 Current Targets
+## Current Targets
 
 - Web
 - Android
@@ -20,26 +20,23 @@ Deferred:
 
 ---
 
-## ▶️ Basic Commands
+## Basic Commands
 
 ### Install dependencies
-```bash
-flutter pub get
-```
+
+    flutter pub get
 
 ### Run on Chrome
-```bash
-flutter run -d chrome
-```
+
+    flutter run -d chrome
 
 ### Run on Android
-```bash
-flutter run -d android
-```
+
+    flutter run -d android
 
 ---
 
-## 🧭 Working Conventions
+## Working Conventions
 
 ### 1. Protect backend flow
 Do not change request/response structures casually.
@@ -56,25 +53,33 @@ Whenever Web/IO code changes, both variants must be reviewed.
 ### 5. Decompose critical classes internally before moving them
 For highly sensitive classes such as `ServiceProvider`, first reduce internal complexity while staying in the same file.
 
+### 6. Stop refactoring when the next abstraction adds risk
+Once a runtime-sensitive area becomes stable, do not continue abstracting it unless the benefit is immediate and verified.
+
+This rule became especially relevant at the end of Phase 5.
+
 ---
 
-## 🧪 Validation Policy
+## Validation Policy
 
 After every meaningful runtime-core change:
 
 - run `flutter analyze`
 - run Web target
 - run Android target
+- validate handshake
+- validate backend status
 - validate login
+- validate channel subscription
 - validate dashboard
 - validate billing/receipts
-- validate logout
+- validate logout if touched
 
 This is mandatory for ServiceProvider-focused work.
 
 ---
 
-## 🗺️ Recommended Engineering Sequence
+## Recommended Engineering Sequence
 
 1. Phase 1 — audit and baseline docs
 2. Phase 2 — structural planning
@@ -83,4 +88,4 @@ This is mandatory for ServiceProvider-focused work.
 5. Phase 5 — ServiceProvider decomposition
 6. Phase 6 — presentation structure cleanup
 7. Phase 7 — domain model organization
-8. Phase 8 — session/config hardening
+8. later hardening only where validated

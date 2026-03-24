@@ -1,18 +1,18 @@
-# 🧠 ServiceProvider Decomposition
+# ServiceProvider Decomposition
 
-## 🎯 Purpose
+## Purpose
 
-This document defines how `ServiceProvider` should be decomposed internally in Mi IP·RED.
+This document defines how `ServiceProvider` was decomposed internally in Mi IP·RED during Phase 5.
 
-The goal is not to replace it immediately, but to make it smaller, clearer, and safer to maintain.
+The goal was not to replace it immediately, but to make it smaller, clearer, and safer to maintain.
 
 ---
 
-## 🧭 Current Problem
+## Current Problem
 
-`ServiceProvider` is currently the main runtime backbone of the application, but it also concentrates too many responsibilities in a single place.
+`ServiceProvider` remains the runtime backbone of the application and still concentrates many responsibilities.
 
-Today it acts as:
+Today it still acts as:
 
 - connection manager
 - backend bootstrap coordinator
@@ -23,13 +23,13 @@ Today it acts as:
 - partial UI trigger source
 - state notifier
 
-This works, but it creates high maintenance pressure.
+This centralization still exists, but its most fragile internal flows are now better structured.
 
 ---
 
-## 🚫 What Phase 5 Is NOT
+## What Phase 5 Was NOT
 
-Phase 5 is **not**:
+Phase 5 was **not**:
 
 - a full rewrite
 - a protocol redesign
@@ -37,134 +37,84 @@ Phase 5 is **not**:
 - a provider replacement
 - a change to the backend contract
 
-It is a **controlled internal decomposition**.
+It was a controlled internal decomposition.
 
 ---
 
-## ✅ What Phase 5 Is
+## What Phase 5 Actually Did
 
-Phase 5 is:
+Phase 5 focused on extracting and stabilizing internal helper groups while keeping behavior frozen.
 
-- extracting internal helper methods
-- grouping logic by responsibility
-- reducing method size
-- reducing branching complexity
-- making state transitions easier to understand
-- preparing later file-level separation
+The most relevant results were:
 
----
+### 1. Auth/context helper extraction
+Examples:
+- reset authenticated runtime state
+- apply authenticated user context
 
-## 🧱 Proposed Internal Responsibility Areas
+### 2. Handshake helper extraction
+Examples:
+- handshake detection
+- token validation
+- session token application
+- post-handshake initialization continuation
 
-The current `ServiceProvider` logic should gradually be split into these areas.
+### 3. Tracked wait/helper extraction
+Examples:
+- tracked response retrieval
+- tracked message wait orchestration
+- post-processing wait helpers
 
-### 1. Connection lifecycle
-Responsibilities:
-- socket initialization
-- reconnect attempts
-- done/error handling
-- connection stage transitions
+### 4. Callback utility extraction
+Examples:
+- callback payload parsing
+- queued-message handling
+- tracked callback finalization helpers
 
-Suggested future helper names:
-- `_initializeSocket()`
-- `_connectSocket()`
-- `_handleSocketError(...)`
-- `_handleSocketDone()`
-- `_retryConnectionIfNeeded()`
+### 5. Request builder extraction
+Examples:
+- backend status request builder
+- subscribe request builder
+- login request builder
 
----
+### 6. Post-send tracked request preparation
+Examples:
+- extract tracked response object after send
+- normalize "message not found after send" handling
 
-### 2. Handshake/bootstrap lifecycle
-Responsibilities:
-- detect first backend message
-- extract `TokenID`
-- mark `isNew = false`
-- trigger channel subscription
-- continue provider initialization
+### 7. `_onData(...)` decomposition
+The incoming-message router now clearly separates:
+- handshake path
+- tracked incoming message path
+- tracked callback/cleanup logic
+- error handling
 
-Suggested future helper names:
-- `_isHandshakeMessage(...)`
-- `_handleHandshakeMessage(...)`
-- `_applySessionToken(...)`
-- `_continueInitializationAfterHandshake()`
+### 8. Reusable tracked request execution helper
+A common tracked request execution helper is now reused in:
+- `getBackendStatus()`
+- `subscribeChannel()`
+- `doLogin()`
 
----
-
-### 3. Channel subscription lifecycle
-Responsibilities:
-- subscribe to required channels
-- confirm subscription success
-- control initialization progression
-
-Suggested future helper names:
-- `_subscribeRequiredChannels()`
-- `_subscribeSingleChannel(...)`
-- `_markChannelSubscribed(...)`
+This was one of the most valuable structural outcomes of the phase.
 
 ---
 
-### 4. Backend status lifecycle
-Responsibilities:
-- request backend status
-- interpret status result
-- decide next init stage
+## What Remains Intentionally Unfinished
 
-Suggested future helper names:
-- `_requestBackendStatus()`
-- `_handleBackendStatusResult(...)`
+Phase 5 intentionally stopped before aggressive callback abstraction.
 
----
+In particular, it did **not** force:
+- broad shared callback frameworks
+- aggressive shared error handlers for all callbacks
+- risky callback bootstrap generalization
 
-### 5. Login/session lifecycle
-Responsibilities:
-- check login state
-- send login request
-- apply logged user data
-- logout/reset session-related state
-
-Suggested future helper names:
-- `_checkLoginState()`
-- `_sendLoginRequest(...)`
-- `_handleLoginSuccess(...)`
-- `_clearLoginState()`
-- `_resetSessionState()`
+This is intentional because the callback bodies still carry behavior-sensitive differences.
 
 ---
 
-### 6. RPC/tracked message lifecycle
-Responsibilities:
-- create tracked messages
-- assign `messageID`
-- send request
-- wait for response
-- route callback data
+## Public Behavior That Stayed Frozen
 
-Suggested future helper names:
-- `_createTrackedMessage(...)`
-- `_sendTrackedMessage(...)`
-- `_waitForTrackedMessage(...)`
-- `_resolveTrackedMessage(...)`
-
----
-
-### 7. Customer/company context lifecycle
-Responsibilities:
-- set current company
-- set current customer
-- switch current customer
-- expose current context to UI
-
-Suggested future helper names:
-- `_applyCompanyContext(...)`
-- `_applyCustomerContext(...)`
-- `_selectCustomerByIndex(...)`
-- `_resetCustomerContext()`
-
----
-
-## 🛡️ Public Behavior That Must Stay Frozen
-
-The following behavior must remain stable during Phase 5:
+The following behavior remained stable during Phase 5:
 
 - app startup flow
 - socket init flow
@@ -172,49 +122,30 @@ The following behavior must remain stable during Phase 5:
 - channel subscription flow
 - backend status request flow
 - login request shape
-- `loggedUser` assignment
-- dashboard data availability
-- billing/receipts loading
-- logout visible behavior
+- callback-driven auth materialization
+- `loggedUser` assignment behavior
+- dashboard readiness behavior
 
 ---
 
-## 🧪 Recommended Decomposition Strategy
+## Success Criteria Achieved
 
-### Step 1
-Extract **private helper methods only** inside the same file.
-
-### Step 2
-Group related helpers together using comment sections or clearly marked regions.
-
-### Step 3
-Once internal responsibilities are stable, move helper groups into dedicated companion files if still needed.
-
-This reduces risk because behavior stays close to the original code during the first decomposition pass.
-
----
-
-## ⚠️ High-Risk Areas
-
-Special care is required around:
-
-- `_onData(...)`
-- `init()`
-- handshake detection
-- message tracking maps
-- async callback resolution
-- login result assignment
-- anything touching `notifyListeners()`
-
-These are the most behavior-sensitive parts of the runtime core.
-
----
-
-## ✅ Success Criteria
-
-Phase 5 is successful when:
+Phase 5 is considered successful because:
 
 - `ServiceProvider` is easier to read
-- large methods are split into smaller helpers
-- the runtime behavior remains identical
-- future extraction to separate files becomes feasible
+- critical methods are smaller and more navigable
+- tracked request execution is more coherent
+- handshake and auth helper boundaries are clearer
+- the runtime behavior remained stable in the validated paths
+
+---
+
+## Recommended Next Step
+
+After this phase, the best next move is **not** another risky runtime-core abstraction.
+
+The recommended direction is:
+
+1. move toward presentation cleanup and feature-oriented structure
+2. preserve the backend contract
+3. only revisit deeper callback abstraction if a concrete and validated need appears

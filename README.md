@@ -62,23 +62,21 @@ This includes:
 
 High-level boot flow:
 
-```text
-main.dart
-  -> ProviderScope
-  -> MyApp
-  -> MyStartingPage
-      -> notifierServiceProvider
-          -> serviceProviderConfigProvider
-          -> ServiceProvider
-              -> WebSocketClient
-              -> init()
-              -> subscribeChannel()
-              -> getBackendStatus()
-              -> doCheckLogin()
-              -> doLogin()
-      -> DashboardPage
-          -> BillingWidget
-```
+    main.dart
+      -> ProviderScope
+      -> MyApp
+      -> MyStartingPage
+          -> notifierServiceProvider
+              -> serviceProviderConfigProvider
+              -> ServiceProvider
+                  -> WebSocketClient
+                  -> init()
+                  -> subscribeChannel()
+                  -> getBackendStatus()
+                  -> doCheckLogin()
+                  -> doLogin()
+          -> DashboardPage
+              -> BillingWidget
 
 Main architectural blocks:
 
@@ -126,7 +124,7 @@ The current application provides, at minimum, the following customer-facing capa
 The app is strongly coupled to a custom backend protocol transported over WebSocket.
 
 ### 2. Centralized global state
-`ServiceProvider` currently acts as the main application orchestrator and contains connection, session, login, message tracking, and some business context state.
+`ServiceProvider` currently acts as the main application orchestrator and contains connection, session, login, message tracking, and business context state.
 
 ### 3. Cross-platform support
 The project already uses conditional imports for:
@@ -136,12 +134,12 @@ The project already uses conditional imports for:
 - file saving
 
 ### 4. Current documentation stage
-This repository has entered a formal documentation and staged refactor process.
+This repository has completed the initial ServiceProvider decomposition phase.
 
 See:
 
 - `docs/index.md`
-- `docs/phase1_audit.md`
+- `docs/phase5_service_provider_decomposition.md`
 
 ---
 
@@ -153,40 +151,43 @@ The current roadmap is:
 2. Baseline documentation
 3. Safe refactor plan
 4. Incremental structural cleanup
-5. Continued feature development
+5. ServiceProvider internal decomposition
+6. Continued feature-oriented cleanup
 
 ---
 
 ## Running the project
 
 ### Web
-```bash
-flutter pub get
-flutter run -d chrome
-```
+
+    flutter pub get
+    flutter run -d chrome
 
 ### Android
-```bash
-flutter pub get
-flutter run -d android
-```
+
+    flutter pub get
+    flutter run -d android
 
 ---
 
 ## Documentation structure
 
-```text
-docs/
-  index.md
-  architecture.md
-  flows.md
-  decisions.md
-  development.md
-  features.md
-  release.md
-  security.md
-  phase1_audit.md
-```
+    docs/
+      index.md
+      architecture.md
+      architecture-deep.md
+      flows.md
+      decisions.md
+      development.md
+      features.md
+      release.md
+      secutiry.md
+      service-provider-decomposition.md
+      phase1_audit.md
+      phase2_structural_plan.md
+      phase3_cleanup_hygene.md
+      phase4_infra_normalization.md
+      phase5_service_provider_decomposition.md
 
 ---
 

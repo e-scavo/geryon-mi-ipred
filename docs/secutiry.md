@@ -21,7 +21,18 @@ The app negotiates connection state and token context through backend WebSocket 
 
 This area is critical and must not be modified without controlled review.
 
-### 4. Future hardening opportunity
+### 4. Phase 5 security implication
+Phase 5 did not redesign security behavior.
+
+What it did do was make the most sensitive runtime paths easier to reason about:
+- handshake flow
+- tracked request flow
+- auth/context application points
+- callback finalization points
+
+This improves maintainability and lowers accidental regression risk, but it is not a security redesign.
+
+### 5. Future hardening opportunity
 Future phases should review:
 - config persistence behavior
 - token/session lifecycle
