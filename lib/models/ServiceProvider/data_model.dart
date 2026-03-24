@@ -1049,6 +1049,149 @@ class ServiceProvider extends ChangeNotifier {
     );
   }
 
+  void _applyBackendStatusSuccessState({
+    required String functionName,
+    String? additionalMessage = 'Backend status checked successfully.',
+  }) {
+    initStage = ServiceProviderInitStages.connected;
+    initStageAdditionalMsg = additionalMessage;
+    isReady = true;
+    updateListeners(calledFrom: functionName);
+  }
+
+  ErrorHandler _handleBackendStatusFinalError({
+    required ErrorHandler error,
+    required String functionName,
+  }) {
+    initStage = ServiceProviderInitStages.errorRequestingBackend;
+    initStageError = error;
+    updateListeners(calledFrom: functionName);
+    return error;
+  }
+
+  Future<ErrorHandler> _handleBackendStatusLoginFailure({
+    required ErrorHandler loginResult,
+    required String functionName,
+    required String logFunctionName,
+  }) async {
+    if (loginResult.errorCode != 0) {
+      if (debug) {
+        developer.log(
+          'GetBackendStatus => Login failed: ${loginResult.toString()}',
+          name: '$logClassName - $logFunctionName',
+        );
+      }
+
+      initStageError = loginResult;
+      initStage = ServiceProviderInitStages.errorRequestingBackend;
+      updateListeners(calledFrom: functionName);
+      return loginResult;
+    } else {
+      if (debug) {
+        developer.log(
+          'GetBackendStatus => User logged in successfully: ${loginResult.toString()}',
+          name: '$logClassName - $logFunctionName',
+        );
+      }
+
+      _applyAuthenticatedUserContext(
+        user: loginResult.data as ServiceProviderLoginDataUserMessageModel,
+      );
+      initStage = ServiceProviderInitStages.connected;
+      initStageAdditionalMsg = 'User logged in successfully.';
+      initStageError = loginResult;
+      isReady = true;
+      isProgress = false;
+      updateListeners(calledFrom: functionName);
+      return loginResult;
+    }
+  }
+
+  Future<ErrorHandler> _handleBackendStatusSuccessFlow({
+    required ErrorHandler finalResponse,
+    required String functionName,
+    required String logFunctionName,
+  }) async {
+    if (debug) {
+      developer.log(
+        '${LogIcons.arrowLeft} Backend status checked successfully: ${finalResponse.toString()}',
+        name: '$logClassName - $logFunctionName',
+      );
+    }
+
+    _applyBackendStatusSuccessState(
+      functionName: functionName,
+    );
+
+    ErrorHandler rCheckLoggedUser = await doCheckLogin();
+    if (rCheckLoggedUser.errorCode != 0) {
+      if (debug) {
+        developer.log(
+          'GetBackendStatus => Error checking logged user: ${rCheckLoggedUser.toString()}',
+          name: '$logClassName - $logFunctionName',
+        );
+      }
+
+      if (rCheckLoggedUser.errorCode == -1000 ||
+          rCheckLoggedUser.errorCode == 1001 ||
+          rCheckLoggedUser.errorCode == 1002) {
+        developer.log(
+          '-1000 1 => $navigatorKey ${navigatorKey.currentState}',
+          name: '$logClassName - $logFunctionName',
+        );
+
+        if (navigatorKey.currentState != null) {
+          developer.log(
+            '-1000 2 => $navigatorKey ${navigatorKey.currentState}',
+            name: '$logClassName - $logFunctionName',
+          );
+
+          var rLogin = await navigatorKey.currentState
+              ?.push(PopUpLoginWidget<ErrorHandler>());
+
+          developer.log(
+            '-1000 3 => $navigatorKey ${navigatorKey.currentState} $rLogin',
+            name: '$logClassName - $logFunctionName',
+          );
+
+          if (rLogin != null) {
+            return await _handleBackendStatusLoginFailure(
+              loginResult: rLogin,
+              functionName: functionName,
+              logFunctionName: logFunctionName,
+            );
+          }
+        }
+      } else {
+        _resetAuthenticatedRuntimeState();
+        initStage = ServiceProviderInitStages.errorRequestingBackend;
+        initStageError = rCheckLoggedUser;
+        updateListeners(calledFrom: functionName);
+        return rCheckLoggedUser;
+      }
+    }
+
+    if (debug) {
+      developer.log(
+        'GetBackendStatus => Logged user checked successfully: ${rCheckLoggedUser.toString()}',
+        name: '$logClassName - $logFunctionName',
+      );
+    }
+
+    isReady = true;
+    isProgress = false;
+    initStage = ServiceProviderInitStages.connected;
+    initStageAdditionalMsg = null;
+    updateListeners(calledFrom: functionName);
+
+    return ErrorHandler(
+      errorCode: 0,
+      errorDsc: 'Backend status checked successfully.',
+      className: className,
+      functionName: functionName,
+    );
+  }
+
   Future<ErrorHandler> getBackendStatus() async {
     const String functionName = 'getBackendStatus';
     const logFunctionName = '.::$functionName::.';
@@ -1120,112 +1263,15 @@ class ServiceProvider extends ChangeNotifier {
           name: '$logClassName - $logFunctionName',
         );
       }
-      initStage = ServiceProviderInitStages.errorRequestingBackend;
-      initStageError = rFinalResponse;
-      updateListeners(calledFrom: functionName);
-      return rFinalResponse;
-    } else {
-      if (debug) {
-        developer.log(
-          '${LogIcons.arrowLeft} Backend status checked successfully: ${rFinalResponse.toString()}',
-          name: '$logClassName - $logFunctionName',
-        );
-      }
-      initStage = ServiceProviderInitStages.connected;
-      initStageAdditionalMsg = 'Backend status checked successfully.';
-      isReady = true;
-      //isProgress = false;
-      updateListeners(calledFrom: functionName);
-      // Backend status is OK, we can proceed
-      // Check if we have a logged user
-      ErrorHandler rCheckLoggedUser = await doCheckLogin();
-      if (rCheckLoggedUser.errorCode != 0) {
-        if (debug) {
-          developer.log(
-            'GetBackendStatus => Error checking logged user: ${rCheckLoggedUser.toString()}',
-            name: '$logClassName - $logFunctionName',
-          );
-        }
-        if (rCheckLoggedUser.errorCode == -1000 ||
-            rCheckLoggedUser.errorCode == 1001 ||
-            rCheckLoggedUser.errorCode == 1002) {
-          developer.log(
-            '-1000 1 => $navigatorKey ${navigatorKey.currentState}',
-            name: '$logClassName - $logFunctionName',
-          );
-
-          /// If the error is -1000, it means that the user is not logged in
-          /// and we should show the login dialog.
-          if (navigatorKey.currentState != null) {
-            developer.log(
-              '-1000 2 => $navigatorKey ${navigatorKey.currentState}',
-              name: '$logClassName - $logFunctionName',
-            );
-            var rLogin = await navigatorKey.currentState
-                ?.push(PopUpLoginWidget<ErrorHandler>());
-            developer.log(
-              '-1000 3 => $navigatorKey ${navigatorKey.currentState} $rLogin',
-              name: '$logClassName - $logFunctionName',
-            );
-
-            if (rLogin != null) {
-              if (rLogin.errorCode != 0) {
-                /// If the login failed, we should set the error and update the listeners
-                if (debug) {
-                  developer.log(
-                    'GetBackendStatus => Login failed: ${rLogin.toString()}',
-                    name: '$logClassName - $logFunctionName',
-                  );
-                }
-                initStageError = rLogin;
-                initStage = ServiceProviderInitStages.errorRequestingBackend;
-                updateListeners(calledFrom: functionName);
-                return rLogin;
-              } else {
-                /// If the login was successful, we can proceed
-                if (debug) {
-                  developer.log(
-                    'GetBackendStatus => User logged in successfully: ${rLogin.toString()}',
-                    name: '$logClassName - $logFunctionName',
-                  );
-                }
-                _applyAuthenticatedUserContext(
-                  user: rLogin.data as ServiceProviderLoginDataUserMessageModel,
-                );
-                initStage = ServiceProviderInitStages.connected;
-                initStageAdditionalMsg = 'User logged in successfully.';
-                initStageError = rLogin;
-                isReady = true;
-                isProgress = false;
-                updateListeners(calledFrom: functionName);
-                return rLogin;
-              }
-            }
-          }
-        } else {
-          _resetAuthenticatedRuntimeState();
-          initStage = ServiceProviderInitStages.errorRequestingBackend;
-          initStageError = rCheckLoggedUser;
-          updateListeners(calledFrom: functionName);
-          return rCheckLoggedUser;
-        }
-      }
-      if (debug) {
-        developer.log(
-          'GetBackendStatus => Logged user checked successfully: ${rCheckLoggedUser.toString()}',
-          name: '$logClassName - $logFunctionName',
-        );
-      }
-      isReady = true;
-      isProgress = false;
-      initStage = ServiceProviderInitStages.connected;
-      initStageAdditionalMsg = null;
-      updateListeners(calledFrom: functionName);
-      return ErrorHandler(
-        errorCode: 0,
-        errorDsc: 'Backend status checked successfully.',
-        className: className,
+      return _handleBackendStatusFinalError(
+        error: rFinalResponse,
         functionName: functionName,
+      );
+    } else {
+      return await _handleBackendStatusSuccessFlow(
+        finalResponse: rFinalResponse,
+        functionName: functionName,
+        logFunctionName: logFunctionName,
       );
     }
   }
