@@ -2326,7 +2326,7 @@ class ServiceProvider extends ChangeNotifier {
     const logFunctionName = '.::$functionName::.';
     if (debug) {
       developer.log(
-        '${LogIcons.arrowRight} Requesting backend status...',
+        '${LogIcons.arrowRight} Building login request for backend...',
         name: '$logClassName - $logFunctionName',
       );
     }
@@ -2335,7 +2335,7 @@ class ServiceProvider extends ChangeNotifier {
     );
     if (debug) {
       developer.log(
-        '${LogIcons.arrowRight} Requesting backend status...',
+        '${LogIcons.arrowRight} Requesting login to backend...',
         name: '$logClassName - $logFunctionName',
       );
     }
