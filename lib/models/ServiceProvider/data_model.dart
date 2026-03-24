@@ -3,13 +3,13 @@ import 'dart:developer' as developer;
 
 import 'package:flutter/material.dart';
 import 'package:geryon_web_app_ws_v2/common_vars.dart';
+import 'package:geryon_web_app_ws_v2/features/auth/presentation/login_widget.dart';
 import 'package:geryon_web_app_ws_v2/models/CommonFileDescriptorModel/common_file_descriptor_model.dart';
 import 'package:geryon_web_app_ws_v2/models/CommonRPCMessageResponse/common_rpc_message_response.dart';
 import 'package:geryon_web_app_ws_v2/models/GeneralLoadingProgress/popup_model.dart';
 import 'package:geryon_web_app_ws_v2/core/transport/geryonsocket_model.dart';
 import 'package:geryon_web_app_ws_v2/models/LogIcons/model.dart';
 import 'package:geryon_web_app_ws_v2/models/Login/model.dart';
-import 'package:geryon_web_app_ws_v2/models/Login/widget.dart';
 import 'package:geryon_web_app_ws_v2/models/ServiceProvider/channel_model.dart';
 import 'package:geryon_web_app_ws_v2/models/ServiceProvider/init_stages_enum_model.dart';
 import 'package:geryon_web_app_ws_v2/models/ServiceProvider/login_data_user_message_model.dart';
