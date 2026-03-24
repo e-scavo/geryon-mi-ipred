@@ -1,6 +1,6 @@
-# Development
+# 🛠️ Development
 
-## Current Development Principle
+## 🎯 Current Development Principle
 
 Mi IP·RED is functional in production.
 
@@ -10,7 +10,7 @@ Development must follow this rule:
 
 ---
 
-## Current Targets
+## 🎯 Current Targets
 
 - Web
 - Android
@@ -20,66 +20,92 @@ Deferred:
 
 ---
 
-## Basic Commands
+## ▶️ Basic Commands
 
 ### Install dependencies
 
-    flutter pub get
+```bash
+flutter pub get
+```
 
 ### Run on Chrome
 
-    flutter run -d chrome
+```bash
+flutter run -d chrome
+```
 
 ### Run on Android
 
-    flutter run -d android
+```bash
+flutter run -d android
+```
 
 ---
 
-## Working Conventions
+## 🧭 Working Conventions
 
 ### 1. Protect backend flow
+
 Do not change request/response structures casually.
-
-### 2. Refactor by phase
-Every meaningful refactor should be documented in a phase document.
-
-### 3. Prefer actual runtime paths
-Before cleaning old code, confirm whether it is still part of runtime behavior.
-
-### 4. Keep platform abstractions aligned
-Whenever Web/IO code changes, both variants must be reviewed.
-
-### 5. Decompose critical classes internally before moving them
-For highly sensitive classes such as `ServiceProvider`, first reduce internal complexity while staying in the same file.
-
-### 6. Stop refactoring when the next abstraction adds risk
-Once a runtime-sensitive area becomes stable, do not continue abstracting it unless the benefit is immediate and verified.
-
-This rule became especially relevant at the end of Phase 5.
 
 ---
 
-## Validation Policy
+### 2. Refactor by phase
+
+Every meaningful refactor should be documented in a phase document.
+
+---
+
+### 3. Prefer actual runtime paths
+
+Before cleaning old code, confirm whether it is still part of runtime behavior.
+
+---
+
+### 4. Keep platform abstractions aligned
+
+Whenever Web/IO code changes, both variants must be reviewed.
+
+---
+
+### 5. Decompose critical classes internally before moving them
+
+For highly sensitive classes such as `ServiceProvider`, first reduce internal complexity while staying in the same file.
+
+---
+
+### 6. Use compatibility shims for structural UI migrations
+
+When reorganizing the presentation layer, introduce canonical paths first and keep temporary compatibility exports until imports are fully migrated.
+
+---
+
+## 🧪 Validation Policy
 
 After every meaningful runtime-core change:
 
 - run `flutter analyze`
 - run Web target
 - run Android target
-- validate handshake
-- validate backend status
 - validate login
-- validate channel subscription
 - validate dashboard
 - validate billing/receipts
-- validate logout if touched
+- validate logout
 
 This is mandatory for ServiceProvider-focused work.
 
+For presentation-structure changes, validation must also include:
+
+- startup loading flow
+- login popup visibility
+- customer selection
+- payment information dialog
+- invoice/receipt rendering
+- file download entry points that open dialogs or visual containers
+
 ---
 
-## Recommended Engineering Sequence
+## 🗺️ Recommended Engineering Sequence
 
 1. Phase 1 — audit and baseline docs
 2. Phase 2 — structural planning
@@ -88,4 +114,4 @@ This is mandatory for ServiceProvider-focused work.
 5. Phase 5 — ServiceProvider decomposition
 6. Phase 6 — presentation structure cleanup
 7. Phase 7 — domain model organization
-8. later hardening only where validated
+8. Phase 8 — session/config hardening

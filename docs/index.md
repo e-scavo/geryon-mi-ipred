@@ -1,10 +1,10 @@
-# Documentation Index
+# 📚 Documentation Index
 
 This folder contains the living technical documentation for **Mi IP·RED**.
 
 ---
 
-## Core Documents
+## 🧭 Core Documents
 
 ### Architecture
 - `architecture.md`
@@ -27,43 +27,27 @@ This folder contains the living technical documentation for **Mi IP·RED**.
 - `infra-normalization.md`
 - `service-provider-decomposition.md`
 
-### Audit and Refactor Phases
+### Audit Phases
 - `phase1_audit.md`
 - `phase2_structural_plan.md`
 - `phase3_cleanup_hygene.md`
 - `phase4_infra_normalization.md`
 - `phase5_service_provider_decomposition.md`
+- `phase6_presentation_structure_cleanup.md`
 
 ---
 
-## Current Phase
+## 🚦 Current Phase
 
-**Phase 5 — ServiceProvider internal decomposition completed**
+**Phase 6 — Presentation structure cleanup**
 
-Completed goals:
-- reduce the internal responsibility concentration of `ServiceProvider`
-- split high-risk logic into smaller helpers without changing runtime behavior
-- preserve backend contract and current flows
-- stabilize tracked request execution across the most sensitive runtime methods
+Current active substep:
 
----
+- **Phase 6.1 — Canonical shared UI paths with compatibility shims**
 
-## Current documented state
-
-The repository now has explicit documentation for:
-
-- current runtime architecture
-- backend-centric flow constraints
-- ServiceProvider decomposition strategy
-- completed Phase 5 refactor results
-- next-step guidance for later phases
-
----
-
-## Recommended next focus
-
-After Phase 5, the recommended direction is:
-
-1. avoid further risky callback abstraction unless it provides immediate and verified value
-2. move toward presentation- and feature-oriented cleanup
-3. keep the backend contract frozen while improving maintainability around the runtime core
+Goals:
+- normalize the presentation-layer structure without changing runtime behavior
+- separate feature screens from shared visual widgets
+- introduce canonical UI paths while preserving compatibility during migration
+- avoid touching backend protocol, handshake flow, and tracked request semantics
+- prepare the codebase for later feature-first organization

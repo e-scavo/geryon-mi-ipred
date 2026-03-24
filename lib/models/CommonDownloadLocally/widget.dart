@@ -15,8 +15,8 @@ import 'package:geryon_web_app_ws_v2/models/child_popup_error_message.dart';
 import 'package:geryon_web_app_ws_v2/models/error_handler.dart';
 import 'package:geryon_web_app_ws_v2/models/tbl_ClientesV2/additionalparams.dart';
 import 'package:geryon_web_app_ws_v2/pages/CatchMainScreen/widget.dart';
-import 'package:geryon_web_app_ws_v2/pages/WindowWidget/mode.dart';
-import 'package:geryon_web_app_ws_v2/pages/WindowWidget/widget.dart';
+import 'package:geryon_web_app_ws_v2/shared/window/window_model.dart';
+import 'package:geryon_web_app_ws_v2/shared/window/window_widget.dart';
 
 class CommonDownloadLocallyScreen<T extends CommonModel<T>>
     extends ConsumerStatefulWidget {

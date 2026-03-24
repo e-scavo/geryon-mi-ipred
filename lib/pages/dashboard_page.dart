@@ -5,13 +5,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geryon_web_app_ws_v2/common_vars.dart';
 import 'package:geryon_web_app_ws_v2/models/ServiceProvider/login_data_user_message_model.dart';
 import 'package:geryon_web_app_ws_v2/pages/Billing/widget.dart';
-import 'package:geryon_web_app_ws_v2/pages/FrameWithScroll/widget.dart';
 // import 'package:geryon_web_app_ws_v2/models/_pruebas/them1.dart';
-import 'package:geryon_web_app_ws_v2/pages/copyable_list_tile_page.dart';
-import 'package:geryon_web_app_ws_v2/pages/infocard_page.dart';
 import 'package:geryon_web_app_ws_v2/core/session/session_storage.dart';
 import 'package:geryon_web_app_ws_v2/core/utils/utils.dart';
 //import 'package:geryon_web_app_ws_v2/providers/user_provider.dart';
+import 'package:geryon_web_app_ws_v2/shared/layouts/frame_with_scroll.dart';
+import 'package:geryon_web_app_ws_v2/shared/widgets/copyable_list_tile.dart';
+import 'package:geryon_web_app_ws_v2/shared/widgets/info_card.dart';
 
 class DashboardPage extends ConsumerWidget {
   final int clientID;

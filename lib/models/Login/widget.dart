@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geryon_web_app_ws_v2/common_vars.dart';
 import 'package:geryon_web_app_ws_v2/models/Login/model.dart';
-import 'package:geryon_web_app_ws_v2/models/ShakeTextField/widget.dart';
 import 'package:geryon_web_app_ws_v2/core/session/session_storage.dart';
+import 'package:geryon_web_app_ws_v2/shared/widgets/shake_text_field.dart';
 
 class LoginPageWidget extends ConsumerStatefulWidget {
   const LoginPageWidget({super.key});
