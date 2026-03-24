@@ -1192,6 +1192,82 @@ class ServiceProvider extends ChangeNotifier {
     );
   }
 
+  Future<ErrorHandler> _executeTrackedRequestFlow({
+    required Map<String, dynamic> requestData,
+    required CommonRPCMessageResponseCallBack callBackFunction,
+    required String functionName,
+    required String logFunctionName,
+    bool setInitStageErrorOnNotFound = false,
+    bool updateListenersOnNotFound = false,
+    bool notifyListenersOnSend = true,
+    bool showWorkInProgress = false,
+    bool inclusiveTimeout = true,
+    bool removeOnOk = true,
+    bool removeOnlyWhenCounterMatchesChannels = false,
+  }) async {
+    final ErrorHandler rSendMessage = await sendMessageV2(
+      pData: requestData,
+      isAsync: true,
+      pNotifyListeners: notifyListenersOnSend,
+      pShowWorkInProgress: showWorkInProgress,
+      callBackFunction: callBackFunction,
+    );
+
+    if (rSendMessage.errorCode != 0) {
+      if (debug) {
+        developer.log(
+          'Error sending tracked request: ${rSendMessage.toString()}',
+          name: '$logClassName - $logFunctionName',
+        );
+      }
+      return rSendMessage;
+    }
+
+    final _PreparedTrackedMessageResult rPrepared =
+        _prepareTrackedMessageAfterSend(
+      sendMessageResult: rSendMessage,
+      functionName: functionName,
+      setInitStageErrorOnNotFound: setInitStageErrorOnNotFound,
+      updateListenersOnNotFound: updateListenersOnNotFound,
+    );
+
+    if (rPrepared.hasError) {
+      return rPrepared.error!;
+    }
+
+    final CommonRPCMessageResponse rMessageResponse =
+        rPrepared.messageResponse!;
+
+    final ErrorHandler? rWaitError = await _waitForTrackedMessageCompletion(
+      messageResponse: rMessageResponse,
+      functionName: functionName,
+      logFunctionName: logFunctionName,
+      inclusiveTimeout: inclusiveTimeout,
+    );
+
+    if (rWaitError != null) {
+      return rWaitError;
+    }
+
+    final ErrorHandler rFinalResponse = rMessageResponse.finalResponse;
+
+    if (rMessageResponse.status == "ok") {
+      await _waitUntilTrackedWorkIsDone(rMessageResponse);
+
+      if (removeOnOk) {
+        if (removeOnlyWhenCounterMatchesChannels) {
+          if (rMessageResponse.counter == channels.length) {
+            await wssMessagesTrackingV2.remove(rSendMessage.messageID);
+          }
+        } else {
+          await wssMessagesTrackingV2.remove(rSendMessage.messageID);
+        }
+      }
+    }
+
+    return rFinalResponse;
+  }
+
   Future<ErrorHandler> getBackendStatus() async {
     const String functionName = 'getBackendStatus';
     const logFunctionName = '.::$functionName::.';
@@ -1210,52 +1286,19 @@ class ServiceProvider extends ChangeNotifier {
         name: '$logClassName - $logFunctionName',
       );
     }
-    ErrorHandler rSendMessage = await sendMessageV2(
-      pData: pRequest,
-      isAsync: true,
-      pNotifyListeners: true,
-      pShowWorkInProgress: false,
+    final ErrorHandler rFinalResponse = await _executeTrackedRequestFlow(
+      requestData: pRequest,
       callBackFunction: getBackendStatusCallback,
-    );
-    if (rSendMessage.errorCode != 0) {
-      if (debug) {
-        developer.log(
-          '${LogIcons.arrowRight} Error sending status request: ${rSendMessage.toString()}',
-          name: '$logClassName - $logFunctionName',
-        );
-      }
-      initStage = ServiceProviderInitStages.errorRequestingBackend;
-      initStageError = rSendMessage;
-      updateListeners(calledFrom: functionName);
-      return rSendMessage;
-    }
-    final _PreparedTrackedMessageResult rPrepared =
-        _prepareTrackedMessageAfterSend(
-      sendMessageResult: rSendMessage,
-      functionName: functionName,
-      setInitStageErrorOnNotFound: true,
-      updateListenersOnNotFound: true,
-    );
-    if (rPrepared.hasError) {
-      return rPrepared.error!;
-    }
-
-    final CommonRPCMessageResponse rMessageResponse =
-        rPrepared.messageResponse!;
-    final ErrorHandler? rWaitError = await _waitForTrackedMessageCompletion(
-      messageResponse: rMessageResponse,
       functionName: functionName,
       logFunctionName: logFunctionName,
+      setInitStageErrorOnNotFound: true,
+      updateListenersOnNotFound: true,
+      notifyListenersOnSend: true,
+      showWorkInProgress: false,
       inclusiveTimeout: true,
+      removeOnOk: true,
+      removeOnlyWhenCounterMatchesChannels: false,
     );
-    if (rWaitError != null) {
-      return rWaitError;
-    }
-    ErrorHandler rFinalResponse = rMessageResponse.finalResponse;
-    if (rMessageResponse.status == "ok") {
-      await _waitUntilTrackedWorkIsDone(rMessageResponse);
-      await wssMessagesTrackingV2.remove(rSendMessage.messageID);
-    }
     if (rFinalResponse.errorCode != 0) {
       if (debug) {
         developer.log(
