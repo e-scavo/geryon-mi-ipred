@@ -2024,54 +2024,19 @@ class ServiceProvider extends ChangeNotifier {
           name: '$logClassName - $logFunctionName',
         );
       }
-      ErrorHandler rSendMessage = await sendMessageV2(
-        pData: pRequest,
-        isAsync: true,
-        pNotifyListeners: true,
-        pShowWorkInProgress: false,
+      final ErrorHandler rFinalResponse = await _executeTrackedRequestFlow(
+        requestData: pRequest,
         callBackFunction: subscribeChannelCallback,
-      );
-      if (rSendMessage.errorCode != 0) {
-        if (debug) {
-          developer.log(
-            '${LogIcons.arrowRight} Error sending subscription request: ${rSendMessage.toString()}',
-            name: '$logClassName - $logFunctionName',
-          );
-        }
-        initStage = ServiceProviderInitStages.errorRequestingBackend;
-        initStageError = rSendMessage;
-        updateListeners(calledFrom: functionName);
-        return rSendMessage;
-      }
-      final _PreparedTrackedMessageResult rPrepared =
-          _prepareTrackedMessageAfterSend(
-        sendMessageResult: rSendMessage,
-        functionName: functionName,
-        setInitStageErrorOnNotFound: true,
-        updateListenersOnNotFound: true,
-      );
-      if (rPrepared.hasError) {
-        return rPrepared.error!;
-      }
-
-      final CommonRPCMessageResponse rMessageResponse =
-          rPrepared.messageResponse!;
-      final ErrorHandler? rWaitError = await _waitForTrackedMessageCompletion(
-        messageResponse: rMessageResponse,
         functionName: functionName,
         logFunctionName: logFunctionName,
+        setInitStageErrorOnNotFound: true,
+        updateListenersOnNotFound: true,
+        notifyListenersOnSend: true,
+        showWorkInProgress: false,
         inclusiveTimeout: false,
+        removeOnOk: true,
+        removeOnlyWhenCounterMatchesChannels: true,
       );
-      if (rWaitError != null) {
-        return rWaitError;
-      }
-      ErrorHandler rFinalResponse = rMessageResponse.finalResponse;
-      if (rMessageResponse.status == "ok") {
-        await _waitUntilTrackedWorkIsDone(rMessageResponse);
-        if (rMessageResponse.counter == channels.length) {
-          await wssMessagesTrackingV2.remove(rSendMessage.messageID);
-        }
-      }
       if (rFinalResponse.errorCode != 0) {
         if (debug) {
           developer.log(
