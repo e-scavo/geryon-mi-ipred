@@ -767,6 +767,49 @@ class ServiceProvider extends ChangeNotifier {
     }
   }
 
+  ErrorHandler _buildOnDataErrorHandler({
+    required Object error,
+    required StackTrace stacktrace,
+  }) {
+    if (error is ErrorHandler) {
+      return error;
+    }
+
+    return ErrorHandler(
+      errorCode: 9999,
+      errorDsc: error.toString(),
+      stacktrace: stacktrace,
+    );
+  }
+
+  Future<void> _handleOnDataProcessingError({
+    required Object error,
+    required StackTrace stacktrace,
+    required String functionName,
+    required String logFunctionName,
+  }) async {
+    initStageError = _buildOnDataErrorHandler(
+      error: error,
+      stacktrace: stacktrace,
+    );
+
+    initStage = ServiceProviderInitStages.errorRequestingBackend;
+    initStageAdditionalMsg = "Catched an error on $logFunctionName";
+    isReady = false;
+
+    if (!isProgress) {
+      if (navigatorKey.currentState != null) {
+        navigatorKey.currentState?.push(
+          ModelGeneralPoPUpErrorMessageDialog(
+            error: initStageError!,
+          ),
+        );
+      }
+    }
+
+    updateListeners(calledFrom: functionName);
+  }
+
   Future<ErrorHandler?> _onData(Map<String, dynamic> data) async {
     const String functionName = '_onData';
     const logFunctionName = '.::$functionName::.';
@@ -777,50 +820,33 @@ class ServiceProvider extends ChangeNotifier {
         name: '$logClassName - $logFunctionName',
       );
     }
+
     ServiceProviderWholeMessageModel pData;
+
     try {
       pData = ServiceProviderWholeMessageModel.fromJson(data);
+
       if (_isHandshakeMessage(pData)) {
         return await _handleHandshakeIncomingMessage(
           message: pData,
           functionName: functionName,
           logFunctionName: logFunctionName,
         );
-      } else {
-        if (debug) {
-          developer.log(
-            'OnData: Received data is [NOT NEW], processing normally.',
-            name: '$logClassName - $logFunctionName',
-          );
-        }
+      }
 
-        return await _handleTrackedIncomingMessage(
-          message: pData,
-          rawData: data,
-          functionName: functionName,
-          logFunctionName: logFunctionName,
-        );
-      }
+      return await _handleTrackedIncomingMessage(
+        message: pData,
+        rawData: data,
+        functionName: functionName,
+        logFunctionName: logFunctionName,
+      );
     } catch (e, stacktrace) {
-      if (e is ErrorHandler) {
-        initStageError = e;
-      } else {
-        initStageError = ErrorHandler(
-          errorCode: 9999,
-          errorDsc: e.toString(),
-          stacktrace: stacktrace,
-        );
-      }
-      initStage = ServiceProviderInitStages.errorRequestingBackend;
-      initStageAdditionalMsg = "Catched an error on $logFunctionName";
-      isReady = false;
-      if (!isProgress) {
-        if (navigatorKey.currentState != null) {
-          navigatorKey.currentState?.push(
-              ModelGeneralPoPUpErrorMessageDialog(error: initStageError!));
-        }
-      }
-      updateListeners(calledFrom: functionName);
+      await _handleOnDataProcessingError(
+        error: e,
+        stacktrace: stacktrace,
+        functionName: functionName,
+        logFunctionName: logFunctionName,
+      );
       return null;
     }
   }
