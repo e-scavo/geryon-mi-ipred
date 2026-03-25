@@ -1,245 +1,288 @@
 # 🎨 Phase 6 — Presentation Structure Cleanup
 
-## 🎯 Phase Goal
+## Objective
 
-Normalize the presentation-layer structure of Mi IP·RED without changing runtime behavior.
-
-This phase starts after the internal decomposition work of `ServiceProvider` and intentionally avoids touching the backend contract, handshake lifecycle, tracked RPC semantics, and login protocol behavior.
+Normalize the presentation layer of Mi IP·RED while preserving 100% of runtime behavior and backend interaction semantics, introducing a clear separation between shared UI and feature-owned UI, and preparing the codebase for future domain and application-layer refactoring without increasing system risk.
 
 ---
 
-## 🧠 Why This Phase Exists
+## Initial Context
 
-The current repository is now in a better position than before:
+At the end of Phase 5:
 
-- backend flow is documented
-- infrastructure paths are more explicit
-- `ServiceProvider` has already gone through an internal decomposition phase
-- runtime-critical behavior is better mapped and better protected
+- The `ServiceProvider` had been internally decomposed and stabilized.
+- Backend communication flow was fully documented and treated as immutable.
+- Request tracking, login lifecycle, and message orchestration were working correctly.
+- The application was already functional in production.
 
-That makes the next bottleneck clear:
+However, the **presentation layer remained structurally inconsistent**.
 
-> the presentation layer is still structurally mixed.
+The repository exhibited the following characteristics:
 
-The project currently contains real UI code under both `models/` and `pages/`, and some files classified as pages are actually reusable shared widgets.
+- UI components existed inside `lib/models/*`
+- Reusable widgets were located inside `lib/pages/*`
+- Feature-specific UI was mixed with shared UI
+- Import paths did not reflect ownership or responsibility
+- Dashboard acted as an aggregation point for mixed presentation concerns
+- Login UI lived under a model path but behaved as runtime-critical UI
 
-This does not block runtime behavior today, but it does create friction for future maintenance.
+This created a situation where:
 
----
-
-## 🔎 Current Structural Symptoms
-
-The real project shows the following presentation-layer inconsistencies:
-
-### 1. UI living under `models/`
-Examples:
-- `lib/models/Login/widget.dart`
-- `lib/models/ShakeTextField/widget.dart`
-- `lib/models/GeneralLoadingProgress/*`
-
-These are active runtime UI pieces, but their location suggests data/domain semantics rather than presentation semantics.
-
-### 2. Reusable visual widgets living under `pages/`
-Examples:
-- `lib/pages/copyable_list_tile_page.dart`
-- `lib/pages/infocard_page.dart`
-- `lib/pages/FrameWithScroll/widget.dart`
-- `lib/pages/WindowWidget/*`
-
-These are not top-level product pages. They are shared visual building blocks.
-
-### 3. Mixed import story inside active screens
-`dashboard_page.dart` currently imports:
-- billing feature UI
-- layout wrappers
-- shared visual widgets
-- session helpers
-
-from a mixture of page, model, and shared-like paths.
-
-### 4. Login presentation is still coupled through a historical location
-`ServiceProvider` still imports the login popup/widget from the current `models/Login` path.
-
-This should not be broken impulsively. It should be migrated only through a safe structural sequence.
+- the system worked correctly,
+- but the structure did not reflect reality,
+- increasing long-term maintenance risk.
 
 ---
 
-## ✅ What This Phase Tries to Achieve
+## Problem Statement
 
-This phase aims to:
+The presentation layer lacked structural clarity and ownership boundaries.
 
-- separate shared visual widgets from feature screens
-- create clearer canonical presentation paths
-- reduce the semantic confusion of UI code living under `models/`
-- improve discoverability of visual components
-- prepare the repository for later feature-first organization
-- keep behavior stable during migration
+Key issues:
 
----
+1. **Semantic mismatch between file location and responsibility**
+   - UI under `models/`
+   - shared widgets under `pages/`
 
-## 🚫 What This Phase Must Not Do
+2. **Lack of separation between shared UI and feature UI**
+   - no distinction between reusable components and feature screens
 
-This phase must **not**:
+3. **Uncontrolled import surface**
+   - multiple entry points for the same UI concepts
+   - legacy paths used as primary imports
 
-- change backend message contracts
-- change tracked request handling
-- change `ServiceProvider` public behavior
-- redesign login flow
-- redesign dashboard flow
-- redesign billing flow
-- change app startup orchestration semantics
-- change platform abstractions
-- introduce a large visual overhaul
+4. **High coupling inside Dashboard**
+   - mixed imports from pages, models, and shared-like components
 
-This is structure cleanup, not a product redesign.
+5. **Auth presentation incorrectly classified**
+   - login widget treated as model artifact while being runtime UI
 
 ---
 
-## 🧱 Recommended Structural Direction
+## Scope
 
-The correct structural direction is to distinguish between:
+### Included
 
-### 1. Shared presentation building blocks
-Examples:
-- copyable tiles
-- info cards
-- shake text field
-- framed layout wrappers
-- generic loading/progress UI
-- simple reusable visual containers
+- normalization of shared UI structure
+- normalization of feature presentation structure
+- canonical path introduction
+- compatibility shim strategy
+- import normalization
+- documentation alignment
 
-### 2. Feature presentation modules
-Examples:
-- auth presentation
-- dashboard presentation
-- billing presentation
-- customer context presentation
+### Excluded
 
-The first step should focus on the lowest-risk shared building blocks, not on full feature relocation.
+- backend protocol changes
+- ServiceProvider logic changes
+- navigation redesign
+- domain layer restructuring
+- state management refactor
+- UI redesign
 
 ---
 
-## 🪜 Recommended Execution Strategy
+## Root Cause Analysis
 
-The safest strategy for Phase 6 is:
+The system evolved incrementally without structural enforcement:
 
-1. introduce canonical new paths first
-2. keep compatibility with old paths temporarily
-3. migrate imports gradually
-4. validate UI behavior after each small move
-5. remove old paths only after migration is complete
+- early UI was placed where it was easiest to integrate
+- no distinction between presentation layers existed
+- reuse occurred without relocation
+- imports were driven by convenience rather than ownership
+- no canonical structure existed
 
-This avoids breaking multiple active screens at the same time.
+As a result:
 
----
-
-## ✅ Phase 6.1 — Canonical shared UI paths with compatibility shims
-
-This is the first safe execution step of Phase 6.
-
-### Why this is the safest entry point
-Because it focuses on low-risk visual pieces that:
-- are easier to reason about
-- are not backend-protocol critical
-- are already reusable in nature
-- can be relocated with minimal semantic risk
-
-### Canonical target paths introduced
-New canonical paths:
-
-- `lib/shared/widgets/copyable_list_tile.dart`
-- `lib/shared/widgets/info_card.dart`
-- `lib/shared/widgets/shake_text_field.dart`
-- `lib/shared/layouts/frame_with_scroll.dart`
-- `lib/shared/window/window_model.dart`
-- `lib/shared/window/window_widget.dart`
-
-### Legacy compatibility paths preserved temporarily
-These files remain as compatibility shims or exports during migration:
-
-- `lib/pages/copyable_list_tile_page.dart`
-- `lib/pages/infocard_page.dart`
-- `lib/models/ShakeTextField/widget.dart`
-- `lib/pages/FrameWithScroll/widget.dart`
-- `lib/pages/WindowWidget/mode.dart`
-- `lib/pages/WindowWidget/widget.dart`
-
-### Imports migrated in this substep
-Low-risk imports are migrated to canonical paths in:
-
-- `lib/pages/dashboard_page.dart`
-- `lib/models/Login/widget.dart`
-- `lib/pages/Billing/widget.dart`
-- `lib/models/CommonDownloadLocally/widget.dart`
+- presentation logic became distributed across unrelated folders
+- feature boundaries were implicit instead of explicit
+- shared components were not clearly identified
 
 ---
 
-## 🛡️ Frozen Runtime Behaviors During Phase 6
+## Files Affected
 
-The following runtime behaviors remain frozen:
+### Pre-existing structures
 
-- startup loading experience
-- login popup flow
-- current remembered DNI behavior
-- current dashboard rendering logic
-- current customer selector behavior
-- payment dialog behavior
-- billing and receipts loading behavior
-- current logout behavior
-- current download entry points
+- lib/models/Login/*
+- lib/models/ShakeTextField/*
+- lib/models/GeneralLoadingProgress/*
+- lib/pages/*
+- lib/pages/Billing/*
+- lib/pages/FrameWithScroll/*
+- lib/pages/WindowWidget/*
 
----
+### New structures introduced
 
-## ⚠️ Sensitive Areas Inside This Phase
-
-Even though this is a presentation-focused phase, the following areas are still sensitive:
-
-- `lib/main.dart`
-- `lib/models/Login/widget.dart`
-- any `ServiceProvider` imports that point to UI files
-- `dashboard_page.dart`
-- `Billing/widget.dart`
-- progress popup and login popup routes
-
-These areas are presentation-adjacent but still connected to critical runtime entry points.
+- lib/shared/*
+- lib/features/auth/*
+- lib/features/dashboard/*
+- lib/features/billing/*
 
 ---
 
-## 🧪 Validation Requirements
+## Implementation Characteristics
 
-After Phase 6.1, validate at minimum:
+### Phase 6.1 — Shared Presentation Normalization
 
-- `flutter analyze`
-- Web startup
-- Android startup
-- loading popup appears correctly
-- login popup appears correctly
-- successful login still reaches dashboard
-- customer switching still works
-- payment information dialog still works
-- invoices and receipts still render
-- logout still resets visible state correctly
+Introduced canonical shared paths:
 
-If file download UI is touched, validate that too.
+- shared/widgets
+- shared/layouts
+- shared/window
 
----
+Moved reusable UI:
 
-## ✅ Expected Outcome of Phase 6.1
+- CopyableListTile
+- InfoCard
+- ShakeTextField
+- FrameWithScroll
+- WindowWidget
 
-After this substep:
+Legacy paths were preserved via **export-based compatibility shims**.
 
-- canonical shared presentation paths exist
-- legacy imports still remain compatible
-- active low-risk consumers use the new paths
-- runtime behavior remains unchanged
-- the repository is ready for further feature-oriented presentation normalization
+This allowed:
+
+- zero runtime impact
+- gradual migration
+- no import breakage
 
 ---
 
-## 📌 Recommended Next Step After Phase 6.1
+### Phase 6.2 — Feature Presentation Normalization
 
-Once the shared visual foundation is normalized, the next logical step is:
+Introduced feature-oriented presentation:
 
-> **Phase 6.2 — migrate auth/dashboard/billing presentation paths more explicitly while preserving current runtime flow**
+- features/auth/presentation
+- features/dashboard/presentation
+- features/billing/presentation
 
-That step should still remain incremental and behavior-preserving.
+#### Migration order (critical design decision)
+
+1. Billing (lowest risk)
+2. Dashboard (central but stable)
+3. Login (highest sensitivity)
+
+#### Key constraint
+
+Login remained tightly coupled to ServiceProvider and was migrated last to reduce risk.
+
+---
+
+### Phase 6.2.1 — Compatibility Preservation
+
+For every moved file:
+
+- original path remained
+- replaced with `export` shim
+- ensured backward compatibility
+
+Example:
+
+models/Login/widget.dart → export → features/auth/presentation/login_widget.dart
+
+---
+
+### Phase 6.2.2 — Canonical Import Normalization
+
+After feature paths stabilized:
+
+- active imports migrated to canonical paths
+- legacy paths downgraded to compatibility-only usage
+
+Canonical imports became:
+
+- features/auth/presentation/login_widget.dart
+- features/dashboard/presentation/dashboard_page.dart
+- features/billing/presentation/billing_widget.dart
+
+---
+
+### Phase 6.2.3 — Documentation Alignment
+
+Documentation updated to:
+
+- reflect real structure
+- explain migration strategy
+- document shim behavior
+- define canonical import policy
+- preserve historical context
+
+---
+
+## Validation
+
+Validation was performed incrementally after each substep.
+
+### Required checks
+
+- flutter analyze
+- application startup
+- login popup rendering
+- login failure behavior
+- login success flow
+- dashboard rendering
+- customer switching
+- billing access from dashboard
+- invoice/receipt visualization
+- logout behavior
+- return to initial state
+
+### Additional checks
+
+- shim compatibility
+- canonical import stability
+- absence of runtime regressions
+
+---
+
+## Release Impact
+
+- zero functional change
+- zero backend change
+- zero protocol change
+
+Positive impact:
+
+- improved readability
+- reduced ambiguity
+- clear ownership boundaries
+- safer future refactors
+
+---
+
+## Risks
+
+- incomplete import migration
+- hidden legacy dependencies
+- over-reliance on shims
+- accidental removal of active shim
+
+Mitigation:
+
+- incremental validation
+- conservative migration order
+- shim preservation strategy
+
+---
+
+## What it does NOT solve
+
+- domain layer organization
+- session persistence strategy
+- backend improvements
+- state management refactor
+- navigation redesign
+
+---
+
+## Conclusion
+
+Phase 6 successfully:
+
+- normalized the presentation layer
+- introduced shared vs feature separation
+- preserved runtime stability
+- reduced structural ambiguity
+- prepared the codebase for controlled evolution
+
+The system is now structurally aligned with its real behavior, without sacrificing safety.

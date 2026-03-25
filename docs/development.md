@@ -1,117 +1,305 @@
 # 🛠️ Development
 
-## 🎯 Current Development Principle
+## Objective
 
-Mi IP·RED is functional in production.
-
-Development must follow this rule:
-
-> improve structure without breaking runtime behavior
+Define the development rules, constraints, and validation requirements for Mi IP·RED during and after Phase 6, ensuring that structural improvements to the presentation layer do not compromise runtime behavior, backend integrity, or system stability.
 
 ---
 
-## 🎯 Current Targets
+## Initial Context
 
-- Web
-- Android
+At the end of Phase 5:
 
-Deferred:
-- iOS
+- ServiceProvider had been stabilized and internally decomposed
+- Backend flow was fully operational and documented
+- Application was already in production use
+- Core flows (login, dashboard, billing, logout) were functioning correctly
 
----
+However:
 
-## ▶️ Basic Commands
+- presentation layer structure was inconsistent
+- UI ownership boundaries were unclear
+- imports did not reflect actual responsibilities
+- future refactors would be risky without normalization
 
-### Install dependencies
-
-```bash
-flutter pub get
-```
-
-### Run on Chrome
-
-```bash
-flutter run -d chrome
-```
-
-### Run on Android
-
-```bash
-flutter run -d android
-```
+Phase 6 introduced structural changes to the presentation layer, requiring updated development conventions.
 
 ---
 
-## 🧭 Working Conventions
+## Development Principle
 
-### 1. Protect backend flow
+Mi IP·RED must evolve under the following rule:
 
-Do not change request/response structures casually.
+improve structure without breaking runtime behavior
 
----
-
-### 2. Refactor by phase
-
-Every meaningful refactor should be documented in a phase document.
+This principle overrides all other concerns.
 
 ---
 
-### 3. Prefer actual runtime paths
+## Core Constraints
 
-Before cleaning old code, confirm whether it is still part of runtime behavior.
+### Backend Flow Protection
 
----
+The following must never be altered unintentionally:
 
-### 4. Keep platform abstractions aligned
+- handshake lifecycle
+- authentication sequence
+- message structure
+- tracked request handling (messageID)
+- response parsing behavior
 
-Whenever Web/IO code changes, both variants must be reviewed.
-
----
-
-### 5. Decompose critical classes internally before moving them
-
-For highly sensitive classes such as `ServiceProvider`, first reduce internal complexity while staying in the same file.
+Any change affecting these requires explicit analysis and validation.
 
 ---
 
-### 6. Use compatibility shims for structural UI migrations
+### ServiceProvider Protection
 
-When reorganizing the presentation layer, introduce canonical paths first and keep temporary compatibility exports until imports are fully migrated.
+ServiceProvider is considered critical infrastructure.
+
+Rules:
+
+- do not split it across files prematurely
+- do not modify its public behavior
+- do not introduce side effects from UI refactors
+- do not alter request/response timing
 
 ---
 
-## 🧪 Validation Policy
+### No Behavioral Refactor During Structural Changes
 
-After every meaningful runtime-core change:
+Presentation refactors must not include:
 
-- run `flutter analyze`
-- run Web target
-- run Android target
-- validate login
-- validate dashboard
-- validate billing/receipts
-- validate logout
+- UI redesign
+- navigation changes
+- state management changes
+- lifecycle changes
 
-This is mandatory for ServiceProvider-focused work.
+Only structural relocation is allowed.
 
-For presentation-structure changes, validation must also include:
+---
 
-- startup loading flow
-- login popup visibility
-- customer selection
-- payment information dialog
+## Presentation Layer Rules
+
+### Separation of Concerns
+
+Presentation must be divided into:
+
+Shared UI
+
+- reusable components
+- layout primitives
+- generic containers
+
+Feature UI
+
+- auth
+- dashboard
+- billing
+
+---
+
+### Shared UI Location
+
+All reusable UI must live under:
+
+- lib/shared/widgets
+- lib/shared/layouts
+- lib/shared/window
+
+---
+
+### Feature UI Location
+
+All feature-owned UI must live under:
+
+- lib/features/auth/presentation
+- lib/features/dashboard/presentation
+- lib/features/billing/presentation
+
+---
+
+### Migration Order Rule
+
+Presentation refactor must follow this order:
+
+1. shared UI
+2. feature UI
+3. import normalization
+4. documentation alignment
+
+---
+
+### Compatibility Shim Rule
+
+During structural migration:
+
+- legacy paths must remain functional
+- files must be converted into export-only shims
+- no duplication of logic is allowed
+
+Example:
+
+models/Login/widget.dart  
+becomes  
+export → features/auth/presentation/login_widget.dart
+
+---
+
+### Canonical Import Rule
+
+After stabilization:
+
+- all active imports must use canonical paths
+- legacy paths are only fallback
+- no new code should use legacy imports
+
+---
+
+## Import Management
+
+### Allowed During Migration
+
+- coexistence of old and new imports
+- gradual migration of consumers
+- selective migration for safety
+
+---
+
+### Required After Stabilization
+
+- canonical imports must be dominant
+- legacy imports must be reduced
+- no new dependencies on legacy paths
+
+---
+
+## Validation Policy
+
+Validation must be performed after each structural change.
+
+### Mandatory Checks
+
+- flutter analyze
+- application startup
+- login popup rendering
+- login failure behavior
+- login success flow
+- dashboard rendering
+- customer switching
+- billing access
 - invoice/receipt rendering
-- file download entry points that open dialogs or visual containers
+- logout behavior
+- return to initial state
 
 ---
 
-## 🗺️ Recommended Engineering Sequence
+### Additional Checks for Phase 6
 
-1. Phase 1 — audit and baseline docs
-2. Phase 2 — structural planning
-3. Phase 3 — cleanup and hygiene
-4. Phase 4 — infrastructure normalization
-5. Phase 5 — ServiceProvider decomposition
-6. Phase 6 — presentation structure cleanup
-7. Phase 7 — domain model organization
-8. Phase 8 — session/config hardening
+- compatibility shim correctness
+- canonical import correctness
+- absence of broken imports
+- absence of duplicate widgets
+- dashboard to billing transitions
+- login to dashboard transition
+- logout to login transition
+
+---
+
+## Risk Management
+
+### Identified Risks
+
+- incomplete import migration
+- hidden dependencies on legacy paths
+- accidental removal of active shim
+- duplicated class definitions
+- runtime regressions
+
+---
+
+### Mitigation Strategy
+
+- incremental commits
+- validation after each step
+- conservative migration order
+- temporary redundancy via shims
+- documentation alignment
+
+---
+
+## Code Modification Guidelines
+
+### Allowed
+
+- file relocation
+- import updates
+- creation of shared structures
+- introduction of feature folders
+- export-based shims
+
+---
+
+### Not Allowed
+
+- logic changes
+- renaming public classes
+- modifying ServiceProvider behavior
+- altering backend interaction
+- introducing new architecture layers
+
+---
+
+## Development Workflow
+
+### Recommended Sequence
+
+1. identify target files
+2. create canonical destination
+3. copy file without modification
+4. replace original file with export shim
+5. validate compilation
+6. migrate safe imports
+7. validate runtime
+8. commit
+
+---
+
+## Phase 6 Outcome Alignment
+
+After Phase 6:
+
+- presentation structure is explicit
+- shared vs feature UI is clearly separated
+- canonical paths are established
+- imports reflect real ownership
+- legacy paths remain as compatibility layer
+
+---
+
+## What Development Must Avoid Next
+
+Do not immediately:
+
+- delete shims
+- refactor domain layer
+- change ServiceProvider structure
+- introduce new abstractions
+
+These belong to future phases.
+
+---
+
+## Conclusion
+
+Development during Phase 6 enforces:
+
+- structural clarity without behavioral change
+- strict protection of runtime-critical flows
+- controlled and reversible migration strategy
+- disciplined separation between presentation layers
+
+This creates a stable foundation for:
+
+- Phase 6.3 (legacy cleanup)
+- Phase 7 (domain organization)
+- Phase 8 (session and configuration hardening)
