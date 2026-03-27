@@ -217,11 +217,22 @@ Covers:
 - logout orchestration extraction
 - AppBar-supporting application logic extraction
 
+phase7_application_layer_consolidation_7_1_3_billing_extraction.md
+
+Covers:
+
+- billing controller introduction
+- data-model preparation extraction
+- billing request orchestration extraction
+- typed response validation extraction
+- table-row normalization extraction
+- refresh orchestration support for customer changes
+
 ---
 
 ## Current System State
 
-After Phase 7.1.2:
+After Phase 7.1.3:
 
 - presentation layer remains normalized
 - shared UI remains isolated under lib/shared
@@ -229,8 +240,9 @@ After Phase 7.1.2:
 - canonical paths remain the only active paths
 - auth logic no longer performs application coordination directly inside the widget
 - dashboard logic no longer performs customer/session coordination directly inside the widget
-- controller boundaries now exist for auth and dashboard
-- billing still remains the next major UI / logic decoupling target inside Phase 7.1
+- billing logic no longer performs request orchestration directly inside the widget
+- controller boundaries now exist for auth, dashboard, and billing
+- Phase 7.1 is functionally complete pending final validation and closure decision
 
 The repository structure now reflects both ownership boundaries and the first behavioral extraction layer.
 
@@ -257,8 +269,7 @@ At this stage, documentation does not yet include:
 - application service layer
 - session persistence redesign
 - advanced state management architecture
-- complete business logic isolation from presentation
-- billing controller extraction
+- flow ownership redesign beyond the current widget/controller split
 
 These will be addressed in upcoming phases.
 
@@ -266,13 +277,13 @@ These will be addressed in upcoming phases.
 
 ## Next Documentation Evolution
 
-The next expected updates will correspond to:
+The next expected updates will correspond to one of these two paths:
 
-Phase 7.1.3
+Phase 7.1 closure
 
-- billing extraction or equivalent remaining presentation/runtime decoupling
-- final consistency cleanup inside UI / Logic Decoupling
-- possible closure of Phase 7.1 if no additional extraction remains
+- final cross-feature consistency review
+- removal or consolidation of any residual duplicated Phase 7.1 documentation surface if required
+- formal closure of UI / Logic Decoupling
 
 ---
 
@@ -286,7 +297,7 @@ Phase 7.2
 
 ## Conclusion
 
-The documentation set is aligned with the real structure of the system after Phase 7.1.2.
+The documentation set is aligned with the real structure of the system after Phase 7.1.3.
 
 It provides:
 

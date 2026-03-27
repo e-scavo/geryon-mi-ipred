@@ -41,6 +41,9 @@ Examples of these responsibilities include:
 - dashboard customer selection
 - logout coordination
 - client resolution for rendering
+- billing request preparation
+- billing refresh coordination on customer change
+- billing response normalization for table rendering
 
 As a result:
 
@@ -110,6 +113,7 @@ Now that Phase 6 established structural clarity, Phase 7 can safely address resp
 - docs/phase7_application_layer_consolidation.md
 - docs/phase7_application_layer_consolidation_7_1_1_auth_extraction.md
 - docs/phase7_application_layer_consolidation_7_1_2_dashboard_extraction.md
+- docs/phase7_application_layer_consolidation_7_1_3_billing_extraction.md
 
 ### Protected areas
 
@@ -141,8 +145,8 @@ Current subphases:
 
 - 7.1.1 — Auth extraction
 - 7.1.2 — Dashboard extraction
-- 7.1.3 — Billing extraction or equivalent remaining UI / logic cleanup
-- 7.1.4 — Cross-feature consistency cleanup if still required
+- 7.1.3 — Billing extraction
+- 7.1.4 — Cross-feature consistency cleanup only if still required after validation
 
 ---
 
@@ -213,12 +217,14 @@ Additional Phase 7-specific checks:
 - no backend request semantics are modified
 - canonical feature imports remain coherent
 
-Specific checks after 7.1.2:
+Specific checks after 7.1.3:
 
-- active client still resolves correctly
-- client selection still updates dashboard data
-- logout still clears session and returns control to app runtime
-- payment dialog remains purely presentational
+- facturas and recibos load correctly after login
+- switching customer refreshes billing data correctly
+- logout continues to remove the authenticated experience correctly
+- loading state remains visible while billing refresh is in progress
+- billing rendering still uses the same table and window widgets
+- backend errors still surface through the existing billing error UI
 
 ---
 
@@ -257,8 +263,8 @@ Mitigation strategy:
 
 Specific current risk:
 
-- dashboard depends on current customer index and session/logout flow
-- therefore extraction must preserve both selection semantics and session clearing order
+- billing depends on tracked request preparation, typed response decoding, and refresh after customer change
+- therefore extraction must preserve both the thread/data-model setup semantics and the customer-switch refresh order
 
 ---
 

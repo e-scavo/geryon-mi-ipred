@@ -282,6 +282,9 @@ Controllers may own:
 - active user/customer resolution
 - logout coordination
 - feature-local option list normalization
+- data-model preparation
+- typed backend response validation for feature consumption
+- feature-local table-row normalization when it is part of data shaping
 
 ### Forbidden Responsibilities
 
@@ -334,6 +337,23 @@ This rule now applies to:
 
 - auth
 - dashboard
+- billing
+
+### Billing Lifecycle Rule
+
+Billing is a special case because its widget owns:
+
+- provider subscription lifecycle
+- customer-change observation
+- `mounted` checks
+- `setState(...)`
+- render switching between loading, error, and table views
+
+Therefore:
+
+- lifecycle orchestration remains in the widget
+- data preparation and backend result handling move to the controller
+- no attempt should be made to hide widget lifecycle concerns inside the controller during Phase 7.1
 
 ---
 

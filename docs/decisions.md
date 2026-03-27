@@ -497,6 +497,48 @@ The controller may prepare application data, but `AlertDialog` construction rema
 
 ---
 
+## Decision 23 — Billing Request Preparation Must Leave the Widget Before Closing Phase 7.1
+
+Billing is part of the authenticated runtime surface and still depended on widget-owned request preparation.
+
+### Rationale
+
+As long as `billing_widget.dart` prepares thread-bound models, request parameters, and typed backend decoding inline:
+
+- the widget remains an execution coordinator
+- feature behavior stays only partially decoupled
+- Phase 7.1 would be incomplete compared to auth and dashboard
+
+### Implication
+
+Billing request preparation, typed response validation, and row normalization must be extracted before considering Phase 7.1 functionally complete.
+
+---
+
+## Decision 24 — Billing Widget Keeps Lifecycle Ownership
+
+Billing has stronger lifecycle coupling than auth and dashboard because it depends on:
+
+- provider subscription
+- customer-change detection
+- `mounted` checks
+- `setState(...)`
+- render switching between loading, error, and table modes
+
+### Rationale
+
+Moving all of this into a controller during Phase 7.1 would increase risk and blur the UI/application boundary in a different way.
+
+### Implication
+
+During Phase 7.1.3:
+
+- the widget keeps lifecycle and rendering ownership
+- the controller absorbs data preparation and backend-facing coordination
+- no hidden lifecycle orchestration should be introduced into the controller
+
+---
+
 ## Conclusion
 
 Phase 7 extends the decision system already established in Phase 6.
