@@ -344,6 +344,7 @@ The system now has:
 - controlled import surface
 - documented migration strategy
 - stable foundation for further refactoring
+
 ---
 
 ## Decision 16 — Remove Compatibility Layer After Full Validation
@@ -365,4 +366,111 @@ all compatibility shims must be removed.
 - eliminates hidden dependencies
 
 This was executed in Phase 6.3.
+
 ---
+
+## Decision 17 — Introduce a Controller Layer Only After Presentation Normalization
+
+Phase 7 does not begin by changing backend interaction.
+
+It begins by introducing an explicit controller layer only after Phase 6 completed structural normalization.
+
+### Rationale
+
+Before Phase 6, responsibility extraction would have been mixed with path cleanup and import migration.
+
+After Phase 6:
+
+- presentation ownership is clear
+- canonical paths already exist
+- extraction can happen without structural ambiguity
+
+### Implication
+
+Application-layer consolidation must happen after presentation normalization, not before it.
+
+---
+
+## Decision 18 — Extract Business-Adjacent Logic Before Redesigning State
+
+State redesign is deferred until business-adjacent logic leaves widgets.
+
+### Rationale
+
+If widgets still own orchestration logic:
+
+- state redesign would hide coupling instead of removing it
+- feature boundaries would remain behaviorally weak
+- future state abstractions would be harder to validate
+
+### Implication
+
+The first Phase 7 priority is not global state redesign.
+It is UI / logic decoupling through feature-level controllers.
+
+---
+
+## Decision 19 — Controllers Must Stay Feature-Local Initially
+
+Controller introduction must start inside feature boundaries instead of as a global application service layer.
+
+### Rationale
+
+- lower migration risk
+- easier ownership
+- easier rollback
+- clearer mapping from widget to extracted logic
+
+### Implication
+
+Initial controller locations must be:
+
+- lib/features/auth/controllers
+- lib/features/dashboard/controllers
+- lib/features/billing/controllers
+
+Global application services are not introduced yet.
+
+---
+
+## Decision 20 — Widgets Remain Responsible for Rendering and UI Feedback
+
+Controllers must not absorb rendering responsibilities.
+
+### Rationale
+
+The goal is to separate responsibilities, not to move UI code into non-UI classes.
+
+Therefore controllers may return:
+
+- normalized results
+- action outcomes
+- error descriptions for presentation use
+
+But widgets remain responsible for:
+
+- snackbars
+- dialogs
+- pop / push decisions tied to UI lifecycle
+- visual response to controller outcomes
+
+### Implication
+
+Phase 7 extraction is application-layer decoupling, not headless UI conversion.
+
+---
+
+## Conclusion
+
+Phase 7 extends the decision system already established in Phase 6.
+
+The repository is no longer only structurally normalized; it now begins to formalize behavioral ownership as well.
+
+That means future refactors must preserve:
+
+- backend invariants
+- ServiceProvider stability
+- feature-local ownership
+- strict separation between controller responsibility and UI rendering responsibility
+
+This preserves safety while enabling further architectural evolution.

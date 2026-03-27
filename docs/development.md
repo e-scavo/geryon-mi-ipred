@@ -2,7 +2,7 @@
 
 ## Objective
 
-Define the development rules, constraints, and validation requirements for Mi IP·RED during and after Phase 6, ensuring that structural improvements to the presentation layer do not compromise runtime behavior, backend integrity, or system stability.
+Define the development rules, constraints, and validation requirements for Mi IP·RED during and after Phase 7, ensuring that structural and application-layer improvements do not compromise runtime behavior, backend integrity, or system stability.
 
 ---
 
@@ -74,11 +74,27 @@ Presentation refactors must not include:
 - state management changes
 - lifecycle changes
 
-Only structural relocation is allowed.
+Only structural relocation was allowed during Phase 6. Phase 7 may additionally extract business-adjacent logic into controllers under the explicit constraints documented below.
 
 ---
 
 ## Presentation Layer Rules
+
+### Phase 7 Extension Rule
+
+Starting in Phase 7, structural normalization is already complete.
+
+Therefore, controlled behavioral extraction is allowed only when all of the following are respected:
+
+- backend request semantics remain unchanged
+- ServiceProvider public behavior remains unchanged
+- widget rendering output remains functionally equivalent
+- lifecycle-sensitive flow is preserved
+- extracted logic does not absorb UI rendering concerns
+
+This means Phase 7 may move orchestration logic out of widgets, but may not redesign runtime behavior.
+
+---
 
 ### Separation of Concerns
 
@@ -236,84 +252,70 @@ Validation must be performed after each structural change.
 - creation of shared structures
 - introduction of feature folders
 - export-based shims
+- controller extraction under feature boundaries
+- response/result normalization for widget consumption
 
 ---
 
 ### Not Allowed
 
-- logic changes
-- renaming public classes
-- modifying ServiceProvider behavior
-- altering backend interaction
-- introducing new architecture layers
+- backend protocol redesign
+- ServiceProvider public contract changes
+- navigation redesign mixed into controller introduction
+- moving UI rendering concerns into non-UI classes
 
 ---
 
-## Development Workflow
+## Controller Layer Rules
 
-### Recommended Sequence
+Phase 7 introduces a controller layer inside feature boundaries.
 
-1. identify target files
-2. create canonical destination
-3. copy file without modification
-4. replace original file with export shim
-5. validate compilation
-6. migrate safe imports
-7. validate runtime
-8. commit
+### Allowed Responsibilities
 
----
+Controllers may own:
 
-## Phase 6 Outcome Alignment
+- request orchestration
+- input normalization
+- session persistence coordination
+- response interpretation for presentation use
+- feature-local application decisions
 
-After Phase 6:
+### Forbidden Responsibilities
 
-- presentation structure is explicit
-- shared vs feature UI is clearly separated
-- canonical paths are established
-- imports reflect real ownership
-- legacy paths remain as compatibility layer
+Controllers must not own:
 
----
+- widget rendering
+- BuildContext-driven rendering decisions
+- visual styling
+- direct dialog construction
+- direct snackbar rendering
+- navigation tree redesign
 
-## What Development Must Avoid Next
+### Dependency Rule
 
-Do not immediately:
+Preferred direction:
 
-- delete shims
-- refactor domain layer
-- change ServiceProvider structure
-- introduce new abstractions
+presentation → controller → ServiceProvider / core
 
-These belong to future phases.
+Avoid:
+
+- presentation duplicating controller logic
+- controller depending on widget classes
+- controller depending on presentation widgets
+
+### Introduction Rule
+
+Controllers must be introduced incrementally:
+
+1. extract one safe feature path
+2. validate runtime behavior
+3. document the extraction
+4. continue with the next feature only after stability is confirmed
 
 ---
 
 ## Conclusion
 
-Development during Phase 6 enforces:
+Development after Phase 6 is no longer only about structure.
 
-- structural clarity without behavioral change
-- strict protection of runtime-critical flows
-- controlled and reversible migration strategy
-- disciplined separation between presentation layers
-
-This creates a stable foundation for:
-
-- Phase 6.3 (legacy cleanup)
-- Phase 7 (domain organization)
-- Phase 8 (session and configuration hardening)
-
----
-
-## Post-Phase 6 Rule — No Legacy Paths Allowed
-
-After Phase 6 completion:
-
-- no legacy presentation paths must exist
-- no export-based shims must remain
-- all imports must use canonical paths
-
-Any new code introducing legacy-style paths is considered a violation of architecture rules.
-
----
+Starting in Phase 7, Mi IP·RED may evolve behaviorally at the application-layer level, but only through controlled, incremental, and fully validated extractions that preserve the production runtime contract.

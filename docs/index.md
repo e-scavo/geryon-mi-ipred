@@ -183,6 +183,20 @@ Includes:
 
 ---
 
+### Phase 7
+
+phase7_application_layer_consolidation.md
+
+Covers:
+
+- application-layer consolidation strategy
+- introduction of controller boundaries
+- progressive UI / logic decoupling
+- preparation for state and flow normalization
+- risk-aware migration rules for behavioral extraction
+
+---
+
 ## Current System State
 
 After Phase 6 completion:
@@ -195,6 +209,7 @@ After Phase 6 completion:
 - no legacy presentation paths remain
 - no compatibility shims exist
 - no duplicated UI structures exist
+- Phase 7 has started with application-layer consolidation
 
 The repository structure now accurately reflects runtime behavior and ownership boundaries.
 
@@ -233,10 +248,10 @@ The next expected updates will correspond to:
 
 Phase 7
 
-- domain model organization
-- separation of business logic from presentation
-- introduction of domain boundaries
-- progressive decoupling from ServiceProvider
+- application-layer consolidation
+- controller introduction by feature
+- UI / logic separation
+- preparation for state coordination normalization
 
 ---
 
@@ -258,7 +273,4 @@ It provides:
 - complete historical traceability
 - explicit architectural decisions
 - clear ownership boundaries
-- removal of transitional ambiguity
-- a stable foundation for future evolution
-
-Documentation must continue evolving together with the system, preserving both technical accuracy and architectural intent while enabling safe and controlled growth.
+- a stable base for controlled Phase 7 evolution

@@ -1,9 +1,6 @@
-import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:geryon_web_app_ws_v2/common_vars.dart';
-import 'package:geryon_web_app_ws_v2/models/Login/model.dart';
-import 'package:geryon_web_app_ws_v2/core/session/session_storage.dart';
+import 'package:geryon_web_app_ws_v2/features/auth/controllers/login_controller.dart';
 import 'package:geryon_web_app_ws_v2/shared/widgets/shake_text_field.dart';
 
 class LoginPageWidget extends ConsumerStatefulWidget {
@@ -16,62 +13,68 @@ class LoginPageWidget extends ConsumerStatefulWidget {
 class _LoginPageWidgetState extends ConsumerState<LoginPageWidget> {
   final _dniController = TextEditingController();
   final _shakeKey = GlobalKey<ShakeTextFieldState>();
+  final _controller = LoginController();
 
   bool _rememberMe = true;
   bool _loading = false;
 
-  void _checkAutoLogin() async {
-    final savedDni = await SessionStorage.getSavedDni();
-    if (savedDni != null && savedDni.isNotEmpty) {
-      _dniController.text = savedDni;
-      _rememberMe = true;
-      _login();
-    } else {
+  Future<void> _checkAutoLogin() async {
+    final initialState = await _controller.prepareInitialState();
+
+    if (!mounted) {
+      return;
+    }
+
+    _dniController.text = initialState.dni;
+
+    setState(() {
+      _rememberMe = initialState.rememberMe;
+      _loading = initialState.shouldAutoSubmit;
+    });
+
+    if (initialState.shouldAutoSubmit) {
+      await _login();
+      return;
+    }
+
+    setState(() => _loading = false);
+  }
+
+  Future<void> _login() async {
+    setState(() => _loading = true);
+
+    final result = await _controller.login(
+      ref: ref,
+      dni: _dniController.text,
+      rememberMe: _rememberMe,
+    );
+
+    if (!mounted) {
+      return;
+    }
+
+    if (!result.success) {
       setState(() => _loading = false);
+
+      if ((result.errorMessage ?? '').contains('DNI/CUIT válido')) {
+        _shakeKey.currentState?.shake();
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(result.errorMessage ?? 'Error desconocido.')),
+      );
+      return;
+    }
+
+    if (Navigator.canPop(context)) {
+      Navigator.pop(context, result.response);
     }
   }
 
-  void _login() async {
-    final dni = _dniController.text.trim();
-    if (dni.isEmpty) {
-      _shakeKey.currentState?.shake(); // vibra el textfield
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Por favor, ingrese un DNI/CUIT válido.")),
-        );
-      }
-      return;
-    }
-
-    setState(() => _loading = true);
-    final pLogin = LoginModel(
-      dni: dni,
-      rememberMe: _rememberMe,
-    );
-    var rResponse = await ref.read(notifierServiceProvider).doLogin(
-          pLogin: pLogin,
-        );
-    if (debug) {
-      developer.log(
-        'LoginModel: doLogin response: ${rResponse.toString()}',
-        name: '.::LoginPageWidget::_login::.',
-      );
-    }
-    if (rResponse.errorCode != 0) {
-      setState(() => _loading = false);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(rResponse.errorDsc.toString())),
-        );
-      }
-      return;
-    }
-    if (_rememberMe) await SessionStorage.saveDni(dni);
-    if (mounted) {
-      if (Navigator.canPop(context)) {
-        Navigator.pop(context, rResponse);
-      }
-    }
+  @override
+  void dispose() {
+    _dniController.dispose();
+    super.dispose();
   }
 
   @override
@@ -130,8 +133,6 @@ class PopUpLoginWidget<T> extends PopupRoute<T> {
   @override
   Color? get barrierColor => Colors.black.withAlpha(0x50);
 
-  // This allows the popup to be dismissed by tapping the scrim or by pressing
-  // the escape key on the keyboard.
   @override
   bool get barrierDismissible => false;
 
@@ -147,7 +148,7 @@ class PopUpLoginWidget<T> extends PopupRoute<T> {
     return const Center(
         child: Material(
       type: MaterialType.transparency,
-      child: LoginPageWidget(), // Your ConsumerStatefulWidget
+      child: LoginPageWidget(),
     ));
   }
 }
