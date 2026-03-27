@@ -1,25 +1,34 @@
-# 🛠️ Development
+# 🛠️ Development Rules
 
 ## Objective
 
-Define the development rules, constraints, and validation requirements for Mi IP·RED after formal closure of Phase 7.1, ensuring that further application-layer improvements do not compromise runtime behavior, backend integrity, or system stability.
+Define the active engineering constraints and safe implementation rules for Mi IP·RED after Phase 7.2.1 kickoff, preserving runtime behavior while allowing incremental architectural improvement.
 
 ---
 
 ## Initial Context
 
-At the end of Phase 5:
+Mi IP·RED reached Phase 7 after completing:
 
-- ServiceProvider had been stabilized and internally decomposed
-- backend flow was fully operational and documented
-- application was already in production use
-- core flows (login, dashboard, billing, logout) were functioning correctly
+- backend/runtime stabilization
+- ServiceProvider decomposition and documentation
+- presentation structure cleanup
+- controller extraction for the main features
 
-Phase 6 introduced structural normalization of the presentation layer.
+At the end of Phase 7.1:
 
-Phase 7.1 then completed the first behavioral consolidation pass by extracting business-adjacent logic from the main feature widgets into feature-local controllers.
+- auth, dashboard, and billing already use feature-local controllers
+- business-adjacent request orchestration was removed from the main widgets
+- runtime behavior was preserved
 
-The development rules now need to reflect that Phase 7.1 is closed and that the next safe step is state coordination work.
+Phase 7.2 has now started, but it has not started as a code-heavy consolidation phase.
+
+It has started as an ownership-definition phase.
+
+The current development rules must therefore protect two things at the same time:
+
+- the runtime already validated in production-oriented flows
+- the clarity needed to continue state-boundary work safely
 
 ---
 
@@ -93,6 +102,25 @@ This rule already applies to:
 - billing
 
 Any new code added to these feature widgets must preserve that separation.
+
+---
+
+### Phase 7.2 Ownership Rule
+
+Phase 7.2 adds a second rule:
+
+presentation widgets should not continue accumulating feature functional state once ownership has been identified as non-UI state.
+
+This does not mean all local state must be removed.
+
+It means local widget state must now be evaluated explicitly under ownership categories:
+
+- UI state
+- feature functional state
+- derived state
+- global source state
+
+Any change during Phase 7.2 must justify where a state value belongs before moving it.
 
 ---
 
@@ -185,6 +213,14 @@ Validation must be performed after each change.
 - state-related refactors do not break customer-switch semantics
 - billing refresh behavior remains correct after customer changes
 
+### Additional Phase 7.2 Checks
+
+- moved state must have explicitly documented ownership
+- feature functional state must not be disguised as visual widget state
+- derived state normalization must not duplicate source-of-truth
+- startup/auth boundary changes must preserve current entry behavior
+- manual coordination reduction must not change runtime ordering
+
 ---
 
 ## Risk Management
@@ -195,13 +231,16 @@ Validation must be performed after each change.
 - growing controllers without clear responsibility boundaries
 - mixing state redesign with unrelated refactors
 - hidden runtime regression during future consolidation
+- collapsing startup and auth behavior into an unvalidated shortcut
+- moving billing coordination too aggressively
 
 ### Mitigation Strategy
 
 - incremental commits
 - validation after each step
 - preserve current feature-local controller boundaries
-- start Phase 7.2 conservatively
+- treat 7.2.1 as the ownership contract
+- start implementation with the highest-value but still bounded hotspot
 - keep documentation aligned with the real codebase
 
 ---
@@ -215,6 +254,8 @@ Validation must be performed after each change.
 - import updates aligned with ownership boundaries
 - response/result normalization for widget consumption
 - documentation consolidation and cleanup
+- startup/auth boundary clarification when explicitly scoped
+- manual coordination reduction when runtime-equivalent behavior is preserved
 
 ### Not Allowed
 
@@ -223,6 +264,8 @@ Validation must be performed after each change.
 - navigation redesign mixed into unrelated controller work
 - moving UI rendering concerns into non-UI classes
 - reintroducing duplicated documentation surfaces as active references
+- silent state-management migration
+- global ownership abstractions introduced without prior scoped justification
 
 ---
 
@@ -238,67 +281,69 @@ Controllers may own:
 - response interpretation for presentation use
 - feature-local application decisions
 - active user/customer resolution
-- logout coordination
-- feature-local option list normalization
-- data-model preparation
-- typed backend response validation for feature consumption
-- feature-local table-row normalization when it is part of data shaping
+- feature-local derived state building
+- feature-local state-boundary normalization support
 
-### Forbidden Responsibilities
+### Not Allowed Responsibilities
 
 Controllers must not own:
 
-- widget rendering
-- BuildContext-driven rendering decisions
-- visual styling
-- direct dialog construction
-- direct snackbar rendering
-- navigation tree redesign
-
-### Dependency Rule
-
-Preferred direction:
-
-presentation → controller → ServiceProvider / core
-
-Avoid:
-
-- presentation duplicating controller logic
-- controller depending on widget classes
-- controller depending on presentation widgets
-
-### Preservation Rule After Phase 7.1 Closure
-
-Because Phase 7.1 is closed:
-
-- extracted responsibilities should stay outside the widgets
-- new state work must build on the existing controller boundaries
-- widgets remain owners of lifecycle/render/UI feedback
-- controllers remain owners of feature-local application coordination
+- direct rendering
+- widget-specific animation behavior
+- view-only decoration logic
+- broad cross-feature global orchestration unless explicitly introduced in a later phase
+- hidden navigation redesign
 
 ---
 
-## Next Phase Rule
+## Phase 7.2 Sequencing Rule
 
-The next correct step is:
+The validated execution order after the real inventory is:
 
-Phase 7.2 — State Coordination Boundaries
+1. 7.2.1 — Feature State Inventory & Ownership Definition
+2. 7.2.2 — Billing State Boundary Consolidation
+3. 7.2.3 — Dashboard State Derivation Normalization
+4. 7.2.4 — Auth & Startup Initial State Boundary Cleanup
+5. 7.2.5 — Formal Closure of Phase 7.2
 
-This means future work should focus on clarifying:
+This order should not be altered without code-backed justification.
 
-- what belongs to widget-local state
-- what belongs to feature/application state
-- where customer-dependent runtime state should live
-- how to reduce ad-hoc coordination without redesigning backend flow
+Reason:
 
-Phase 7.2 must start from the closed Phase 7.1 baseline and not reopen already-settled UI / logic extraction work unless a validated defect requires it.
+- billing contains the highest concentration of widget-owned feature functional state and manual coordination
+- dashboard mainly needs derivation normalization
+- auth and startup share the same initial-boundary concern and should be treated together
+
+---
+
+## Current Working Rule
+
+From this point forward, any discussion about state in Mi IP·RED must answer three questions before implementation:
+
+1. Is this state purely UI?
+2. Is this state feature functional state?
+3. Is this state derived from another source-of-truth?
+
+If the answer is unclear, do not move the state yet.
+
+Document it first.
 
 ---
 
 ## Conclusion
 
-Development after formal closure of Phase 7.1 is no longer about first-pass UI / logic separation.
+Development after Phase 7.2.1 must remain conservative, explicit, and ownership-driven.
 
-That work is complete for the main runtime surfaces.
+The project is not in a “rewrite” stage.
 
-Starting now, Mi IP·RED should evolve by clarifying state ownership on top of the controller boundaries already established, while preserving the production runtime contract and the architectural safety achieved in Phases 6 and 7.1.
+It is in a “boundary clarification and safe consolidation” stage.
+
+That means:
+
+- no impulsive state migration
+- no hidden architecture switch
+- no runtime-risky cleanup disguised as simplification
+
+The next implementation step should therefore focus on the most obvious coordination hotspot:
+
+- billing

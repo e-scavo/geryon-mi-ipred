@@ -1,4 +1,4 @@
-# 🧠 Decisions — Phase 6 Alignment
+# 🧠 Decisions — Phase 7 Alignment
 
 ## Decision 1 — Preserve Backend Flow as Immutable Constraint
 
@@ -14,24 +14,24 @@ This includes:
 
 ### Implication
 
-All presentation-layer refactoring must:
+All presentation-layer and application-layer refactoring must:
 
 - avoid modifying request generation
 - avoid modifying response parsing
 - avoid altering timing or sequencing of calls
 - avoid introducing side effects in ServiceProvider
 
-This constraint governed every step of Phase 6 and remains active for later phases.
+This constraint governed every earlier phase and remains active for Phase 7.2.
 
 ---
 
-## Decision 2 — Refactor Presentation Without Behavioral Change
+## Decision 2 — Refactor Structure and Application Layer Without Behavioral Change
 
 The system is already functional in production.
 
 Therefore:
 
-structural improvements must not introduce runtime changes.
+structural and application-layer improvements must not introduce runtime changes unless they are explicitly intended, justified, and validated.
 
 ### Implication
 
@@ -39,10 +39,12 @@ Phase 6 explicitly avoided:
 
 - UI redesign
 - navigation changes
-- widget lifecycle changes
-- state management changes
+- widget lifecycle redesign
+- state-management redesign
 
 Phase 7.1 preserved the same rule while extracting business-adjacent orchestration into controllers.
+
+Phase 7.2 preserves the same rule while clarifying state ownership boundaries.
 
 ---
 
@@ -198,6 +200,8 @@ it behaves as infrastructure-adjacent due to its integration with ServiceProvide
 - compatibility must be preserved first
 - validation must be stricter than other UI moves
 
+This remains relevant in Phase 7.2 because auth still shares a boundary with startup and session-driven entry behavior.
+
 ---
 
 ## Decision 9 — Normalize Imports Only After Structural Stability
@@ -238,326 +242,196 @@ legacy paths are no longer primary access points.
 
 - preferred import paths
 - part of final architecture
+- a valid place for new logic
 
 ---
 
-## Decision 11 — Documentation Must Reflect Real Structure
+## Decision 11 — Introduce Feature-Local Controllers Before Touching State Boundaries
 
-Documentation is treated as:
+Application-layer extraction had to occur before state-boundary consolidation.
 
-a reflection of actual implementation, not an idealized model.
+### Decision
 
-### Therefore Phase 6 documentation:
+Phase 7.1 introduces controllers first.
 
-- includes historical structure
-- explains migration steps
-- documents shim strategy
-- defines canonical structure
-- preserves rationale
-
-The same rule applies to Phase 7 closure documents.
-
----
-
-## Decision 12 — Avoid Mixing Structural Refactor with Logical Refactor
-
-A key constraint:
-
-do not combine presentation restructuring with logic changes.
-
-### Avoided during Phase 6:
-
-- splitting ServiceProvider
-- changing login logic
-- altering request builders
-- modifying state handling
-
-### Controlled exception in Phase 7.1
-
-After presentation normalization was complete, logical extraction became allowed, but only under strict scope control and without backend behavior changes.
-
----
-
-## Decision 13 — Maintain Full Backward Compatibility During Migration
-
-At no point should the system require:
-
-- simultaneous refactor of all imports
-- atomic migration across all files
-
-### Instead:
-
-- old paths continue working
-- new paths gradually adopted
-- system remains stable at every step
-
----
-
-## Decision 14 — Prepare for Controlled Shim Removal (Future Phase)
-
-Phase 6 did not remove legacy paths immediately.
-
-### Instead it prepared:
-
-- identification of unused shims
-- confirmation of canonical import adoption
-- safe conditions for removal
-
-This led into:
-
-Phase 6.3 — Legacy shim audit
-
----
-
-## Decision 15 — Prioritize Safety Over Structural Purity
-
-Throughout Phase 6 and Phase 7.1:
-
-safety was prioritized over ideal structure.
-
-### This includes:
-
-- keeping temporary redundancy when needed
-- delaying certain migrations
-- avoiding aggressive cleanup before validation
-- preserving widget lifecycle ownership where extraction risk was higher
-
-### Outcome
-
-- zero intentional runtime regressions
-- controlled evolution
-- maintainable transition path
-
----
-
-## Decision 16 — Remove Compatibility Layer After Full Validation
-
-Once:
-
-- canonical imports are fully adopted
-- no active usage of legacy paths remains
-- runtime validation is complete
-
-Then:
-
-all compatibility shims must be removed.
+Only after that baseline is validated may Phase 7.2 start.
 
 ### Rationale
 
-- prevents structural duplication
-- enforces single source of truth
-- eliminates hidden dependencies
+- ownership cannot be normalized while widgets still own request orchestration
+- state cleanup before logic extraction would mix two concerns
+- later state work becomes safer once feature-local controller boundaries exist
 
-This was executed in Phase 6.3.
+### Result
 
----
-
-## Decision 17 — Introduce a Controller Layer Only After Presentation Normalization
-
-Phase 7 did not begin by changing backend interaction.
-
-It began by introducing an explicit controller layer only after Phase 6 completed structural normalization.
-
-### Rationale
-
-Before Phase 6, responsibility extraction would have been mixed with path cleanup and import migration.
-
-After Phase 6:
-
-- presentation ownership is clear
-- canonical paths already exist
-- extraction can happen without structural ambiguity
-
-### Implication
-
-Application-layer consolidation must happen after presentation normalization, not before it.
+Phase 7.1 is the prerequisite foundation for Phase 7.2.
 
 ---
 
-## Decision 18 — Extract Business-Adjacent Logic Before Redesigning State
+## Decision 12 — Treat State Ownership as an Explicit Architectural Concern
 
-State redesign is deferred until business-adjacent logic leaves widgets.
+State ownership must not remain implicit after Phase 7.1.
+
+### Decision
+
+Phase 7.2 begins with a formal ownership inventory.
+
+State must be classified into:
+
+- UI state
+- feature functional state
+- derived state
+- global source state
 
 ### Rationale
 
-If widgets still own orchestration logic:
+Without this classification:
 
-- state redesign would hide coupling instead of removing it
-- feature boundaries would remain behaviorally weak
-- future state abstractions would be harder to validate
+- local state could be moved incorrectly
+- derived state could be duplicated
+- widgets could continue owning feature coordination by inertia
+- future abstractions would rest on assumptions instead of code-backed analysis
 
-### Implication
+### Result
 
-The first Phase 7 priority was not global state redesign.
-It was UI / logic decoupling through feature-level controllers.
-
-Phase 7.1 is now formally closed under this decision.
+7.2.1 is required before any implementation-focused consolidation step.
 
 ---
 
-## Decision 19 — Controllers Must Stay Feature-Local Initially
+## Decision 13 — Billing Is the First State-Boundary Consolidation Target
 
-Controller introduction must start inside feature boundaries instead of as a global application service layer.
+The order inside Phase 7.2 is not arbitrary.
+
+### Decision
+
+After the inventory step, the first implementation-focused state-boundary subphase must target billing.
 
 ### Rationale
 
-- lower migration risk
-- easier ownership
-- easier rollback
-- clearer mapping from widget to extracted logic
+Billing currently concentrates the greatest amount of:
 
-### Implication
+- widget-owned feature functional state
+- manual reload coordination
+- client-change synchronization logic
+- mixed local coordination around loading/error/data state
 
-Initial controller locations are:
+### Result
 
-- lib/features/auth/controllers
-- lib/features/dashboard/controllers
-- lib/features/billing/controllers
+The first practical consolidation target after 7.2.1 is:
 
-Global application services are not introduced yet.
+- 7.2.2 — Billing State Boundary Consolidation
 
 ---
 
-## Decision 20 — Widgets Remain Responsible for Rendering and UI Feedback
+## Decision 14 — Dashboard Is Primarily a Derived-State Normalization Problem
 
-Controllers must not absorb rendering responsibilities.
+Dashboard remains important, but its main debt is narrower than billing.
+
+### Decision
+
+Treat dashboard as a derived-state normalization subphase rather than as the first broad state-consolidation step.
 
 ### Rationale
 
-The goal is to separate responsibilities, not to move UI code into non-UI classes.
+The dashboard controller already centralizes relevant behavior more effectively than billing.
 
-Therefore controllers may return:
+What remains is mainly:
 
-- normalized results
-- action outcomes
-- error descriptions for presentation use
+- source/derived boundary clarity
+- normalization of how resolved state is consumed
 
-But widgets remain responsible for:
+### Result
 
-- snackbars
-- dialogs
-- pop / push decisions tied to UI lifecycle
-- visual response to controller outcomes
-
-### Implication
-
-Phase 7 extraction is application-layer decoupling, not headless UI conversion.
+Dashboard is positioned after billing in the validated Phase 7.2 order.
 
 ---
 
-## Decision 21 — Dashboard Customer Resolution Must Leave the Widget Before State Refactor
+## Decision 15 — Auth Cleanup Must Include Startup Boundary Cleanup
 
-Dashboard is the main authenticated screen and directly reflects the currently selected customer.
+The real codebase does not isolate auth initial-state concerns inside the login feature alone.
+
+### Decision
+
+The original wording:
+
+- Auth Initial State Boundary Cleanup
+
+is expanded to:
+
+- Auth & Startup Initial State Boundary Cleanup
 
 ### Rationale
 
-As long as `dashboard_page.dart` resolves the active customer inline:
+The initial boundary is currently distributed across:
 
-- the screen keeps owning application decisions
-- customer-switch behavior remains UI-coupled
-- state coordination work in Phase 7.2 would start from a blurred responsibility boundary
+- lib/main.dart
+- auth presentation
+- session persistence
+- ServiceProvider-backed readiness/auth state
 
-### Implication
+Cleaning only the auth widget would leave the boundary architecturally incomplete.
 
-Dashboard customer resolution, customer-option normalization, and logout orchestration had to be extracted before beginning Phase 7.2.
+### Result
 
-This was completed in Phase 7.1.2.
+Phase 7.2 scope is clarified without broadening into a redesign.
+
+This is a scope correction, not a scope expansion into a new architecture.
 
 ---
 
-## Decision 22 — Presentational Dialogs Remain in the Widget
+## Decision 16 — Do Not Introduce a Global Application Service Layer During Phase 7.2
 
-Not every dashboard concern should move to the controller.
+A tempting next step after inventory would be to centralize more behavior globally.
+
+### Decision
+
+Do not introduce a new global application service layer during Phase 7.2.
 
 ### Rationale
 
-Dialogs such as “Métodos de pago” are presentation concerns because they:
+- it would widen the blast radius unnecessarily
+- it would blur the existing controller boundaries
+- it would mix ownership clarification with architecture expansion
+- the current goal is boundary normalization, not platform redesign
 
-- format visual content
-- depend directly on `BuildContext`
-- define modal composition and button arrangement
-- do not own backend-adjacent coordination
+### Result
 
-### Implication
-
-The controller may prepare application data, but `AlertDialog` construction remains in presentation.
+Phase 7.2 remains feature-local and startup-boundary-focused.
 
 ---
 
-## Decision 23 — Billing Request Preparation Must Leave the Widget Before Closing Phase 7.1
+## Decision 17 — Manual Coordination Reduction Must Preserve Runtime Order
 
-Billing is part of the authenticated runtime surface and still depended on widget-owned request preparation.
+Reducing `listenManual`, local reload checks, and widget-coordinated loading state is desirable.
 
-### Rationale
+But it must not change runtime ordering implicitly.
 
-As long as `billing_widget.dart` prepared thread-bound models, request parameters, and typed backend decoding inline:
+### Decision
 
-- the widget remained an execution coordinator
-- feature behavior stayed only partially decoupled
-- Phase 7.1 would be incomplete compared to auth and dashboard
+Any manual coordination reduction in later subphases must preserve:
 
-### Implication
+- trigger timing
+- user-visible loading sequence where relevant
+- feature reload semantics
+- customer-switch behavior
+- startup/login entry ordering
 
-Billing request preparation, typed response validation, and row normalization had to be extracted before considering Phase 7.1 functionally complete.
+### Result
 
-This was completed in Phase 7.1.3.
-
----
-
-## Decision 24 — Billing Widget Keeps Lifecycle Ownership
-
-Billing has stronger lifecycle coupling than auth and dashboard because it depends on:
-
-- provider subscription
-- customer-change detection
-- `mounted` checks
-- `setState(...)`
-- render switching between loading, error, and table modes
-
-### Rationale
-
-Moving all of this into a controller during Phase 7.1 would increase risk and blur the UI/application boundary in a different way.
-
-### Implication
-
-During Phase 7.1.3:
-
-- the widget keeps lifecycle and rendering ownership
-- the controller absorbs data preparation and backend-facing coordination
-- no hidden lifecycle orchestration should be introduced into the controller
-
----
-
-## Decision 25 — Close Phase 7.1 Without Reopening Feature Extraction
-
-Once auth, dashboard, and billing were all extracted and validated, Phase 7.1 should be formally closed instead of kept artificially open.
-
-### Rationale
-
-Keeping Phase 7.1 open after its original objective is already met would:
-
-- blur milestone boundaries
-- delay transition to state work unnecessarily
-- keep transitional documents alive longer than needed
-
-### Implication
-
-The correct next step after validation is:
-
-- formal documentation closure of Phase 7.1
-- removal of residual umbrella documentation from the active set
-- transition to Phase 7.2
+Implementation choices during 7.2.2 onward must be evaluated by runtime-equivalent behavior, not only by code cleanliness.
 
 ---
 
 ## Conclusion
 
-The decisions established across Phases 6 and 7.1 collectively ensure that:
+Phase 7 decisions now form a coherent chain:
 
-- presentation structure is explicit and normalized
-- backend behavior remains stable
-- feature-local controller boundaries are now established
-- the first behavioral decoupling layer is complete
-- the project is ready to move into Phase 7.2 from a cleaner baseline
+- normalize structure
+- introduce controllers
+- classify ownership
+- consolidate the riskiest state hotspot first
+- normalize derived state next
+- clean startup/auth boundary after that
+- preserve runtime at every step
 
-This preserves safety while enabling further architectural evolution.
+This sequence is now the active architectural contract for the continuation of Mi IP·RED in Phase 7.2.

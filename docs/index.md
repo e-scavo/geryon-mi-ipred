@@ -2,7 +2,7 @@
 
 ## Objective
 
-Provide a structured and accurate entry point to all technical documentation of Mi IP·RED, ensuring that every document reflects the real implementation state of the system, including historical evolution, structural decisions, and current architectural boundaries after Phase 7.1 formal closure.
+Provide a structured and accurate entry point to all technical documentation of Mi IP·RED, ensuring that every document reflects the real implementation state of the system, including historical evolution, structural decisions, and current architectural boundaries after Phase 7.2.1 inventory kickoff.
 
 ---
 
@@ -21,7 +21,7 @@ Phase 6 then introduced full presentation normalization.
 
 Phase 7.1 subsequently introduced the first application-layer consolidation work, extracting business-adjacent logic from the main presentation surfaces into feature-local controllers.
 
-The documentation now needs to reflect the formal closure of that subphase.
+Phase 7.2 has now started with an ownership-definition step that documents real state boundaries before any runtime-facing consolidation is performed.
 
 ---
 
@@ -116,6 +116,7 @@ Defines all architectural and structural decisions, including:
 - compatibility rules
 - shim strategy and removal policy
 - controller-introduction rules for Phase 7
+- ownership-definition rules for Phase 7.2
 
 ---
 
@@ -129,6 +130,7 @@ Defines development rules and constraints:
 - migration workflow
 - post-Phase 6 architectural rules
 - Phase 7 controller extraction rules
+- Phase 7.2 state-boundary rules
 
 ---
 
@@ -173,12 +175,9 @@ Covers:
 
 Includes:
 
-- Phase 6.1 — Shared UI normalization
-- Phase 6.2 — Feature presentation normalization
-- Phase 6.2.1 — Controlled migration sequence
-- Phase 6.2.2 — Import normalization
-- Phase 6.2.3 — Documentation alignment
-- Phase 6.3 — Legacy shim audit and removal
+- Phase 6.1 shared UI normalization
+- Phase 6.2 feature UI normalization
+- Phase 6.3 formal closure and cleanup
 
 ---
 
@@ -188,122 +187,169 @@ phase7_application_layer_consolidation.md
 
 Covers:
 
+- introduction of feature-local controllers
 - application-layer consolidation strategy
-- controller introduction principles
 - formal closure of Phase 7.1
-- preparation for Phase 7.2 and beyond
+- Phase 7.2 scope and validated subphase structure
+- state coordination boundaries
+- startup/auth initial boundary scope clarification
+
+---
+
+phase7_application_layer_consolidation_7_1_ui_logic_decoupling.md
+
+Historical umbrella document for the original Phase 7.1 intent.
+
+Kept for historical continuity after the formal split and closure into implementation subphases.
+
+---
 
 phase7_application_layer_consolidation_7_1_1_auth_extraction.md
 
-Covers:
+Documents:
 
 - auth controller introduction
-- autologin extraction
-- login orchestration extraction
-- remembered DNI persistence extraction
-- first safe controller pattern for Phase 7
+- login flow extraction
+- initial auth widget cleanup baseline
+- preserved runtime contract for login flow
+
+---
 
 phase7_application_layer_consolidation_7_1_2_dashboard_extraction.md
 
-Covers:
+Documents:
 
 - dashboard controller introduction
-- active customer resolution extraction
-- customer-switch orchestration extraction
-- logout orchestration extraction
-- AppBar-supporting application logic extraction
+- customer selection extraction
+- logout delegation extraction
+- dashboard rendering-state preparation baseline
+
+---
 
 phase7_application_layer_consolidation_7_1_3_billing_extraction.md
 
-Covers:
+Documents:
 
 - billing controller introduction
-- data-model preparation extraction
-- billing request orchestration extraction
-- typed response validation extraction
-- table-row normalization extraction
-- refresh orchestration support for customer changes
+- billing request preparation extraction
+- billing response normalization extraction
+- preserved widget rendering compatibility
 
 ---
 
-## Current System State
+phase7_application_layer_consolidation_7_2_1_feature_state_inventory.md
 
-After formal closure of Phase 7.1:
+Documents:
 
-- presentation layer remains normalized
-- shared UI remains isolated under lib/shared
-- feature UI remains isolated under lib/features
-- canonical paths remain the only active paths
-- auth logic no longer performs application coordination directly inside the widget
-- dashboard logic no longer performs customer/session coordination directly inside the widget
-- billing logic no longer performs request orchestration directly inside the widget
-- controller boundaries now exist for auth, dashboard, and billing
-- Phase 7.1 is formally closed
-- Phase 7.2 is the next correct step
-
-The repository now reflects both structural ownership and first-layer behavioral ownership.
+- real state ownership inventory after Phase 7.1 closure
+- separation of UI state vs feature functional state
+- derived state mapping
+- global source state mapping
+- manual coordination hotspots
+- validated priority order for the remaining Phase 7.2 subphases
 
 ---
 
-## Removed Transitional Elements
+## Structural and Historical Documents
 
-The following elements no longer exist after Phase 6.3:
+module-inventory.md
 
-- export-based compatibility shims
-- legacy presentation paths under lib/models and lib/pages
-- duplicated UI access paths
-- fallback import surfaces
-
-In addition, after formal closure of Phase 7.1:
-
-- the residual umbrella document `phase7_application_layer_consolidation_7_1_ui_logic_decoupling.md` is no longer part of the active documentation surface
-
-All transitional structures introduced during migration and renumbering should be considered resolved.
+High-level inventory of modules and ownership zones across the project.
 
 ---
 
-## What Documentation Does NOT Cover Yet
+target-structure.md
 
-At this stage, documentation does not yet include:
-
-- domain layer separation
-- application service layer
-- session persistence redesign
-- advanced state management architecture
-- flow ownership redesign beyond the current widget/controller split
-
-These will be addressed in upcoming phases.
+Describes the intended structural organization of the project.
 
 ---
 
-## Next Documentation Evolution
+legacy.md
 
-The next expected updates correspond to:
-
-Phase 7.2
-
-- state coordination boundaries
-- clarification of widget-local state vs application state
-- preparation for more explicit feature-owned state
-- reduction of ad-hoc cross-widget state coupling
+Tracks historical paths, compatibility artifacts, and legacy structure references.
 
 ---
 
-Phase 7.3
+cleanup-checklist.md
 
-- feature encapsulation reinforcement
-- stronger behavioral coherence inside feature boundaries
+Tracks cleanup-oriented tasks and normalization checkpoints.
+
+---
+
+infra-normalization.md
+
+Documents infrastructure-related normalization work and its architectural implications.
+
+---
+
+refactor-plan.md
+
+Historical refactor planning document preserved for continuity.
+
+---
+
+features.md
+
+Feature-oriented documentation index and context.
+
+---
+
+## Recommended Reading Order
+
+### For onboarding
+
+1. README.md
+2. docs/index.md
+3. docs/architecture.md
+4. docs/flows.md
+5. docs/development.md
+6. docs/decisions.md
+
+---
+
+### For understanding ServiceProvider and runtime constraints
+
+1. docs/architecture-deep.md
+2. docs/service-provider-decomposition.md
+3. docs/phase5_service_provider_decomposition.md
+
+---
+
+### For understanding current UI/application architecture
+
+1. docs/phase6_presentation_structure_cleanup.md
+2. docs/phase7_application_layer_consolidation.md
+3. docs/phase7_application_layer_consolidation_7_1_1_auth_extraction.md
+4. docs/phase7_application_layer_consolidation_7_1_2_dashboard_extraction.md
+5. docs/phase7_application_layer_consolidation_7_1_3_billing_extraction.md
+6. docs/phase7_application_layer_consolidation_7_2_1_feature_state_inventory.md
+
+---
+
+## Current Documentation Status
+
+Current status of the codebase reflected by documentation:
+
+- Phase 1 completed
+- Phase 2 completed
+- Phase 3 completed
+- Phase 4 completed
+- Phase 5 completed
+- Phase 6 completed
+- Phase 7.1 completed and formally closed
+- Phase 7.2 started
+- Phase 7.2.1 documented as the ownership-definition baseline
+- next safe implementation target identified as Phase 7.2.2
 
 ---
 
 ## Conclusion
 
-The documentation set is aligned with the real structure of the system after formal closure of Phase 7.1.
+The documentation set is aligned with the real project state reflected in the current ZIP.
 
-It provides:
+At this point:
 
-- complete historical traceability
-- explicit architectural decisions
-- clear ownership boundaries
-- explicit subphase progression
-- a clean starting point for Phase 7.2
+- presentation normalization is complete
+- controller extraction baseline is complete
+- state-boundary work has formally started
+- the project now has an explicit ownership inventory to guide safe continuation of Phase 7.2
