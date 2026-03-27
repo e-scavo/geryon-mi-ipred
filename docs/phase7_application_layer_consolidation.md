@@ -2,71 +2,59 @@
 
 ## Objective
 
-Consolidate the application layer of Mi IP·RED by progressively separating presentation from business interaction logic, introducing an explicit controller layer, and preparing the codebase for future state and navigation normalization without altering backend behavior or the existing runtime contract.
+Consolidate the application layer of Mi IP·RED by progressively separating presentation from business interaction logic, introducing explicit feature-local controller boundaries, and clarifying state ownership without altering the validated runtime contract of the application.
 
 ---
 
 ## Initial Context
 
-After Phase 6 completion:
+After the structural normalization work completed in Phase 6, the project reached a state where the main runtime flows were stable but still carried important application-layer ambiguity.
 
-- presentation structure is normalized
-- shared UI and feature UI are clearly separated
-- canonical import paths are active
-- ServiceProvider remains stable and protected
-- runtime behavior is preserved in production
+The main issue was no longer directory structure.
 
-However, structural normalization alone did not fully solve the next architectural debt layer:
+The main issue was responsibility placement.
 
-- feature widgets still contained business-oriented logic
-- pages still coordinated backend-adjacent actions directly
-- UI state and application flow decisions were still mixed together
-- feature boundaries existed physically but not yet behaviorally
+Widgets in the main runtime surfaces still owned too much business-adjacent logic and too much coordination behavior.
 
-Phase 7 was opened to address that gap safely and incrementally.
+Phase 7 was opened to address that safely and incrementally.
 
-After Phase 7.1 formal closure:
+Phase 7.1 completed the first extraction pass:
 
-- auth extraction is complete
-- dashboard extraction is complete
-- billing extraction is complete
-- controller directories are now real runtime boundaries
-- the main presentation surfaces no longer inline the same business-adjacent orchestration they previously contained
+- auth extraction
+- dashboard extraction
+- billing extraction
 
-This created the correct baseline for the next step:
+That work introduced feature-local controllers and successfully removed inline request orchestration from the main presentation surfaces.
 
-- state ownership clarification
-- state derivation normalization
-- reduction of manual coordination spread across widgets
+Once that extraction completed, a second architectural layer became visible:
+
+- state ownership was still partially implicit
+- some widgets still owned feature lifecycle state
+- some derived state was still resolved ad hoc from `ServiceProvider`
+- startup/auth initial flow boundaries were still not explicit enough
+
+That led to the opening of Phase 7.2.
 
 ---
 
 ## Problem Statement
 
-Even with Phase 7.1 completed, presentation and startup surfaces still contain state coordination responsibilities that are not yet formally normalized.
+Phase 7.1 solved the first boundary problem:
 
-The remaining problem is no longer primarily request orchestration.
+- request orchestration should not remain inline in widgets
 
-The remaining problem is ownership and coordination of state.
+But it did not yet solve the second boundary problem:
 
-This appears in different forms across the current codebase:
+- widgets should not continue to own feature functional state when that state is not truly UI state
 
-- widget-local state representing feature lifecycle state
-- manual synchronization between widget lifecycle and feature reload behavior
-- direct derivation of rendering state from ServiceProvider inside presentation/runtime surfaces
-- startup flow state mixed with authentication-entry state
-- implicit rather than explicit boundaries between:
-  - UI state
-  - feature functional state
-  - derived state
-  - global source state
+The codebase still showed different forms of ownership ambiguity:
 
-As a result:
+- local widget state acting as feature lifecycle state
+- derived state resolved directly from `ServiceProvider` without explicit normalization
+- manual coordination spread across widget listeners and `setState`
+- initial startup/auth state split across runtime surfaces
 
-- feature ownership is still partially implicit
-- future refactors would be riskier than necessary
-- widget maintenance remains harder than it should be
-- future application-layer abstractions would have an unclear foundation
+Without clarifying those boundaries, future application-layer work would become riskier and less coherent.
 
 ---
 
@@ -74,186 +62,172 @@ As a result:
 
 ### Included
 
-- introduction of controller/application-layer primitives
-- progressive extraction of business-adjacent logic from widgets
-- preservation of existing feature presentation structure
-- preparation for state architecture consolidation
-- documentation alignment for Phase 7
-- subphase-based incremental extraction tracking
-- formal closure of Phase 7.1 after runtime validation
-- formal start of Phase 7.2 focused on state coordination boundaries
-- inventory and ownership classification of current state holders
-- clarification of startup/auth initial boundary as part of Phase 7.2 scope
+- feature-local controller introduction
+- progressive logic extraction from widgets
+- preservation of the current runtime contract
+- state ownership inventory
+- billing state-boundary consolidation
+- future preparation for dashboard derived-state normalization
+- future preparation for auth/startup initial-boundary cleanup
+- documentation alignment with real runtime structure
 
 ### Excluded
 
 - backend protocol changes
 - ServiceProvider redesign
-- runtime flow redesign
-- navigation redesign in Phase 7.1
-- full state-management migration in Phase 7.1
+- navigation redesign
 - UI redesign
-- global application service layer introduction in Phase 7.2.1
-- replacing Riverpod usage patterns globally in Phase 7.2.1
+- global application service layer introduction
+- full state-management migration
+- broad Riverpod architecture replacement
 
 ---
 
 ## Root Cause Analysis
 
-Mi IP·RED evolved under production-driven priorities.
+Mi IP·RED evolved under practical runtime priorities.
 
-That produced a natural sequence:
+That sequence was correct:
 
-1. make runtime work
-2. stabilize backend communication
+1. stabilize backend/runtime behavior
+2. protect ServiceProvider
 3. normalize structure
-4. isolate feature orchestration
-5. only then normalize state coordination
+4. extract request orchestration
+5. only then normalize state ownership
 
-This was appropriate operationally, but it left a second-order architectural residue:
+This means Phase 7.2 is not a correction of a previous mistake.
 
-- widgets stopped owning some business logic, but still own coordination logic
-- startup and auth entry state remain partially mixed
-- derived state is still resolved ad hoc in some runtime surfaces
-- local widget state sometimes represents feature execution state rather than purely UI state
-- controller extraction improved separation, but did not yet finalize ownership rules
+It is the next natural step revealed after Phase 7.1 succeeded.
 
-Phase 7.2 exists to address that residue without collapsing multiple architectural concerns into a single risky rewrite.
+The current debt is not that billing/auth/dashboard still contain too much request logic.
+
+The current debt is that some runtime surfaces still contain too much coordination state and too many implicit ownership assumptions.
 
 ---
 
 ## Files Affected
 
-### New structural area introduced in Phase 7
+### Core Phase 7 runtime areas
 
-- lib/features/*/controllers/
+- `lib/features/auth/controllers/*`
+- `lib/features/dashboard/controllers/*`
+- `lib/features/billing/controllers/*`
+- `lib/features/auth/presentation/*`
+- `lib/features/dashboard/presentation/*`
+- `lib/features/billing/presentation/*`
+- `lib/main.dart`
 
-### Existing areas progressively affected
+### Phase 7 documentation
 
-- lib/features/*/presentation/*
-- lib/main.dart
-- docs/index.md
-- docs/development.md
-- docs/decisions.md
-- docs/phase7_application_layer_consolidation.md
-- docs/phase7_application_layer_consolidation_7_1_1_auth_extraction.md
-- docs/phase7_application_layer_consolidation_7_1_2_dashboard_extraction.md
-- docs/phase7_application_layer_consolidation_7_1_3_billing_extraction.md
-- docs/phase7_application_layer_consolidation_7_2_1_feature_state_inventory.md
-
-### Residual document resolved at formal closure
-
-- docs/phase7_application_layer_consolidation_7_1_ui_logic_decoupling.md
-
-### Protected areas
-
-- lib/core/*
-- lib/models/ServiceProvider/*
-- backend contract-related models
+- `docs/index.md`
+- `docs/development.md`
+- `docs/decisions.md`
+- `docs/phase7_application_layer_consolidation.md`
+- `docs/phase7_application_layer_consolidation_7_1_1_auth_extraction.md`
+- `docs/phase7_application_layer_consolidation_7_1_2_dashboard_extraction.md`
+- `docs/phase7_application_layer_consolidation_7_1_3_billing_extraction.md`
+- `docs/phase7_application_layer_consolidation_7_2_1_feature_state_inventory.md`
+- `docs/phase7_application_layer_consolidation_7_2_2_billing_state_boundary_consolidation.md`
 
 ---
 
 ## Implementation Characteristics
 
-Phase 7 is intentionally incremental and risk-aware.
-
 ### Phase 7.1 — UI / Logic Decoupling
 
-Goal:
+Phase 7.1 extracted business-adjacent logic from the main widgets into feature-local controllers.
 
-- extract business-adjacent logic from widgets into controllers
-- keep widgets focused on rendering and interaction delegation
+Validated subphases:
 
-Characteristics:
+- `7.1.1 — Auth extraction`
+- `7.1.2 — Dashboard extraction`
+- `7.1.3 — Billing extraction`
 
-- no backend behavior changes
-- no protocol changes
-- no ServiceProvider public behavior changes
-- no navigation redesign
-- no state-management redesign
-- controller introduction remains feature-local
+Result:
 
-Implemented and validated subphases:
-
-- 7.1.1 — Auth extraction
-- 7.1.2 — Dashboard extraction
-- 7.1.3 — Billing extraction
+- widgets stopped owning inline request orchestration
+- controllers became the application-layer boundary for feature logic
+- runtime behavior remained stable
 
 Formal status:
 
-- Phase 7.1 is closed
-
-Closure meaning:
-
-- auth no longer performs application coordination inline in the widget
-- dashboard no longer performs customer/session coordination inline in the widget
-- billing no longer performs request preparation and backend-facing data shaping inline in the widget
-- the original UI / Logic Decoupling objective has been achieved for the main authenticated runtime surface
+- Phase 7.1 completed and closed
 
 ---
 
 ### Phase 7.2 — State Coordination Boundaries
 
-Goal:
+Phase 7.2 starts only after Phase 7.1 has been validated.
 
-- clarify what is local widget state vs application state
-- reduce ad-hoc state coordination inside presentation widgets
-- normalize derived state boundaries
-- prepare future abstractions without altering runtime behavior
+Its goal is not to redesign state management globally.
 
-Characteristics:
+Its goal is to clarify ownership boundaries:
 
-- still conservative
-- must preserve current Riverpod runtime behavior
-- must not redesign ServiceProvider
-- must not redesign navigation
-- must not migrate the app to a new state-management model
-- must remain reversible and feature-local where possible
-
-Important scope clarification derived from the real ZIP state:
-
-Phase 7.2 is not limited to feature widgets only.
-
-It must also include the startup/auth initial boundary, because the current runtime still distributes initial-state decisions across:
-
-- lib/main.dart
-- auth presentation
-- session persistence
-- ServiceProvider-backed runtime state
-
-This makes the correct operational label for the phase:
-
-- State Coordination Boundaries
-- including Auth + Startup Initial Boundary Cleanup
+- UI state
+- feature functional state
+- derived state
+- global source state
 
 Validated subphase structure:
 
-- 7.2.1 — Feature State Inventory & Ownership Definition
-- 7.2.2 — Billing State Boundary Consolidation
-- 7.2.3 — Dashboard State Derivation Normalization
-- 7.2.4 — Auth & Startup Initial State Boundary Cleanup
-- 7.2.5 — Formal Closure of Phase 7.2
-
-Current formal status:
-
-- Phase 7.2 started
-- 7.2.1 is the first safe step
-- no runtime modification is required for 7.2.1
-- 7.2.1 exists to freeze ownership before moving responsibilities
+- `7.2.1 — Feature State Inventory & Ownership Definition`
+- `7.2.2 — Billing State Boundary Consolidation`
+- `7.2.3 — Dashboard State Derivation Normalization`
+- `7.2.4 — Auth & Startup Initial State Boundary Cleanup`
+- `7.2.5 — Formal Closure of Phase 7.2`
 
 ---
 
-### Phase 7.3 — Feature Encapsulation Reinforcement
+### Phase 7.2.1 — Feature State Inventory & Ownership Definition
 
-Goal:
+This subphase documented the real ownership baseline of the project after Phase 7.1 closure.
 
-- make feature directories behaviorally coherent, not only structurally coherent
-- reduce cross-feature knowledge leakage
+It confirmed that:
 
-Characteristics:
+- billing was the strongest feature-state hotspot
+- dashboard mainly required derived-state normalization
+- auth still mixed UI state with initial functional coordination
+- startup participated in the same initial boundary as auth
 
-- move feature-owned orchestration closer to feature boundaries
-- avoid presentation widgets reaching too deeply into generic runtime primitives
+Result:
+
+- Phase 7.2.1 completed
+- billing was validated as the first implementation target of Phase 7.2
+
+---
+
+### Phase 7.2.2 — Billing State Boundary Consolidation
+
+This subphase consolidates billing feature state into an explicit feature-local boundary.
+
+Implemented characteristics:
+
+- billing functional state is now grouped into `BillingFeatureState`
+- billing transitions are now owned by `BillingController`
+- client-tracking and reload decisions are now controller-owned
+- `listenManual` remains temporarily in place as a low-risk runtime trigger
+- `BillingWidget` now consumes a single aggregated feature state instead of managing dispersed lifecycle variables
+
+Important constraint preserved:
+
+- this is not a state-management redesign
+- this is a billing feature-boundary consolidation
+
+Formal status:
+
+- implemented in code
+- pending local validation in the real project environment
+
+---
+
+### Phase 7.2.3 — Dashboard State Derivation Normalization
+
+Planned goal:
+
+- formalize dashboard derived state boundaries
+- make source-of-truth vs derived data clearer
+- keep derivation feature-local
+- avoid widening scope into global application state redesign
 
 Status:
 
@@ -261,17 +235,27 @@ Status:
 
 ---
 
-### Phase 7.4 — Navigation / Flow Normalization Preparation
+### Phase 7.2.4 — Auth & Startup Initial State Boundary Cleanup
 
-Goal:
+Planned goal:
 
-- document and prepare route/flow ownership boundaries
-- identify where login, dashboard, logout, and customer-switch behavior should live
+- clarify the initial boundary currently distributed across auth and startup
+- separate UI state from feature/bootstrap state
+- preserve current entry ordering and behavior
 
-Characteristics:
+Status:
 
-- preparatory in nature unless runtime-safe centralization is possible
-- must remain compatible with current app startup flow
+- not started
+
+---
+
+### Phase 7.2.5 — Formal Closure of Phase 7.2
+
+Planned goal:
+
+- close the phase with ownership rules validated in code and documentation
+- record final boundary decisions
+- document remaining intentional debt, if any
 
 Status:
 
@@ -281,133 +265,109 @@ Status:
 
 ## Validation
 
-### Phase 7.1 validation already completed
+### Phase 7.1 validation baseline
 
-Validated behaviors from the prior closure baseline:
+Previously validated:
 
-- login popup rendering
-- login request flow
-- login failure behavior
-- login success behavior
+- login flow
+- login success/failure
 - dashboard rendering
 - customer switching
-- billing load
 - billing rendering
 - logout
 
-### Phase 7.2.1 validation target
+### Phase 7.2.1 validation baseline
 
-Because 7.2.1 is documentation-first and code-neutral, validation for this subphase is architectural/documental consistency validation:
+Previously validated at documentation/architecture level:
 
-- the inventory must reflect real code
-- ownership categories must match actual runtime usage
-- no behavior must change
-- no file ownership must be assumed without code evidence
-- the next subphase order must be justified by real risk, not by preference
+- ownership inventory matches real code
+- phase order justified by real risk
+- billing confirmed as the first implementation target
 
-### Real ownership hotspots identified in the current ZIP baseline
+### Phase 7.2.2 validation target
 
-Auth presentation:
+This subphase must validate:
 
-- widget still coordinates initial autologin preparation
-- widget-local loading currently mixes UI feedback with feature bootstrap state
-
-Dashboard:
-
-- controller resolves derived state directly from ServiceProvider-backed runtime data
-- feature derivation exists, but boundary formalization is still incomplete
-
-Billing:
-
-- widget still owns the largest concentration of manual state coordination
-- listenManual, local reload coordination, client-change tracking, and functional flags remain spread in presentation
-
-Startup:
-
-- app initialization state still participates in auth-entry flow decisions
-- startup state and auth boundary are not yet fully explicit
+- billing initial load
+- customer-change reload
+- loading state rendering
+- error state rendering
+- successful data rendering after reload
+- no regression in request flow or thread handling
 
 ---
 
 ## Release Impact
 
-Phase 7.2.1 has no release-impacting runtime change.
+Phase 7.2.2 does not change the product release surface.
 
-Impact is limited to:
+It affects only internal ownership and maintainability.
 
-- architectural clarity
-- ownership documentation
-- safer sequencing for subsequent subphases
-- reduced risk of incorrect state movement in future steps
+Release-relevant impact is indirect:
 
-This step exists specifically to avoid unsafe refactors in the next implementation subphases.
+- lower future refactor risk
+- clearer billing state boundary
+- simpler future debugging of billing lifecycle behavior
 
 ---
 
 ## Risks
 
-### Main risk if this phase is skipped
+### Risk if Phase 7.2 is skipped
 
-Moving state boundaries without a formal inventory could cause:
+- widgets keep accumulating feature lifecycle state
+- derived state remains implicit
+- startup/auth boundary remains partially mixed
+- later refactors become harder and riskier
 
-- runtime regressions
-- duplicated ownership
-- hidden coupling between widget lifecycle and feature logic
-- false assumptions about what belongs to ServiceProvider vs feature-local coordination
-- accidental startup/auth regressions
+### Risk inside 7.2.2
 
-### Risk inside Phase 7.2 itself
-
-- overcorrecting toward a full state-management redesign
-- pushing global abstractions too early
-- moving too much state out of widgets without distinguishing UI state from feature functional state
-- mixing navigation cleanup with state boundary cleanup
+- breaking customer-change billing reload
+- duplicating state during the move
+- accidentally widening into a provider redesign
 
 ### Mitigation
 
-- inventory first
-- move only one boundary family at a time
-- prioritize the most manual and widget-heavy coordination hotspot first
-- preserve current runtime contract at every step
+- keep runtime trigger mechanism in place
+- move ownership gradually
+- consolidate billing only
+- preserve ServiceProvider contract completely
 
 ---
 
 ## What it does NOT solve
 
-Phase 7 as a whole does not yet solve:
+Phase 7 overall still does not solve:
 
-- a global application service architecture
-- a complete state-management unification model
-- navigation ownership centralization
-- replacement of ServiceProvider as the global runtime source
-- full startup flow redesign
-- complete lifecycle-state normalization for all future features
+- global application state unification
+- full navigation ownership normalization
+- complete startup flow redesign
+- complete ServiceProvider replacement
+- broad lifecycle redesign across all features
 
-Phase 7.2.1 specifically does not solve:
+Phase 7.2.2 specifically does not solve:
 
-- billing state consolidation yet
-- dashboard derivation normalization yet
-- auth/startup boundary cleanup yet
-
-It only defines and freezes the real ownership map needed before those steps.
+- dashboard derived-state normalization
+- auth/startup initial-boundary cleanup
+- removal of `listenManual`
+- introduction of a new billing-specific provider architecture
 
 ---
 
 ## Conclusion
 
-Phase 7 remains structurally coherent and operationally safe.
+Phase 7 remains coherent and intentionally incremental.
 
-Phase 7.1 is fully complete and formally closed.
+The project first normalized structure, then extracted request orchestration, and is now clarifying state ownership.
 
-The next correct move is not a blind implementation change, but a controlled ownership-definition step.
+That progression is correct.
 
-The real codebase now shows a second-layer debt:
+With Phase 7.2.2, billing now has a substantially clearer feature boundary:
 
-- request orchestration has been extracted
-- state coordination boundaries are still partially implicit
+- rendering remains in presentation
+- feature-state transitions and reload decisions move into the controller
+- runtime behavior remains protected
 
-For that reason, Phase 7.2 starts with 7.2.1:
+The next correct continuation, after validating this step locally, is:
 
-- Feature State Inventory & Ownership Definition
-
-This is the correct low-risk starting point because it turns implicit coordination into explicit architecture before any runtime-facing consolidation is attempted.
+- `Phase 7.2.3 — Dashboard State Derivation Normalization`

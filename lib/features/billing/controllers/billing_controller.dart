@@ -1,3 +1,5 @@
+/// ignore_for_file: unnecessary_cast
+
 import 'dart:developer' as developer;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,6 +13,54 @@ import 'package:geryon_web_app_ws_v2/models/GenericDataModel/data_model.dart';
 import 'package:geryon_web_app_ws_v2/models/GenericDataModel/model.dart';
 import 'package:geryon_web_app_ws_v2/models/error_handler.dart';
 import 'package:geryon_web_app_ws_v2/models/tbl_ComprobantesVT/model.dart';
+
+class BillingFeatureState {
+  final String threadHashID;
+  final bool isLoading;
+  final GenericDataModel<TableComprobantesVTModel>? dataModel;
+  final ErrorHandler? error;
+  final int? trackedClientIndex;
+
+  const BillingFeatureState({
+    required this.threadHashID,
+    required this.isLoading,
+    this.dataModel,
+    this.error,
+    this.trackedClientIndex,
+  });
+
+  const BillingFeatureState.initial()
+      : threadHashID = '',
+        isLoading = true,
+        dataModel = null,
+        error = null,
+        trackedClientIndex = null;
+
+  bool get hasError => error != null;
+
+  bool get isReady => !isLoading && error == null && dataModel != null;
+
+  BillingFeatureState copyWith({
+    String? threadHashID,
+    bool? isLoading,
+    GenericDataModel<TableComprobantesVTModel>? dataModel,
+    bool clearDataModel = false,
+    ErrorHandler? error,
+    bool clearError = false,
+    int? trackedClientIndex,
+    bool clearTrackedClientIndex = false,
+  }) {
+    return BillingFeatureState(
+      threadHashID: threadHashID ?? this.threadHashID,
+      isLoading: isLoading ?? this.isLoading,
+      dataModel: clearDataModel ? null : (dataModel ?? this.dataModel),
+      error: clearError ? null : (error ?? this.error),
+      trackedClientIndex: clearTrackedClientIndex
+          ? null
+          : (trackedClientIndex ?? this.trackedClientIndex),
+    );
+  }
+}
 
 class BillingLoadResult {
   final bool success;
@@ -29,6 +79,108 @@ class BillingLoadResult {
 class BillingController {
   static const String _className = 'BillingController';
   static const String _logClassName = '.::$_className::.';
+
+  BillingFeatureState buildInitialState() {
+    return const BillingFeatureState.initial();
+  }
+
+  int? resolveCurrentClientIndex({
+    required WidgetRef ref,
+  }) {
+    return ref.read(notifierServiceProvider).loggedUser?.cCliente;
+  }
+
+  bool shouldBootstrap({
+    required BillingFeatureState state,
+    required int? currentClientIndex,
+  }) {
+    return state.trackedClientIndex == null && currentClientIndex != null;
+  }
+
+  bool shouldReloadForClientChange({
+    required BillingFeatureState state,
+    required int? currentClientIndex,
+  }) {
+    return state.trackedClientIndex != null &&
+        state.trackedClientIndex != currentClientIndex;
+  }
+
+  BillingFeatureState buildLoadingState({
+    required BillingFeatureState currentState,
+    required int? trackedClientIndex,
+  }) {
+    return currentState.copyWith(
+      isLoading: true,
+      clearError: true,
+      trackedClientIndex: trackedClientIndex,
+    );
+  }
+
+  BillingFeatureState buildSuccessState({
+    required BillingFeatureState currentState,
+    required String threadHashID,
+    required GenericDataModel<TableComprobantesVTModel> dataModel,
+    required int? trackedClientIndex,
+  }) {
+    return currentState.copyWith(
+      threadHashID: threadHashID,
+      isLoading: false,
+      dataModel: dataModel,
+      clearError: true,
+      trackedClientIndex: trackedClientIndex,
+    );
+  }
+
+  BillingFeatureState buildFailureState({
+    required BillingFeatureState currentState,
+    required String threadHashID,
+    required ErrorHandler? error,
+    required int? trackedClientIndex,
+  }) {
+    return currentState.copyWith(
+      threadHashID: threadHashID,
+      isLoading: false,
+      error: error,
+      clearDataModel: true,
+      trackedClientIndex: trackedClientIndex,
+    );
+  }
+
+  Future<BillingFeatureState> reloadBillingState({
+    required WidgetRef ref,
+    required BillingFeatureState currentState,
+    required String billingType,
+    required ConstRequests globalRequest,
+    required ConstRequests localRequest,
+    required bool debug,
+  }) async {
+    final currentClientIndex = resolveCurrentClientIndex(ref: ref);
+
+    final result = await loadBillingData(
+      ref: ref,
+      threadHashID: currentState.threadHashID,
+      billingType: billingType,
+      globalRequest: globalRequest,
+      localRequest: localRequest,
+      debug: debug,
+    );
+
+    if (!result.success) {
+      return buildFailureState(
+        currentState: currentState,
+        threadHashID: result.threadHashID,
+        error: result.error,
+        trackedClientIndex: currentClientIndex,
+      );
+    }
+
+    return buildSuccessState(
+      currentState: currentState,
+      threadHashID: result.threadHashID,
+      dataModel: result.dataModel!,
+      trackedClientIndex: currentClientIndex,
+    );
+  }
 
   Future<BillingLoadResult> loadBillingData({
     required WidgetRef ref,

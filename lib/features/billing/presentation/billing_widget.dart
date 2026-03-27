@@ -6,13 +6,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geryon_web_app_ws_v2/common_vars.dart';
 import 'package:geryon_web_app_ws_v2/enums/const_requests.dart';
 import 'package:geryon_web_app_ws_v2/features/billing/controllers/billing_controller.dart';
-import 'package:geryon_web_app_ws_v2/models/GenericDataModel/data_model.dart';
 import 'package:geryon_web_app_ws_v2/models/LoadingGeneric/widget.dart';
 import 'package:geryon_web_app_ws_v2/models/ServiceProvider/data_model.dart';
 import 'package:geryon_web_app_ws_v2/models/SimpleTableWithScroll/widget.dart';
 import 'package:geryon_web_app_ws_v2/models/child_popup_error_message.dart';
 import 'package:geryon_web_app_ws_v2/models/error_handler.dart';
-import 'package:geryon_web_app_ws_v2/models/tbl_ComprobantesVT/model.dart';
 import 'package:geryon_web_app_ws_v2/pages/CatchMainScreen/widget.dart';
 import 'package:geryon_web_app_ws_v2/shared/window/window_model.dart';
 import 'package:geryon_web_app_ws_v2/shared/window/window_widget.dart';
@@ -41,21 +39,16 @@ class _BillingWidgetState extends ConsumerState<BillingWidget> {
   late final ScrollController secondScroller;
   late final ScrollController secondCatchScroller;
 
-  String dThreadHashID = "";
-  bool isInit = true;
-  late GenericDataModel<TableComprobantesVTModel> tEnteDataModel;
-  ConstRequests pGlobalRequest = ConstRequests.viewRecord;
-  ConstRequests pLocalRequest = ConstRequests.viewRecord;
-  bool hasError = false;
-  ErrorHandler? errorHandler;
+  final ConstRequests pGlobalRequest = ConstRequests.viewRecord;
+  final ConstRequests pLocalRequest = ConstRequests.viewRecord;
 
+  late BillingFeatureState _billingState;
   ProviderSubscription<ServiceProvider>? _subscription;
-  int? _lastCCliente;
 
   @override
   void initState() {
     super.initState();
-    isInit = true;
+    _billingState = _controller.buildInitialState();
     mainScroller = ScrollController();
     mainCatchScroller = ScrollController();
     secondScroller = ScrollController();
@@ -76,18 +69,20 @@ class _BillingWidgetState extends ConsumerState<BillingWidget> {
   Future<void> _reloadBillingData() async {
     const String functionName = 'BillingWidget._reloadBillingData';
     final String logFunctionName = '.::$functionName::.';
+    final currentClientIndex = _controller.resolveCurrentClientIndex(ref: ref);
 
     if (mounted) {
       setState(() {
-        isInit = true;
-        hasError = false;
-        errorHandler = null;
+        _billingState = _controller.buildLoadingState(
+          currentState: _billingState,
+          trackedClientIndex: currentClientIndex,
+        );
       });
     }
 
-    final result = await _controller.loadBillingData(
+    final nextState = await _controller.reloadBillingState(
       ref: ref,
-      threadHashID: dThreadHashID,
+      currentState: _billingState,
       billingType: widget.pType,
       globalRequest: pGlobalRequest,
       localRequest: pLocalRequest,
@@ -98,25 +93,19 @@ class _BillingWidgetState extends ConsumerState<BillingWidget> {
       return;
     }
 
-    if (!result.success) {
+    if (nextState.hasError) {
       developer.log(
-        'Error al cargar billing: ${result.error?.errorDsc}',
+        'Error al cargar billing: ${nextState.error?.errorDsc}',
         name: '$mainFunc - $logFunctionName',
       );
       setState(() {
-        dThreadHashID = result.threadHashID;
-        hasError = true;
-        errorHandler = result.error;
+        _billingState = nextState;
       });
       return;
     }
 
     setState(() {
-      dThreadHashID = result.threadHashID;
-      tEnteDataModel = result.dataModel!;
-      hasError = false;
-      errorHandler = null;
-      isInit = false;
+      _billingState = nextState;
     });
 
     developer.log(
@@ -141,44 +130,42 @@ class _BillingWidgetState extends ConsumerState<BillingWidget> {
           final String locFunctionName = 'listenManual';
           final String listenerLogFunctionName =
               '.::$functionName=>::$locFunctionName::.';
-          final currentCCliente = next.loggedUser?.cCliente;
+          final currentClientIndex = next.loggedUser?.cCliente;
 
           if (debug) {
             developer.log(
-              '🚀 _initWork: _lastCCliente: $_lastCCliente',
+              '🚀 _initWork: trackedClientIndex: ${_billingState.trackedClientIndex}',
               name: '$mainFunc - $listenerLogFunctionName',
             );
           }
 
-          if (_lastCCliente != null && _lastCCliente != currentCCliente) {
+          if (_controller.shouldReloadForClientChange(
+            state: _billingState,
+            currentClientIndex: currentClientIndex,
+          )) {
             developer.log(
-              '🟢 _initWork: Cliente cambió de $_lastCCliente a $currentCCliente',
+              '🟢 _initWork: Cliente cambió de ${_billingState.trackedClientIndex} a $currentClientIndex',
               name: '$mainFunc - $listenerLogFunctionName',
             );
 
-            setState(() {
-              _lastCCliente = currentCCliente;
-            });
-
             unawaited(_reloadBillingData());
-            return;
           }
         },
       );
 
-      if (_lastCCliente == null) {
-        setState(() {
-          _lastCCliente =
-              ref.read(notifierServiceProvider).loggedUser?.cCliente;
-        });
+      final currentClientIndex =
+          _controller.resolveCurrentClientIndex(ref: ref);
 
+      if (_controller.shouldBootstrap(
+        state: _billingState,
+        currentClientIndex: currentClientIndex,
+      )) {
         developer.log(
-          '🟢 _initWork: Primer cliente detectado: $_lastCCliente',
+          '🟢 _initWork: Primer cliente detectado: $currentClientIndex',
           name: '$mainFunc - $logFunctionName',
         );
 
         unawaited(_reloadBillingData());
-        return;
       }
     } catch (e, stacktrace) {
       if (mounted) {
@@ -216,7 +203,6 @@ Error: ${e.toString()}
   Widget build(BuildContext context) {
     String functionName = 'BillingWidget.build';
     String locFunc = '.::$functionName::.';
-    ref.watch(notifierServiceProvider);
 
     Widget buildWindowHeader() {
       return Placeholder(
@@ -228,7 +214,7 @@ Error: ${e.toString()}
     Widget buildWindowBody({
       required BoxConstraints constraints,
     }) {
-      if (hasError) {
+      if (_billingState.hasError) {
         constraints = BoxConstraints(
           maxHeight: constraints.maxHeight - 32,
           maxWidth: constraints.maxWidth,
@@ -237,8 +223,8 @@ Error: ${e.toString()}
         return CatchMainScreen(
           locFunc: locFunc,
           constraints: constraints,
-          e: errorHandler?.errorDsc ?? 'Error desconocido',
-          stacktrace: errorHandler?.stacktrace ?? StackTrace.current,
+          e: _billingState.error?.errorDsc ?? 'Error desconocido',
+          stacktrace: _billingState.error?.stacktrace ?? StackTrace.current,
           debug: true,
           pScreenMaxHeight: constraints.maxHeight - 32,
           pScreenMaxWidth: constraints.maxWidth,
@@ -248,13 +234,13 @@ Error: ${e.toString()}
         );
       }
 
-      final List<Map<String, dynamic>> comprobantes = !isInit
+      final List<Map<String, dynamic>> comprobantes = _billingState.isReady
           ? _controller.buildTableRows(
-              dataModel: tEnteDataModel,
+              dataModel: _billingState.dataModel!,
             )
           : const <Map<String, dynamic>>[];
 
-      return isInit
+      return _billingState.isLoading
           ? LoadingGeneric()
           : SizedBox(
               child: SimpleTableWithScrollLimit(
