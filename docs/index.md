@@ -118,6 +118,7 @@ Defines all architectural and structural decisions, including:
 - migration approach
 - compatibility rules
 - shim strategy and removal policy
+- controller-introduction rules for Phase 7
 
 ---
 
@@ -130,6 +131,7 @@ Defines development rules and constraints:
 - validation requirements
 - migration workflow
 - post-Phase 6 architectural rules
+- Phase 7 controller extraction rules
 
 ---
 
@@ -195,23 +197,42 @@ Covers:
 - preparation for state and flow normalization
 - risk-aware migration rules for behavioral extraction
 
+phase7_application_layer_consolidation_7_1_1_auth_extraction.md
+
+Covers:
+
+- auth controller introduction
+- autologin extraction
+- login orchestration extraction
+- remembered DNI persistence extraction
+- first safe controller pattern for Phase 7
+
+phase7_application_layer_consolidation_7_1_2_dashboard_extraction.md
+
+Covers:
+
+- dashboard controller introduction
+- active customer resolution extraction
+- customer-switch orchestration extraction
+- logout orchestration extraction
+- AppBar-supporting application logic extraction
+
 ---
 
 ## Current System State
 
-After Phase 6 completion:
+After Phase 7.1.2:
 
-- presentation layer is fully normalized
-- shared UI is isolated under lib/shared
-- feature UI is isolated under lib/features
-- canonical paths are the only active paths
-- all imports reflect real ownership
-- no legacy presentation paths remain
-- no compatibility shims exist
-- no duplicated UI structures exist
-- Phase 7 has started with application-layer consolidation
+- presentation layer remains normalized
+- shared UI remains isolated under lib/shared
+- feature UI remains isolated under lib/features
+- canonical paths remain the only active paths
+- auth logic no longer performs application coordination directly inside the widget
+- dashboard logic no longer performs customer/session coordination directly inside the widget
+- controller boundaries now exist for auth and dashboard
+- billing still remains the next major UI / logic decoupling target inside Phase 7.1
 
-The repository structure now accurately reflects runtime behavior and ownership boundaries.
+The repository structure now reflects both ownership boundaries and the first behavioral extraction layer.
 
 ---
 
@@ -236,7 +257,8 @@ At this stage, documentation does not yet include:
 - application service layer
 - session persistence redesign
 - advanced state management architecture
-- business logic isolation from presentation
+- complete business logic isolation from presentation
+- billing controller extraction
 
 These will be addressed in upcoming phases.
 
@@ -246,31 +268,30 @@ These will be addressed in upcoming phases.
 
 The next expected updates will correspond to:
 
-Phase 7
+Phase 7.1.3
 
-- application-layer consolidation
-- controller introduction by feature
-- UI / logic separation
-- preparation for state coordination normalization
+- billing extraction or equivalent remaining presentation/runtime decoupling
+- final consistency cleanup inside UI / Logic Decoupling
+- possible closure of Phase 7.1 if no additional extraction remains
 
 ---
 
-Phase 8
+Phase 7.2
 
-- session and configuration hardening
-- persistence improvements
-- user experience stability enhancements
-- production-level robustness
+- state coordination boundaries
+- clarification of widget-local state vs application state
+- preparation for more explicit feature-owned state
 
 ---
 
 ## Conclusion
 
-The documentation set is now fully aligned with the real structure of the system after Phase 6 completion.
+The documentation set is aligned with the real structure of the system after Phase 7.1.2.
 
 It provides:
 
 - complete historical traceability
 - explicit architectural decisions
 - clear ownership boundaries
-- a stable base for controlled Phase 7 evolution
+- explicit subphase progression
+- a stable base for controlled continuation of Phase 7

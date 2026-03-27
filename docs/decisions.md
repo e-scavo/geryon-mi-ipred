@@ -460,6 +460,43 @@ Phase 7 extraction is application-layer decoupling, not headless UI conversion.
 
 ---
 
+## Decision 21 — Dashboard Customer Resolution Must Leave the Widget Before State Refactor
+
+Dashboard is the main authenticated screen and directly reflects the currently selected customer.
+
+### Rationale
+
+As long as `dashboard_page.dart` resolves the active customer inline:
+
+- the screen keeps owning application decisions
+- customer-switch behavior remains UI-coupled
+- state coordination work in Phase 7.2 would start from a blurred responsibility boundary
+
+### Implication
+
+Dashboard customer resolution, customer-option normalization, and logout orchestration must be extracted before beginning Phase 7.2.
+
+---
+
+## Decision 22 — Presentational Dialogs Remain in the Widget
+
+Not every dashboard concern should move to the controller.
+
+### Rationale
+
+Dialogs such as “Métodos de pago” are presentation concerns because they:
+
+- format visual content
+- depend directly on `BuildContext`
+- define modal composition and button arrangement
+- do not own backend-adjacent coordination
+
+### Implication
+
+The controller may prepare application data, but `AlertDialog` construction remains in presentation.
+
+---
+
 ## Conclusion
 
 Phase 7 extends the decision system already established in Phase 6.

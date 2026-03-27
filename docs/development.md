@@ -279,6 +279,9 @@ Controllers may own:
 - session persistence coordination
 - response interpretation for presentation use
 - feature-local application decisions
+- active user/customer resolution
+- logout coordination
+- feature-local option list normalization
 
 ### Forbidden Responsibilities
 
@@ -311,6 +314,26 @@ Controllers must be introduced incrementally:
 2. validate runtime behavior
 3. document the extraction
 4. continue with the next feature only after stability is confirmed
+
+Current safe order inside Phase 7.1:
+
+1. auth
+2. dashboard
+3. billing
+4. final consistency cleanup only if still needed
+
+### Presentation Boundary Rule After Extraction
+
+Once a controller is introduced for a feature:
+
+- the widget may still build menu items, dialogs, and presentational helper widgets
+- but it should no longer resolve backend-adjacent application state inline
+- it should delegate session/customer/application decisions to the controller
+
+This rule now applies to:
+
+- auth
+- dashboard
 
 ---
 

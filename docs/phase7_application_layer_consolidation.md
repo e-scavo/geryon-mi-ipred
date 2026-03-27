@@ -38,7 +38,9 @@ Examples of these responsibilities include:
 - request triggering
 - response interpretation
 - error translation for UI decisions
-- client-sensitive reload coordination
+- dashboard customer selection
+- logout coordination
+- client resolution for rendering
 
 As a result:
 
@@ -58,14 +60,15 @@ As a result:
 - preservation of existing feature presentation structure
 - preparation for state architecture consolidation
 - documentation alignment for Phase 7
+- subphase-based incremental extraction tracking
 
 ### Excluded
 
 - backend protocol changes
 - ServiceProvider redesign
 - runtime flow redesign
-- navigation redesign in the first subphase
-- full state-management migration in the first subphase
+- navigation redesign in the first subphases
+- full state-management migration in the first subphases
 - UI redesign
 
 ---
@@ -105,6 +108,8 @@ Now that Phase 6 established structural clarity, Phase 7 can safely address resp
 - docs/development.md
 - docs/decisions.md
 - docs/phase7_application_layer_consolidation.md
+- docs/phase7_application_layer_consolidation_7_1_1_auth_extraction.md
+- docs/phase7_application_layer_consolidation_7_1_2_dashboard_extraction.md
 
 ### Protected areas
 
@@ -132,9 +137,12 @@ Characteristics:
 - no ServiceProvider public behavior changes
 - no navigation redesign
 
-Initial safe target:
+Current subphases:
 
-- authentication presentation logic
+- 7.1.1 — Auth extraction
+- 7.1.2 — Dashboard extraction
+- 7.1.3 — Billing extraction or equivalent remaining UI / logic cleanup
+- 7.1.4 — Cross-feature consistency cleanup if still required
 
 ---
 
@@ -205,6 +213,13 @@ Additional Phase 7-specific checks:
 - no backend request semantics are modified
 - canonical feature imports remain coherent
 
+Specific checks after 7.1.2:
+
+- active client still resolves correctly
+- client selection still updates dashboard data
+- logout still clears session and returns control to app runtime
+- payment dialog remains purely presentational
+
 ---
 
 ## Release Impact
@@ -239,6 +254,11 @@ Mitigation strategy:
 - keep ServiceProvider untouched
 - preserve widget lifecycle decisions where necessary
 - validate after each extraction
+
+Specific current risk:
+
+- dashboard depends on current customer index and session/logout flow
+- therefore extraction must preserve both selection semantics and session clearing order
 
 ---
 
