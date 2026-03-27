@@ -2,7 +2,7 @@
 
 ## Objective
 
-Consolidate the application layer of Mi IP·RED by progressively separating presentation from business-adjacent logic, introducing explicit feature-local controller boundaries, clarifying state ownership, and now documenting the real coordination flows that connect already-separated features without changing the validated runtime contract of the application.
+Consolidate the application layer of Mi IP·RED by progressively separating presentation from business-adjacent logic, introducing explicit feature-local controller boundaries, clarifying state ownership, documenting the real coordination flows that connect already-separated features, and now normalizing the meaning and access patterns of shared runtime context without changing the validated runtime contract of the application.
 
 ## Initial Context
 
@@ -30,9 +30,13 @@ After that, Phase 7.2 clarified state ownership and completed:
 - auth/startup initial-boundary cleanup
 - formal closure
 
-With that baseline complete, the next visible concern in the current ZIP is no longer internal feature-local ambiguity as the main problem.
+Phase 7.3.1 then documented the real flows already connecting the separated runtime surfaces.
 
-The next visible concern is the coordination that exists between already-separated features.
+With that baseline complete, the next visible concern in the current ZIP was not lack of flow visibility anymore.
+
+The next visible concern was that several shared context concepts were already present, but still partially consumed through implicit semantics.
+
+That is why Phase 7.3.2 now exists.
 
 ## Problem Statement
 
@@ -40,16 +44,16 @@ Phase 7.1 solved the problem of business-adjacent logic living inline in widgets
 
 Phase 7.2 solved the problem of unclear ownership between UI state, feature state, derived state, and runtime source state.
 
-But Phase 7.2 intentionally stopped before introducing a coordination layer.
+Phase 7.3.1 solved the problem of undocumented application-flow sequencing.
 
-That leaves the current codebase in a state where:
+But even after those steps, the codebase still showed ambiguity around the meaning of several context concepts that already existed in runtime:
 
-- feature-local boundaries are better defined
-- state boundaries are better defined
-- but application flows still span multiple runtime owners
-- and cross-feature interaction is still only partially explicit
+- startup boundary state
+- persisted login hint state
+- authenticated runtime context
+- active operational context
 
-Without documenting those flows first, any future contract or coordinator would risk being artificial.
+Without normalizing those meanings and read paths first, any future feature interaction contract or coordinator would risk being built on top of vague semantics.
 
 ## Scope
 
@@ -60,6 +64,7 @@ Phase 7 includes:
 - state ownership clarification
 - runtime-preserving normalization work
 - explicit inventory of real application flows
+- session and app-context normalization
 - preparation for future coordination contracts
 
 Phase 7 does not include:
@@ -69,7 +74,7 @@ Phase 7 does not include:
 - navigation redesign
 - UI redesign
 - full state-management replacement
-- broad new application service infrastructure during 7.3.1
+- broad new application service infrastructure during 7.3.2
 
 ## Root Cause Analysis
 
@@ -80,11 +85,12 @@ Mi IP·RED matured in the correct practical order:
 3. normalize project structure
 4. extract feature-local logic
 5. clarify state ownership
-6. only then expose cross-feature coordination debt
+6. inventory cross-feature coordination
+7. normalize shared runtime-context semantics only after the previous layers were explicit
 
-This means Phase 7.3 is not a continuation of state cleanup.
+This means Phase 7.3.2 is not a redesign.
 
-It is the next natural layer that became visible only after the previous layers were completed successfully.
+It is a conservative normalization pass that became visible only after the earlier application-layer layers were successfully completed.
 
 ## Files Affected
 
@@ -112,6 +118,7 @@ Phase 7 documentation includes:
 - `docs/phase7_application_layer_consolidation_7_2_4_auth_startup_initial_state_boundary_cleanup.md`
 - `docs/phase7_application_layer_consolidation_7_2_5_formal_closure.md`
 - `docs/phase7_application_layer_consolidation_7_3_1_application_flow_inventory.md`
+- `docs/phase7_application_layer_consolidation_7_3_2_session_app_context_normalization.md`
 
 ## Implementation Characteristics
 
@@ -170,6 +177,7 @@ Its focus is:
 - runtime transition ownership
 - application-flow sequencing
 - explicit documentation of dependencies that today remain distributed
+- normalization of shared context semantics before contract/coordinator work
 
 Validated structure for Phase 7.3:
 
@@ -179,28 +187,35 @@ Validated structure for Phase 7.3:
 - `7.3.4 — Application Coordinator (mínimo)`
 - `7.3.5 — Formal Closure of Phase 7.3`
 
-At the current project state, only `7.3.1` is active.
+At the current project state, both `7.3.1` and `7.3.2` are already active and completed in sequence.
 
 ### Phase 7.3.1 — Application Flow Inventory
 
-This subphase is intentionally documentary first.
+This subphase was intentionally documentary first.
 
-Its goal is to inventory the real flows already present in code before any new coordination abstraction is introduced.
+Its goal was to inventory the real flows already present in code before any new coordination abstraction was introduced.
 
-The inventory covers flows such as:
+Its output was a validated explicit map of current ownership and downstream effects.
 
-- startup bootstrap
-- backend status to auth decision
-- login popup and auto-submit path
-- login success to authenticated runtime context
-- dashboard consumption of authenticated runtime context
-- client selection propagation
-- billing reload after client change
-- logout reset path
+It did not introduce runtime changes.
 
-Its output is a validated explicit map of current ownership and downstream effects.
+### Phase 7.3.2 — Session & App Context Normalization
 
-It does not introduce runtime changes.
+This subphase is intentionally conservative.
+
+Its goal is not to redesign auth or create a new layer.
+
+Its goal is to normalize the meaning, lifecycle, and read paths of the context concepts already used by the current runtime.
+
+The implemented normalization includes:
+
+- explicit persisted login hint removal support in platform storage
+- symmetric remember-me behavior in `LoginController`
+- explicit logout cleanup of remembered login hint instead of blanket storage clearing
+- minimal read-only shared-context accessors in `ServiceProvider`
+- normalized context reads in dashboard and billing critical paths
+
+Its output is a safer semantic baseline for later contracts without changing backend flow ownership.
 
 ## Validation
 
@@ -213,33 +228,39 @@ Phase 7 as a whole remains valid because the current ZIP still preserves:
 - billing reload behavior driven by active client changes
 - logout reset behavior
 
-Phase 7.3.1 specifically is valid because those flows are present in the current code and can be documented without inventing new architecture.
+Phase 7.3.2 specifically is valid because the current code now also preserves:
+
+- remembered DNI bootstrap behavior
+- explicit remembered DNI removal semantics
+- unchanged ownership of authenticated runtime context
+- unchanged ownership of active operational context
 
 ## Release Impact
 
-Phase 7.3.1 has no release-facing runtime changes.
+Phase 7.3.2 has no intended feature-level redesign.
 
-Its impact is architectural and documentary:
+Its impact is architectural and semantic:
 
 - it reduces ambiguity
-- it prepares future coordination work safely
-- it prevents premature abstraction
+- it prevents stale remembered-login state
+- it narrows logout cleanup to its actual responsibility
+- it prepares future coordination work more safely
 
 ## Risks
 
 The main current risks are:
 
-- assuming that distributed coordination means no coordination exists
-- introducing a coordinator too early
-- overloading ServiceProvider with future app-flow responsibilities
-- collapsing distinct runtime concepts into one vague state notion
+- over-extending context normalization into a coordinator prematurely
+- confusing persisted login hint with authenticated session state again
+- moving ownership out of `ServiceProvider`
+- expanding semantic cleanup beyond what the current runtime actually owns
 
 ## What it does NOT solve
 
 At the current stage, Phase 7 does not yet solve:
 
+- backend-persisted authenticated sessions
 - explicit interaction contract types
-- session/app-context normalization
 - minimal coordinator implementation
 - flow-level automated tests
 
@@ -247,10 +268,11 @@ Those belong to later validated Phase 7.3 subphases.
 
 ## Conclusion
 
-Phase 7 is now best understood in three layers:
+Phase 7 is now best understood in four progressive layers:
 
 1. extract feature-local logic
 2. clarify state ownership boundaries
-3. inventory and later normalize cross-feature coordination flows
+3. inventory cross-feature coordination flows
+4. normalize shared runtime-context semantics before introducing later coordination contracts
 
-The current ZIP confirms that Mi IP·RED is now entering the third layer through `7.3.1 — Application Flow Inventory`.
+The current ZIP confirms that Mi IP·RED has now completed that fourth preparatory layer through `7.3.2 — Session & App Context Normalization`.

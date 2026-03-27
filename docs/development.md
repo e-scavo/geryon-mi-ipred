@@ -15,35 +15,31 @@ Its current codebase has already gone through:
 - presentation-layer normalization
 - feature-local controller extraction
 - state ownership clarification
+- application-flow inventory
 
-The project is now entering Phase 7.3.
+The project is now in Phase 7.3.2.
 
-That means the main architectural risk has shifted.
+That means the most visible architectural risk is no longer only implicit flow coordination.
 
-The system is no longer mainly threatened by feature-local logic living in widgets.
-
-The main visible risk now is implicit coordination between already-separated runtime surfaces.
+The next visible risk is semantic ambiguity around the different context concepts already shared across the runtime.
 
 ## Problem Statement
 
-After Phase 7.1 and Phase 7.2, the project has better boundaries inside each feature.
+After Phase 7.3.1, the real ZIP shows that the app already distinguishes multiple runtime-related concepts in practice, but not yet through a normalized contract.
 
-However, application flows still span several files and owners.
+Those concepts include:
 
-Examples visible in the real code include:
+- startup boundary state
+- persisted login hint state
+- authenticated runtime context
+- active operational context
 
-- startup bootstrap path in `main.dart`
-- backend-status to login decision in `ServiceProvider`
-- login popup and auto-submit behavior in auth
-- dashboard-driven client change propagating to billing through runtime state
-- logout clearing session storage and then re-entering backend status flow
+Without explicit rules, future work could accidentally:
 
-Without explicit development rules, future work could accidentally:
-
-- reintroduce business-adjacent logic into widgets
-- overload ServiceProvider with app-coordination responsibilities
-- create a broad coordinator too early
-- blur the distinction between session persistence, authenticated runtime context, active client, and startup readiness
+- treat persisted login hint as a real authenticated session
+- keep deleting too much storage during logout
+- keep coupling feature controllers to raw `ServiceProvider` fields
+- build feature contracts on top of ambiguous semantics
 
 ## Scope
 
@@ -75,13 +71,12 @@ Mi IP·RED evolved correctly in practical order:
 3. organize structure
 4. extract feature-local logic
 5. clarify state ownership
-6. only then inventory coordination between already-separated features
+6. inventory coordination between already-separated features
+7. normalize shared context semantics only after the previous steps are stable
 
 This order matters.
 
-If a coordination layer had been introduced before feature-local extraction and ownership clarification, the project would likely have created abstractions on top of unstable boundaries.
-
-Phase 7.3 is valid precisely because Phase 7.1 and Phase 7.2 are already complete.
+If shared-context normalization had been introduced before ownership and flow inventory were stabilized, the project would likely have created abstractions on top of unclear boundaries.
 
 ## Files Affected
 
@@ -96,6 +91,8 @@ Runtime areas governed by these rules:
 - `lib/features/billing/presentation/billing_widget.dart`
 - `lib/models/ServiceProvider/data_model.dart`
 - `lib/core/session/session_storage.dart`
+- `lib/core/session/session_storage_io.dart`
+- `lib/core/session/session_storage_web.dart`
 
 Documentation governed by these rules:
 
@@ -103,6 +100,7 @@ Documentation governed by these rules:
 - `docs/decisions.md`
 - `docs/phase7_application_layer_consolidation.md`
 - `docs/phase7_application_layer_consolidation_7_3_1_application_flow_inventory.md`
+- `docs/phase7_application_layer_consolidation_7_3_2_session_app_context_normalization.md`
 
 ## Implementation Characteristics
 
@@ -150,7 +148,7 @@ ServiceProvider may:
 - remain the protected backend/runtime source
 - own backend interaction flow
 - own authenticated runtime context
-- own current active client context
+- own active operational context
 - notify downstream listeners
 
 ### 3. Feature-Local Logic Must Stay Feature-Local
@@ -163,39 +161,71 @@ Examples:
 - dashboard source-to-derived resolution belongs in `DashboardController`
 - billing feature-state transitions belong in `BillingController`
 
-This remains true during and after Phase 7.3.1.
+This remains true during and after Phase 7.3.2.
 
-### 4. Cross-Feature Coordination Must Be Named Explicitly
+### 4. Shared Context Concepts Must Remain Explicitly Separate
 
-Cross-feature interaction is now a first-class architecture concern.
+The project now treats the following as distinct concepts:
 
-That means any dependency between features or between a feature and the global runtime source must be understood in explicit terms such as:
+#### StartupBoundaryContext
+Owned by `main.dart` through `AppStartupViewState`.
 
-- startup flow dependency
-- authenticated runtime transition
-- session/app-context transition
-- downstream feature refresh dependency
-- application-flow sequencing
+This only represents whether the app can leave the startup boundary.
 
-This does not yet require a new coordinator.
+It is not a session concept.
 
-It does require explicit naming and documentation.
+#### PersistedLoginHintContext
+Owned by `SessionStorage`.
 
-### 5. Do Not Introduce a Broad Coordinator Prematurely
+This only represents the remembered DNI/CUIT hint used by auth bootstrap.
 
-Phase 7.3.1 is an inventory step.
+It is not an authenticated session.
 
-Therefore, it does not justify:
+#### AuthenticatedRuntimeContext
+Owned by `ServiceProvider`.
 
-- a global app coordinator
-- a new application service layer
-- a broad provider redesign
-- a ServiceProvider replacement
-- a new navigation architecture
+This is represented by the in-memory authenticated user runtime state.
 
-A future minimal coordinator is only valid if the inventory proves a repeated coordination concern that cannot remain safely distributed.
+#### ActiveOperationalContext
+Owned by `ServiceProvider`.
 
-### 6. Startup Rule
+This represents the currently active company/client context used by downstream features.
+
+These concepts must not be casually merged or renamed as if they were interchangeable.
+
+### 5. Persisted Login Hint Lifecycle Must Be Symmetric
+
+Remember-me behavior must be symmetric.
+
+That means:
+
+- successful login with remember-me enabled saves the normalized DNI
+- successful login with remember-me disabled removes any previously stored DNI hint
+- logout removes the remembered DNI explicitly instead of clearing all storage indiscriminately
+
+This rule is now part of the active architecture baseline.
+
+### 6. Shared Runtime Context Should Be Consumed Through Explicit Read Paths
+
+Do not redesign `ServiceProvider`.
+
+Do not move ownership out of it.
+
+Do normalize reads through explicit read-only accessors when shared context is consumed by multiple features.
+
+Examples now valid in the runtime:
+
+- `authenticatedUser`
+- `hasAuthenticatedRuntimeContext`
+- `activeClientIndex`
+- `activeClient`
+- `hasActiveClientContext`
+- `activeCompany`
+- `availableClients`
+
+This reduces implicit coupling without creating a new application layer.
+
+### 7. Startup Rule
 
 `main.dart` currently owns the startup boundary.
 
@@ -208,7 +238,7 @@ That includes:
 
 It must not start absorbing unrelated feature coordination logic beyond startup entry behavior.
 
-### 7. Auth Rule
+### 8. Auth Rule
 
 Auth currently remains split correctly across three responsibilities:
 
@@ -224,6 +254,7 @@ Auth currently remains split correctly across three responsibilities:
 - manual submit loading state
 - submit failure state recovery
 - login request dispatch preparation
+- persisted login hint normalization
 
 #### ServiceProvider
 - actual backend login request
@@ -232,7 +263,7 @@ Auth currently remains split correctly across three responsibilities:
 
 That split must be preserved.
 
-### 8. Dashboard Rule
+### 9. Dashboard Rule
 
 Dashboard currently owns feature-local derivation from the watched runtime source.
 
@@ -245,20 +276,20 @@ That means:
 - dispatches logout
 
 #### Dashboard controller
-- builds `DashboardSourceState`
-- resolves `DashboardResolvedState`
+- builds source state
+- resolves derived state
 - normalizes active-client selection
 - defines display data and options
 - exposes select-client and logout helpers
 
-Dashboard may trigger downstream effects indirectly through runtime-state mutation, but it must not absorb billing logic.
+Dashboard may now consume explicit read-only runtime context accessors instead of raw provider fields, but it still must not own global runtime context.
 
-### 9. Billing Rule
+### 10. Billing Rule
 
 Billing remains a feature with:
 
 - explicit feature-local state
-- a runtime-triggered reload dependency on current client context
+- a runtime-triggered reload dependency on active client context
 
 That means:
 
@@ -272,20 +303,9 @@ That means:
 - resolves bootstrap decision
 - resolves client-change reload decision
 - performs billing reload orchestration
+- may consume normalized runtime context reads
 
-Billing must not become the owner of active-client context.
-
-### 10. Session and App Context Rule
-
-The current runtime contains several related but distinct concepts:
-
-- persisted DNI in `SessionStorage`
-- authenticated runtime user in `ServiceProvider.loggedUser`
-- active client in `loggedUser.cCliente`
-- provider readiness in `ServiceProvider.isReady`
-- startup-boundary completion in `AppStartupViewState`
-
-Until a later subphase explicitly normalizes them, they must remain documented as distinct responsibilities.
+Billing must not become the owner of active-client or company context.
 
 ### 11. Validation Rule
 
@@ -295,6 +315,7 @@ Any future implementation after this point should validate at minimum:
 - login popup path
 - auto-submit path with saved DNI
 - manual login path
+- login with remember-me disabled after a previously remembered login
 - dashboard render after authenticated context exists
 - client switch from dashboard
 - billing reload after client switch
@@ -307,33 +328,34 @@ These rules are valid only if they remain aligned with the current ZIP.
 At the current baseline, the code confirms:
 
 - startup boundary still lives in `main.dart`
-- login decision bridge still lives in `ServiceProvider`
-- login feature still owns popup submit behavior
-- dashboard still drives active-client selection
-- billing still reacts to active-client changes via runtime source
-- logout still clears session storage and resets runtime auth flow
+- persisted login hint still lives in `SessionStorage`
+- authenticated runtime context still lives in `ServiceProvider`
+- active company/client context still lives in `ServiceProvider`
+- dashboard now reads normalized runtime-context accessors
+- billing now reads normalized runtime-context accessors in its critical paths
+- logout now clears remembered login hint explicitly instead of clearing all storage
 
 ## Release Impact
 
-These guidelines do not change runtime behavior.
+These guidelines do not redesign runtime behavior.
 
-They reduce the risk of architectural regressions during the next subphases of Phase 7.3.
+They reduce the risk of semantic regression during the next subphases of Phase 7.3.
 
 ## Risks
 
 The main risks from this point forward are:
 
-- over-engineering coordination too early
-- hiding feature interaction under vague global refresh behavior
-- reintroducing feature logic into widgets
-- turning ServiceProvider into both backend engine and broad application coordinator
+- over-engineering context normalization into a hidden coordinator
+- confusing persisted login hint with authenticated runtime context again
+- moving ownership accidentally out of `ServiceProvider`
+- expanding logout cleanup beyond what it actually owns
 - collapsing several runtime concepts into one imprecise “session” notion
 
 ## What it does NOT solve
 
 This document does not by itself solve:
 
-- session/app-context normalization
+- backend-persisted authenticated sessions
 - explicit feature interaction contracts
 - the introduction of a minimal coordinator
 - flow-level automated tests
@@ -346,6 +368,7 @@ The active development rule is now:
 
 - keep feature logic local
 - keep runtime source protected
-- document cross-feature coordination explicitly
-- inventory real flows before abstracting them
-- introduce no new global coordination layer unless the real code proves it is necessary
+- keep context concepts explicit and separate
+- normalize persisted login hint lifecycle symmetrically
+- consume shared runtime context through explicit read-only paths
+- introduce no new coordination layer unless later subphases prove it is necessary

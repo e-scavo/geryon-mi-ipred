@@ -87,7 +87,7 @@ class BillingController {
   int? resolveCurrentClientIndex({
     required WidgetRef ref,
   }) {
-    return ref.read(notifierServiceProvider).loggedUser?.cCliente;
+    return ref.read(notifierServiceProvider).activeClientIndex;
   }
 
   bool shouldBootstrap({
@@ -198,8 +198,8 @@ class BillingController {
       final resolvedThreadHashID =
           threadHashID.isEmpty ? generateRandomUniqueHash() : threadHashID;
 
-      if (serviceProvider.loggedUser == null ||
-          serviceProvider.loggedUser!.clientes.isEmpty) {
+      if (!serviceProvider.hasAuthenticatedRuntimeContext ||
+          serviceProvider.availableClients.isEmpty) {
         return BillingLoadResult(
           success: false,
           threadHashID: resolvedThreadHashID,
@@ -231,7 +231,8 @@ class BillingController {
 
       tEnteDataModel.pGlobalRequest = globalRequest;
       tEnteDataModel.pLocalRequest = localRequest;
-      tEnteDataModel.cEmpresa = serviceProvider.cEmpresa;
+      tEnteDataModel.cEmpresa =
+          serviceProvider.activeCompany ?? serviceProvider.cEmpresa;
       tEnteDataModel.cEncRecord = TableComprobantesVTModel.fromDefault(
         pEmpresa: tEnteDataModel.cEmpresa,
       );
@@ -249,8 +250,22 @@ class BillingController {
       pHeaderParamsRequests.search = "";
       pHeaderParamsRequests.table = tEnteDataModel.cEncRecord.iDefaultTable();
 
-      final currentClient = serviceProvider
-          .loggedUser!.clientes[serviceProvider.loggedUser!.cCliente];
+      final currentClient = serviceProvider.activeClient;
+
+      if (currentClient == null) {
+        return BillingLoadResult(
+          success: false,
+          threadHashID: resolvedThreadHashID,
+          error: ErrorHandler(
+            errorCode: 99999,
+            errorDsc:
+                'No se encontró un cliente activo válido para cargar comprobantes.',
+            className: _className,
+            functionName: functionName,
+            stacktrace: StackTrace.current,
+          ),
+        );
+      }
 
       tEnteDataModel.threadParams = {
         'DBVersion': 2,
@@ -361,16 +376,19 @@ pero se obtuvo: ${rReturnedRawData.data.runtimeType}
       );
       return BillingLoadResult(
         success: false,
-        threadHashID: threadHashID,
-        error: ErrorHandler(
-          errorCode: 99999,
-          errorDsc: '''Se produjo un error al cargar comprobantes.
+        threadHashID:
+            threadHashID.isEmpty ? generateRandomUniqueHash() : threadHashID,
+        error: e is ErrorHandler
+            ? e
+            : ErrorHandler(
+                errorCode: 99999,
+                errorDsc: '''Se produjo un error al cargar comprobantes.
 Error: ${e.toString()}
 ''',
-          className: _className,
-          functionName: functionName,
-          stacktrace: stacktrace,
-        ),
+                className: _className,
+                functionName: functionName,
+                stacktrace: stacktrace,
+              ),
       );
     }
   }

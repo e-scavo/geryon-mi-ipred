@@ -155,6 +155,56 @@ class ServiceProvider extends ChangeNotifier {
     }
   }
 
+  bool get hasAuthenticatedRuntimeContext => loggedUser != null;
+
+  ServiceProviderLoginDataUserMessageModel? get authenticatedUser => loggedUser;
+
+  int? get activeClientIndex {
+    if (loggedUser == null) {
+      return null;
+    }
+
+    return loggedUser!.cCliente;
+  }
+
+  List<ServiceProviderLoginDataUserMessageModel> get availableClients {
+    if (loggedUser == null) {
+      return const <ServiceProviderLoginDataUserMessageModel>[];
+    }
+
+    return List<ServiceProviderLoginDataUserMessageModel>.unmodifiable(
+      loggedUser!.clientes,
+    );
+  }
+
+  bool get hasActiveClientContext {
+    final index = activeClientIndex;
+
+    return index != null && index >= 0 && index < availableClients.length;
+  }
+
+  ServiceProviderLoginDataUserMessageModel? get activeClient {
+    final index = activeClientIndex;
+
+    if (index == null) {
+      return null;
+    }
+
+    if (index < 0 || index >= availableClients.length) {
+      return null;
+    }
+
+    return availableClients[index];
+  }
+
+  TableEmpresaModel? get activeCompany {
+    if (cEmpresa.codEmp <= 0) {
+      return null;
+    }
+
+    return cEmpresa;
+  }
+
   bool _isHandshakeMessage(ServiceProviderWholeMessageModel message) {
     return message.data.isNew;
   }
@@ -1097,6 +1147,7 @@ class ServiceProvider extends ChangeNotifier {
       _applyAuthenticatedUserContext(
         user: loginResult.data as ServiceProviderLoginDataUserMessageModel,
       );
+
       initStage = ServiceProviderInitStages.connected;
       initStageAdditionalMsg = 'User logged in successfully.';
       initStageError = loginResult;

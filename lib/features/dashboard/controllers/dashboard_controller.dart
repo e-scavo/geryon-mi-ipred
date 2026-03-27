@@ -15,11 +15,13 @@ class DashboardClientOption {
 }
 
 class DashboardSourceState {
-  final ServiceProviderLoginDataUserMessageModel? loggedUser;
+  final ServiceProviderLoginDataUserMessageModel? authenticatedUser;
+  final List<ServiceProviderLoginDataUserMessageModel> availableClients;
   final int? selectedClientIndex;
 
   const DashboardSourceState({
-    required this.loggedUser,
+    required this.authenticatedUser,
+    required this.availableClients,
     required this.selectedClientIndex,
   });
 }
@@ -44,11 +46,10 @@ class DashboardController {
   DashboardSourceState buildSourceState({
     required ServiceProvider serviceProvider,
   }) {
-    final loggedUser = serviceProvider.loggedUser;
-
     return DashboardSourceState(
-      loggedUser: loggedUser,
-      selectedClientIndex: loggedUser?.cCliente,
+      authenticatedUser: serviceProvider.authenticatedUser,
+      availableClients: serviceProvider.availableClients,
+      selectedClientIndex: serviceProvider.activeClientIndex,
     );
   }
 
@@ -81,27 +82,25 @@ class DashboardController {
   Future<void> logout({
     required WidgetRef ref,
   }) async {
-    await SessionStorage.clear();
+    await SessionStorage.removeSavedDni();
     ref.read(notifierServiceProvider).logout();
   }
 
   int? _resolveActiveClientIndex(
     DashboardSourceState source,
   ) {
-    final loggedUser = source.loggedUser;
-
-    if (loggedUser == null) {
+    if (source.authenticatedUser == null) {
       return null;
     }
 
-    if (loggedUser.clientes.isEmpty) {
+    if (source.availableClients.isEmpty) {
       return null;
     }
 
     final selectedClientIndex = source.selectedClientIndex ?? 0;
 
     if (selectedClientIndex < 0 ||
-        selectedClientIndex >= loggedUser.clientes.length) {
+        selectedClientIndex >= source.availableClients.length) {
       return 0;
     }
 
@@ -112,13 +111,11 @@ class DashboardController {
     required DashboardSourceState source,
     required int? activeClientIndex,
   }) {
-    final loggedUser = source.loggedUser;
-
-    if (loggedUser == null) {
+    if (source.authenticatedUser == null) {
       return null;
     }
 
-    if (loggedUser.clientes.isEmpty) {
+    if (source.availableClients.isEmpty) {
       return null;
     }
 
@@ -126,23 +123,21 @@ class DashboardController {
       return null;
     }
 
-    return loggedUser.clientes[activeClientIndex];
+    return source.availableClients[activeClientIndex];
   }
 
   List<DashboardClientOption> _buildClientOptions(
     DashboardSourceState source,
   ) {
-    final loggedUser = source.loggedUser;
-
-    if (loggedUser == null) {
+    if (source.authenticatedUser == null) {
       return const <DashboardClientOption>[];
     }
 
-    if (loggedUser.clientes.isEmpty) {
+    if (source.availableClients.isEmpty) {
       return const <DashboardClientOption>[];
     }
 
-    return loggedUser.clientes
+    return source.availableClients
         .asMap()
         .entries
         .map<DashboardClientOption>((entry) {

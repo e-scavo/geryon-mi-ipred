@@ -165,6 +165,8 @@ class LoginController {
 
     if (rememberMe) {
       await SessionStorage.saveDni(normalizedDni);
+    } else {
+      await SessionStorage.removeSavedDni();
     }
 
     return LoginControllerResult(

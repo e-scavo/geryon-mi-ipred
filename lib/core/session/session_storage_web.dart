@@ -25,6 +25,15 @@ class SessionStorage {
     return web.window.localStorage.getItem(_key);
   }
 
+  static Future<void> removeSavedDni() async {
+    developer.log(
+      '${LogIcons.cross} [Web] removeSavedDni',
+      name: 'SessionStorage',
+    );
+
+    web.window.localStorage.removeItem(_key);
+  }
+
   static Future<void> clear() async {
     developer.log(
       '${LogIcons.cross} [Web] clear',

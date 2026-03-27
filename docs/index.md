@@ -13,32 +13,28 @@ At the current project baseline, the repository has already completed:
 - Phase 6 — Presentation Structure Cleanup
 - Phase 7.1 — Feature-local controller extraction
 - Phase 7.2 — State ownership and boundary clarification
+- Phase 7.3.1 — Application Flow Inventory
 
-The project is now entering Phase 7.3.
+The project is now advancing through Phase 7.3.2.
 
-This new phase does not continue state cleanup.
+This subphase does not introduce a coordinator yet.
 
-Instead, it begins documenting and normalizing the real coordination flows that already exist between startup, auth, dashboard, billing, session persistence, and global runtime state.
+Instead, it normalizes the meaning and consumption of runtime context already shared across startup, auth, dashboard, billing, logout, and persisted login hint behavior.
 
 ## Problem Statement
 
-After Phase 7.1 and Phase 7.2, the project now has:
+After Phase 7.3.1, the project already has an explicit inventory of its real application flows.
 
-- clearer feature-local boundaries
-- clearer ownership of feature state vs derived state vs runtime source state
+The next visible problem in the real ZIP is no longer flow discovery.
 
-However, the codebase still contains cross-feature coordination that is real but only partially explicit.
+The next visible problem is semantic ambiguity between different kinds of context that already exist in code:
 
-That coordination currently spans:
+- startup boundary context
+- persisted login hint
+- authenticated runtime context
+- active operational context
 
-- `main.dart`
-- `ServiceProvider`
-- `LoginController`
-- `DashboardController`
-- `BillingWidget`
-- `SessionStorage`
-
-Without a clear documentation entry point, future work could incorrectly assume that those flows are already formalized when, in reality, they are still distributed across runtime surfaces.
+Without making those distinctions explicit, future work could accidentally build feature contracts or coordination logic on top of vague assumptions.
 
 ## Scope
 
@@ -46,9 +42,9 @@ This index covers:
 
 - core architecture documents
 - development governance documents
-- phase history documents
-- the currently active Phase 7 documentation baseline
-- the newly opened Phase 7.3 flow-inventory document
+- historical phase documents
+- the current Phase 7 baseline
+- the new Phase 7.3.2 session and app-context normalization document
 
 It does not attempt to redefine architecture beyond the real codebase.
 
@@ -57,11 +53,12 @@ It does not attempt to redefine architecture beyond the real codebase.
 The documentation needed to evolve in the same order as the implementation:
 
 1. first reflect structural cleanup
-2. then reflect feature extraction
-3. then reflect state ownership clarification
-4. only after that reflect cross-feature flow coordination
+2. then feature extraction
+3. then state-boundary clarification
+4. then flow inventory
+5. only after that normalize shared runtime-context semantics
 
-This means the index must now expose Phase 7.3 as a distinct architectural concern rather than pretending it is part of Phase 7.2.
+That sequencing remains important because context normalization only became safe after the previous layers were clarified.
 
 ## Files Affected
 
@@ -79,6 +76,7 @@ Primary documents indexed here include:
 - `docs/phase7_application_layer_consolidation.md`
 - `docs/phase7_application_layer_consolidation_7_2_5_formal_closure.md`
 - `docs/phase7_application_layer_consolidation_7_3_1_application_flow_inventory.md`
+- `docs/phase7_application_layer_consolidation_7_3_2_session_app_context_normalization.md`
 
 ## Implementation Characteristics
 
@@ -154,15 +152,14 @@ These preserve historical rationale and structural evolution context.
 
 ##### Phase 7.3
 - `docs/phase7_application_layer_consolidation_7_3_1_application_flow_inventory.md`
+- `docs/phase7_application_layer_consolidation_7_3_2_session_app_context_normalization.md`
 
-Phase 7.3 is now the active continuation of Phase 7.
+Phase 7.3 is now split into two already-defined layers:
 
-Its focus is:
+- flow inventory
+- context normalization
 
-- coordination between features
-- application-flow sequencing
-- runtime transition ownership
-- explicit documentation of currently implicit interaction paths
+The current active concern is still coordination-focused, but 7.3.2 narrows that concern into explicit semantics for shared context before contracts or coordinator logic are introduced.
 
 ## Validation
 
@@ -179,32 +176,33 @@ At this point, the correct reading order for a technical review is:
 7. `docs/phase7_application_layer_consolidation.md`
 8. `docs/phase7_application_layer_consolidation_7_2_5_formal_closure.md`
 9. `docs/phase7_application_layer_consolidation_7_3_1_application_flow_inventory.md`
+10. `docs/phase7_application_layer_consolidation_7_3_2_session_app_context_normalization.md`
 
 ## Release Impact
 
-This update does not change runtime behavior.
+This update does not change user-facing architecture by itself.
 
 Its impact is documentary and architectural:
 
 - it exposes the real active documentation baseline
-- it prevents Phase 7.3 from being hidden under the Phase 7.2 closure state
-- it improves onboarding for future technical work
+- it makes 7.3.2 visible as a distinct subphase
+- it improves future onboarding for coordination and context work
 
 ## Risks
 
 If this index is not updated, future work may:
 
-- treat Phase 7.3 as an undefined continuation
-- miss the fact that coordination is now the current architectural concern
-- read the codebase as if state cleanup were still the active phase
+- treat 7.3.2 as undefined or optional
+- confuse persisted login hint with authenticated runtime state
+- miss the fact that context normalization is now the active concern before contracts/coordinator work
 
 ## What it does NOT solve
 
 This document does not by itself:
 
-- introduce new coordination contracts
-- normalize session/app-context ownership
-- create a coordinator
+- introduce feature interaction contracts
+- introduce an application coordinator
+- redesign backend session behavior
 - change implementation
 
 It only reflects the real documentation baseline.
@@ -216,6 +214,5 @@ The documentation index now reflects the real project state:
 - Phase 6 completed
 - Phase 7.1 completed
 - Phase 7.2 completed and closed
-- Phase 7.3 opened through `7.3.1 — Application Flow Inventory`
-
-This is the correct current documentation entry point for Mi IP·RED.
+- Phase 7.3.1 completed as flow inventory
+- Phase 7.3.2 opened and implemented as session and app-context normalization

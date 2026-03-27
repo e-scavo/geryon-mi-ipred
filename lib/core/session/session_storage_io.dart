@@ -27,6 +27,16 @@ class SessionStorage {
     return prefs.getString(_key);
   }
 
+  static Future<void> removeSavedDni() async {
+    developer.log(
+      '${LogIcons.cross} [IO] removeSavedDni',
+      name: 'SessionStorage',
+    );
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_key);
+  }
+
   static Future<void> clear() async {
     developer.log(
       '${LogIcons.cross} [IO] clear',
