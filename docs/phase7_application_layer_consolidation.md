@@ -18,20 +18,20 @@ After Phase 6 completion:
 
 However, structural normalization alone did not fully solve the next architectural debt layer:
 
-- feature widgets still contain business-oriented logic
-- pages still coordinate backend-adjacent actions directly
-- UI state and application flow decisions are still mixed together
-- feature boundaries exist physically but not yet behaviorally
+- feature widgets still contained business-oriented logic
+- pages still coordinated backend-adjacent actions directly
+- UI state and application flow decisions were still mixed together
+- feature boundaries existed physically but not yet behaviorally
 
-This means the repository is now visually ordered, but the application layer still needs behavioral consolidation.
+Phase 7 was opened to address that gap safely and incrementally.
 
 ---
 
 ## Problem Statement
 
-The current system has a normalized presentation structure, but presentation widgets still perform responsibilities that belong to an intermediate application layer.
+Even with Phase 6 completed, presentation widgets still performed responsibilities that belonged to an intermediate application layer.
 
-Examples of these responsibilities include:
+These responsibilities included:
 
 - login orchestration
 - autologin preparation
@@ -47,10 +47,10 @@ Examples of these responsibilities include:
 
 As a result:
 
-- widgets are harder to maintain
-- business-adjacent logic is harder to test
-- future state unification would be risky
-- feature growth would continue increasing coupling
+- widgets were harder to maintain
+- business-adjacent logic was harder to test
+- future state unification would have been risky
+- feature growth would have continued increasing coupling
 
 ---
 
@@ -64,14 +64,15 @@ As a result:
 - preparation for state architecture consolidation
 - documentation alignment for Phase 7
 - subphase-based incremental extraction tracking
+- formal closure of Phase 7.1 after runtime validation
 
 ### Excluded
 
 - backend protocol changes
 - ServiceProvider redesign
 - runtime flow redesign
-- navigation redesign in the first subphases
-- full state-management migration in the first subphases
+- navigation redesign in Phase 7.1
+- full state-management migration in Phase 7.1
 - UI redesign
 
 ---
@@ -94,7 +95,7 @@ This was appropriate operationally, but it left an architectural residue:
 - local UI state started representing application state
 - responsibility boundaries remained implicit instead of explicit
 
-Now that Phase 6 established structural clarity, Phase 7 can safely address responsibility clarity.
+Phase 7 was opened only after Phase 6 established structural clarity, allowing responsibility clarity to be addressed without mixing structural relocation and logical extraction.
 
 ---
 
@@ -114,6 +115,10 @@ Now that Phase 6 established structural clarity, Phase 7 can safely address resp
 - docs/phase7_application_layer_consolidation_7_1_1_auth_extraction.md
 - docs/phase7_application_layer_consolidation_7_1_2_dashboard_extraction.md
 - docs/phase7_application_layer_consolidation_7_1_3_billing_extraction.md
+
+### Residual document resolved at formal closure
+
+- docs/phase7_application_layer_consolidation_7_1_ui_logic_decoupling.md
 
 ### Protected areas
 
@@ -140,13 +145,25 @@ Characteristics:
 - no protocol changes
 - no ServiceProvider public behavior changes
 - no navigation redesign
+- no state-management redesign
+- controller introduction remains feature-local
 
-Current subphases:
+Implemented and validated subphases:
 
 - 7.1.1 — Auth extraction
 - 7.1.2 — Dashboard extraction
 - 7.1.3 — Billing extraction
-- 7.1.4 — Cross-feature consistency cleanup only if still required after validation
+
+Formal status:
+
+- Phase 7.1 is closed
+
+Closure meaning:
+
+- auth no longer performs application coordination inline in the widget
+- dashboard no longer performs customer/session coordination inline in the widget
+- billing no longer performs request preparation and backend-facing data shaping inline in the widget
+- the original UI / Logic Decoupling objective has been achieved for the main authenticated runtime surface
 
 ---
 
@@ -163,6 +180,10 @@ Characteristics:
 - may introduce feature-level state abstractions
 - must preserve current Riverpod runtime behavior
 
+Formal status:
+
+- next phase to start after Phase 7.1 closure
+
 ---
 
 ### Phase 7.3 — Feature Encapsulation Reinforcement
@@ -176,6 +197,10 @@ Characteristics:
 
 - move feature-owned orchestration closer to feature boundaries
 - avoid presentation widgets reaching too deeply into generic runtime primitives
+
+Status:
+
+- not started
 
 ---
 
@@ -191,13 +216,17 @@ Characteristics:
 - preparatory in nature unless runtime-safe centralization is possible
 - must remain compatible with current app startup flow
 
+Status:
+
+- not started
+
 ---
 
 ## Validation
 
-Validation for Phase 7 must remain runtime-first.
+Validation for Phase 7 remains runtime-first.
 
-Mandatory checks for each subphase:
+Mandatory checks executed across Phase 7.1:
 
 - application startup
 - initial loading flow
@@ -210,21 +239,18 @@ Mandatory checks for each subphase:
 - logout behavior
 - return to initial state
 
-Additional Phase 7-specific checks:
+Phase 7.1-specific validated outcomes:
 
-- widgets no longer duplicate business-adjacent logic removed to controllers
-- extracted controllers do not introduce UI rendering concerns
-- no backend request semantics are modified
-- canonical feature imports remain coherent
+- auth extraction preserved login behavior
+- dashboard extraction preserved active customer resolution and logout semantics
+- billing extraction preserved request preparation, typed decoding, and customer-switch refresh behavior
+- extracted controllers did not introduce UI rendering concerns
+- no backend request semantics were modified
+- canonical feature imports remained coherent
 
-Specific checks after 7.1.3:
+Formal validation conclusion:
 
-- facturas and recibos load correctly after login
-- switching customer refreshes billing data correctly
-- logout continues to remove the authenticated experience correctly
-- loading state remains visible while billing refresh is in progress
-- billing rendering still uses the same table and window widgets
-- backend errors still surface through the existing billing error UI
+- Phase 7.1 was completed and validated without runtime regression
 
 ---
 
@@ -242,35 +268,36 @@ Expected engineering impact:
 - clearer ownership of orchestration logic
 - safer base for future state and navigation work
 - improved maintainability and testability
+- explicit closure of the first behavioral consolidation layer
 
 ---
 
 ## Risks
 
-Main risks:
+Main risks originally associated with Phase 7.1 were:
 
 - extracting logic too aggressively
-- moving logic that is still tightly lifecycle-dependent
+- moving logic that was still tightly lifecycle-dependent
 - accidentally changing runtime ordering
-- introducing controller abstractions that are too generic too early
+- introducing controller abstractions that were too generic too early
 
-Mitigation strategy:
+Mitigation used:
 
 - one safe feature entry point first
 - keep ServiceProvider untouched
 - preserve widget lifecycle decisions where necessary
 - validate after each extraction
+- keep lifecycle/render responsibilities inside widgets where appropriate
 
-Specific current risk:
+Residual risk after closure:
 
-- billing depends on tracked request preparation, typed response decoding, and refresh after customer change
-- therefore extraction must preserve both the thread/data-model setup semantics and the customer-switch refresh order
+- Phase 7.2 must avoid reintroducing coupling while clarifying state ownership boundaries
 
 ---
 
 ## What it does NOT solve
 
-Phase 7 does not immediately solve:
+Phase 7.1 closure does not solve:
 
 - complete state-management redesign
 - domain-layer formalization
@@ -278,16 +305,26 @@ Phase 7 does not immediately solve:
 - session persistence redesign
 - backend abstraction replacement
 - visual redesign
+- full application-service-layer introduction
 
-Those may be addressed later, but only once controller extraction is proven safe.
+Those remain available for future phases, beginning with Phase 7.2.
 
 ---
 
 ## Conclusion
 
-Phase 7 is the next logical step after Phase 6.
+Phase 7.1 is formally complete.
 
-Phase 6 clarified where presentation lives.
-Phase 7 clarifies what presentation should and should not do.
+The application now has controller boundaries for the three main feature surfaces addressed by the original UI / Logic Decoupling plan:
 
-By introducing a conservative application/controller layer and extracting business-adjacent logic progressively, Mi IP·RED can continue evolving without risking the production runtime already stabilized in earlier phases.
+- auth
+- dashboard
+- billing
+
+This means Mi IP·RED now has:
+
+- presentation structure normalized by Phase 6
+- first-layer behavioral ownership clarified by Phase 7.1
+- a safer foundation for Phase 7.2 state coordination work
+
+The next correct step is Phase 7.2 — State Coordination Boundaries.

@@ -2,7 +2,7 @@
 
 ## Objective
 
-Provide a structured and accurate entry point to all technical documentation of Mi IP·RED, ensuring that every document reflects the real implementation state of the system, including historical evolution, structural decisions, and current architectural boundaries after Phase 6 completion.
+Provide a structured and accurate entry point to all technical documentation of Mi IP·RED, ensuring that every document reflects the real implementation state of the system, including historical evolution, structural decisions, and current architectural boundaries after Phase 7.1 formal closure.
 
 ---
 
@@ -17,14 +17,11 @@ At the end of Phase 5:
 - core application flows were working in production
 - documentation covered infrastructure and internal decomposition
 
-However:
+Phase 6 then introduced full presentation normalization.
 
-- presentation layer structure was not aligned with documentation
-- UI ownership boundaries were not clearly represented
-- legacy paths were still treated as primary references
-- structural duplication existed across models and pages
+Phase 7.1 subsequently introduced the first application-layer consolidation work, extracting business-adjacent logic from the main presentation surfaces into feature-local controllers.
 
-Phase 6 introduced a complete normalization of the presentation layer, requiring full documentation alignment and historical traceability.
+The documentation now needs to reflect the formal closure of that subphase.
 
 ---
 
@@ -192,10 +189,9 @@ phase7_application_layer_consolidation.md
 Covers:
 
 - application-layer consolidation strategy
-- introduction of controller boundaries
-- progressive UI / logic decoupling
-- preparation for state and flow normalization
-- risk-aware migration rules for behavioral extraction
+- controller introduction principles
+- formal closure of Phase 7.1
+- preparation for Phase 7.2 and beyond
 
 phase7_application_layer_consolidation_7_1_1_auth_extraction.md
 
@@ -232,7 +228,7 @@ Covers:
 
 ## Current System State
 
-After Phase 7.1.3:
+After formal closure of Phase 7.1:
 
 - presentation layer remains normalized
 - shared UI remains isolated under lib/shared
@@ -242,9 +238,10 @@ After Phase 7.1.3:
 - dashboard logic no longer performs customer/session coordination directly inside the widget
 - billing logic no longer performs request orchestration directly inside the widget
 - controller boundaries now exist for auth, dashboard, and billing
-- Phase 7.1 is functionally complete pending final validation and closure decision
+- Phase 7.1 is formally closed
+- Phase 7.2 is the next correct step
 
-The repository structure now reflects both ownership boundaries and the first behavioral extraction layer.
+The repository now reflects both structural ownership and first-layer behavioral ownership.
 
 ---
 
@@ -257,7 +254,11 @@ The following elements no longer exist after Phase 6.3:
 - duplicated UI access paths
 - fallback import surfaces
 
-All transitional structures introduced during Phase 6 migration have been fully removed.
+In addition, after formal closure of Phase 7.1:
+
+- the residual umbrella document `phase7_application_layer_consolidation_7_1_ui_logic_decoupling.md` is no longer part of the active documentation surface
+
+All transitional structures introduced during migration and renumbering should be considered resolved.
 
 ---
 
@@ -277,27 +278,27 @@ These will be addressed in upcoming phases.
 
 ## Next Documentation Evolution
 
-The next expected updates will correspond to one of these two paths:
-
-Phase 7.1 closure
-
-- final cross-feature consistency review
-- removal or consolidation of any residual duplicated Phase 7.1 documentation surface if required
-- formal closure of UI / Logic Decoupling
-
----
+The next expected updates correspond to:
 
 Phase 7.2
 
 - state coordination boundaries
 - clarification of widget-local state vs application state
 - preparation for more explicit feature-owned state
+- reduction of ad-hoc cross-widget state coupling
+
+---
+
+Phase 7.3
+
+- feature encapsulation reinforcement
+- stronger behavioral coherence inside feature boundaries
 
 ---
 
 ## Conclusion
 
-The documentation set is aligned with the real structure of the system after Phase 7.1.3.
+The documentation set is aligned with the real structure of the system after formal closure of Phase 7.1.
 
 It provides:
 
@@ -305,4 +306,4 @@ It provides:
 - explicit architectural decisions
 - clear ownership boundaries
 - explicit subphase progression
-- a stable base for controlled continuation of Phase 7
+- a clean starting point for Phase 7.2

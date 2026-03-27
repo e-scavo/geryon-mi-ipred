@@ -2,7 +2,7 @@
 
 ## Objective
 
-Define the development rules, constraints, and validation requirements for Mi IP·RED during and after Phase 7, ensuring that structural and application-layer improvements do not compromise runtime behavior, backend integrity, or system stability.
+Define the development rules, constraints, and validation requirements for Mi IP·RED after formal closure of Phase 7.1, ensuring that further application-layer improvements do not compromise runtime behavior, backend integrity, or system stability.
 
 ---
 
@@ -11,18 +11,15 @@ Define the development rules, constraints, and validation requirements for Mi IP
 At the end of Phase 5:
 
 - ServiceProvider had been stabilized and internally decomposed
-- Backend flow was fully operational and documented
-- Application was already in production use
-- Core flows (login, dashboard, billing, logout) were functioning correctly
+- backend flow was fully operational and documented
+- application was already in production use
+- core flows (login, dashboard, billing, logout) were functioning correctly
 
-However:
+Phase 6 introduced structural normalization of the presentation layer.
 
-- presentation layer structure was inconsistent
-- UI ownership boundaries were unclear
-- imports did not reflect actual responsibilities
-- future refactors would be risky without normalization
+Phase 7.1 then completed the first behavioral consolidation pass by extracting business-adjacent logic from the main feature widgets into feature-local controllers.
 
-Phase 6 introduced structural changes to the presentation layer, requiring updated development conventions.
+The development rules now need to reflect that Phase 7.1 is closed and that the next safe step is state coordination work.
 
 ---
 
@@ -65,40 +62,43 @@ Rules:
 
 ---
 
-### No Behavioral Refactor During Structural Changes
+### No Runtime Redesign Hidden Inside Structural Work
 
-Presentation refactors must not include:
+Application-layer improvements must not smuggle in:
 
 - UI redesign
-- navigation changes
-- state management changes
-- lifecycle changes
+- backend contract changes
+- hidden navigation redesign
+- unvalidated lifecycle changes
+- uncontrolled state model replacement
 
-Only structural relocation was allowed during Phase 6. Phase 7 may additionally extract business-adjacent logic into controllers under the explicit constraints documented below.
+Every change must remain explicitly scoped and validated.
 
 ---
 
 ## Presentation Layer Rules
 
-### Phase 7 Extension Rule
+### Phase 7.1 Closure Rule
 
-Starting in Phase 7, structural normalization is already complete.
+Phase 7.1 is now formally closed.
 
-Therefore, controlled behavioral extraction is allowed only when all of the following are respected:
+This means the baseline rule for the main feature widgets is now:
 
-- backend request semantics remain unchanged
-- ServiceProvider public behavior remains unchanged
-- widget rendering output remains functionally equivalent
-- lifecycle-sensitive flow is preserved
-- extracted logic does not absorb UI rendering concerns
+presentation widgets should not own backend-adjacent orchestration inline when a feature-local controller already exists.
 
-This means Phase 7 may move orchestration logic out of widgets, but may not redesign runtime behavior.
+This rule already applies to:
+
+- auth
+- dashboard
+- billing
+
+Any new code added to these feature widgets must preserve that separation.
 
 ---
 
 ### Separation of Concerns
 
-Presentation must be divided into:
+Presentation must remain divided into:
 
 Shared UI
 
@@ -111,6 +111,8 @@ Feature UI
 - auth
 - dashboard
 - billing
+
+Controllers must remain feature-local unless a later phase explicitly introduces a broader application service layer.
 
 ---
 
@@ -134,64 +136,32 @@ All feature-owned UI must live under:
 
 ---
 
-### Migration Order Rule
+### Controller Location
 
-Presentation refactor must follow this order:
+All feature-local controllers introduced in Phase 7.1 live under:
 
-1. shared UI
-2. feature UI
-3. import normalization
-4. documentation alignment
+- lib/features/auth/controllers
+- lib/features/dashboard/controllers
+- lib/features/billing/controllers
 
----
-
-### Compatibility Shim Rule
-
-During structural migration:
-
-- legacy paths must remain functional
-- files must be converted into export-only shims
-- no duplication of logic is allowed
-
-Example:
-
-models/Login/widget.dart  
-becomes  
-export → features/auth/presentation/login_widget.dart
-
----
-
-### Canonical Import Rule
-
-After stabilization:
-
-- all active imports must use canonical paths
-- legacy paths are only fallback
-- no new code should use legacy imports
+New work in these features must prefer extending these boundaries instead of pushing orchestration back into widgets.
 
 ---
 
 ## Import Management
 
-### Allowed During Migration
+### Required State After Stabilization
 
-- coexistence of old and new imports
-- gradual migration of consumers
-- selective migration for safety
-
----
-
-### Required After Stabilization
-
-- canonical imports must be dominant
-- legacy imports must be reduced
-- no new dependencies on legacy paths
+- canonical imports must remain dominant
+- legacy imports must not be reintroduced
+- new code must respect current ownership boundaries
+- residual transitional documentation paths must not be treated as active architecture
 
 ---
 
 ## Validation Policy
 
-Validation must be performed after each structural change.
+Validation must be performed after each change.
 
 ### Mandatory Checks
 
@@ -207,17 +177,13 @@ Validation must be performed after each structural change.
 - logout behavior
 - return to initial state
 
----
+### Additional Post-7.1 Checks
 
-### Additional Checks for Phase 6
-
-- compatibility shim correctness
-- canonical import correctness
-- absence of broken imports
-- absence of duplicate widgets
-- dashboard to billing transitions
-- login to dashboard transition
-- logout to login transition
+- widgets do not reabsorb logic already extracted into controllers
+- controller boundaries remain coherent
+- no controller starts owning rendering concerns
+- state-related refactors do not break customer-switch semantics
+- billing refresh behavior remains correct after customer changes
 
 ---
 
@@ -225,21 +191,18 @@ Validation must be performed after each structural change.
 
 ### Identified Risks
 
-- incomplete import migration
-- hidden dependencies on legacy paths
-- accidental removal of active shim
-- duplicated class definitions
-- runtime regressions
-
----
+- reintroducing orchestration into widgets
+- growing controllers without clear responsibility boundaries
+- mixing state redesign with unrelated refactors
+- hidden runtime regression during future consolidation
 
 ### Mitigation Strategy
 
 - incremental commits
 - validation after each step
-- conservative migration order
-- temporary redundancy via shims
-- documentation alignment
+- preserve current feature-local controller boundaries
+- start Phase 7.2 conservatively
+- keep documentation aligned with the real codebase
 
 ---
 
@@ -247,28 +210,23 @@ Validation must be performed after each structural change.
 
 ### Allowed
 
-- file relocation
-- import updates
-- creation of shared structures
-- introduction of feature folders
-- export-based shims
-- controller extraction under feature boundaries
+- controller extension inside existing feature boundaries
+- feature-local state abstractions in later phases
+- import updates aligned with ownership boundaries
 - response/result normalization for widget consumption
-
----
+- documentation consolidation and cleanup
 
 ### Not Allowed
 
 - backend protocol redesign
 - ServiceProvider public contract changes
-- navigation redesign mixed into controller introduction
+- navigation redesign mixed into unrelated controller work
 - moving UI rendering concerns into non-UI classes
+- reintroducing duplicated documentation surfaces as active references
 
 ---
 
 ## Controller Layer Rules
-
-Phase 7 introduces a controller layer inside feature boundaries.
 
 ### Allowed Responsibilities
 
@@ -309,56 +267,38 @@ Avoid:
 - controller depending on widget classes
 - controller depending on presentation widgets
 
-### Introduction Rule
+### Preservation Rule After Phase 7.1 Closure
 
-Controllers must be introduced incrementally:
+Because Phase 7.1 is closed:
 
-1. extract one safe feature path
-2. validate runtime behavior
-3. document the extraction
-4. continue with the next feature only after stability is confirmed
+- extracted responsibilities should stay outside the widgets
+- new state work must build on the existing controller boundaries
+- widgets remain owners of lifecycle/render/UI feedback
+- controllers remain owners of feature-local application coordination
 
-Current safe order inside Phase 7.1:
+---
 
-1. auth
-2. dashboard
-3. billing
-4. final consistency cleanup only if still needed
+## Next Phase Rule
 
-### Presentation Boundary Rule After Extraction
+The next correct step is:
 
-Once a controller is introduced for a feature:
+Phase 7.2 — State Coordination Boundaries
 
-- the widget may still build menu items, dialogs, and presentational helper widgets
-- but it should no longer resolve backend-adjacent application state inline
-- it should delegate session/customer/application decisions to the controller
+This means future work should focus on clarifying:
 
-This rule now applies to:
+- what belongs to widget-local state
+- what belongs to feature/application state
+- where customer-dependent runtime state should live
+- how to reduce ad-hoc coordination without redesigning backend flow
 
-- auth
-- dashboard
-- billing
-
-### Billing Lifecycle Rule
-
-Billing is a special case because its widget owns:
-
-- provider subscription lifecycle
-- customer-change observation
-- `mounted` checks
-- `setState(...)`
-- render switching between loading, error, and table views
-
-Therefore:
-
-- lifecycle orchestration remains in the widget
-- data preparation and backend result handling move to the controller
-- no attempt should be made to hide widget lifecycle concerns inside the controller during Phase 7.1
+Phase 7.2 must start from the closed Phase 7.1 baseline and not reopen already-settled UI / logic extraction work unless a validated defect requires it.
 
 ---
 
 ## Conclusion
 
-Development after Phase 6 is no longer only about structure.
+Development after formal closure of Phase 7.1 is no longer about first-pass UI / logic separation.
 
-Starting in Phase 7, Mi IP·RED may evolve behaviorally at the application-layer level, but only through controlled, incremental, and fully validated extractions that preserve the production runtime contract.
+That work is complete for the main runtime surfaces.
+
+Starting now, Mi IP·RED should evolve by clarifying state ownership on top of the controller boundaries already established, while preserving the production runtime contract and the architectural safety achieved in Phases 6 and 7.1.

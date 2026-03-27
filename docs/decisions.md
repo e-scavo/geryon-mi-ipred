@@ -21,7 +21,7 @@ All presentation-layer refactoring must:
 - avoid altering timing or sequencing of calls
 - avoid introducing side effects in ServiceProvider
 
-This constraint governed every step of Phase 6.
+This constraint governed every step of Phase 6 and remains active for later phases.
 
 ---
 
@@ -42,7 +42,7 @@ Phase 6 explicitly avoided:
 - widget lifecycle changes
 - state management changes
 
-Only structural relocation was allowed.
+Phase 7.1 preserved the same rule while extracting business-adjacent orchestration into controllers.
 
 ---
 
@@ -255,6 +255,8 @@ a reflection of actual implementation, not an idealized model.
 - defines canonical structure
 - preserves rationale
 
+The same rule applies to Phase 7 closure documents.
+
 ---
 
 ## Decision 12 — Avoid Mixing Structural Refactor with Logical Refactor
@@ -270,11 +272,9 @@ do not combine presentation restructuring with logic changes.
 - altering request builders
 - modifying state handling
 
-This ensures:
+### Controlled exception in Phase 7.1
 
-- isolated change scope
-- easier validation
-- predictable outcomes
+After presentation normalization was complete, logical extraction became allowed, but only under strict scope control and without backend behavior changes.
 
 ---
 
@@ -295,15 +295,15 @@ At no point should the system require:
 
 ## Decision 14 — Prepare for Controlled Shim Removal (Future Phase)
 
-Phase 6 does NOT remove legacy paths.
+Phase 6 did not remove legacy paths immediately.
 
-### Instead it prepares:
+### Instead it prepared:
 
 - identification of unused shims
 - confirmation of canonical import adoption
 - safe conditions for removal
 
-This leads into:
+This led into:
 
 Phase 6.3 — Legacy shim audit
 
@@ -311,39 +311,22 @@ Phase 6.3 — Legacy shim audit
 
 ## Decision 15 — Prioritize Safety Over Structural Purity
 
-Throughout Phase 6:
+Throughout Phase 6 and Phase 7.1:
 
 safety was prioritized over ideal structure.
 
 ### This includes:
 
-- keeping temporary redundancy (shims)
+- keeping temporary redundancy when needed
 - delaying certain migrations
-- avoiding aggressive cleanup
+- avoiding aggressive cleanup before validation
+- preserving widget lifecycle ownership where extraction risk was higher
 
 ### Outcome
 
-- zero regressions
+- zero intentional runtime regressions
 - controlled evolution
 - maintainable transition path
-
----
-
-## Conclusion
-
-The decisions in Phase 6 collectively ensure that:
-
-- presentation structure becomes explicit and correct
-- runtime behavior remains unchanged
-- migration risk is minimized
-- future architectural phases can proceed safely
-
-The system now has:
-
-- clear ownership boundaries
-- controlled import surface
-- documented migration strategy
-- stable foundation for further refactoring
 
 ---
 
@@ -371,9 +354,9 @@ This was executed in Phase 6.3.
 
 ## Decision 17 — Introduce a Controller Layer Only After Presentation Normalization
 
-Phase 7 does not begin by changing backend interaction.
+Phase 7 did not begin by changing backend interaction.
 
-It begins by introducing an explicit controller layer only after Phase 6 completed structural normalization.
+It began by introducing an explicit controller layer only after Phase 6 completed structural normalization.
 
 ### Rationale
 
@@ -405,8 +388,10 @@ If widgets still own orchestration logic:
 
 ### Implication
 
-The first Phase 7 priority is not global state redesign.
-It is UI / logic decoupling through feature-level controllers.
+The first Phase 7 priority was not global state redesign.
+It was UI / logic decoupling through feature-level controllers.
+
+Phase 7.1 is now formally closed under this decision.
 
 ---
 
@@ -423,7 +408,7 @@ Controller introduction must start inside feature boundaries instead of as a glo
 
 ### Implication
 
-Initial controller locations must be:
+Initial controller locations are:
 
 - lib/features/auth/controllers
 - lib/features/dashboard/controllers
@@ -474,7 +459,9 @@ As long as `dashboard_page.dart` resolves the active customer inline:
 
 ### Implication
 
-Dashboard customer resolution, customer-option normalization, and logout orchestration must be extracted before beginning Phase 7.2.
+Dashboard customer resolution, customer-option normalization, and logout orchestration had to be extracted before beginning Phase 7.2.
+
+This was completed in Phase 7.1.2.
 
 ---
 
@@ -503,15 +490,17 @@ Billing is part of the authenticated runtime surface and still depended on widge
 
 ### Rationale
 
-As long as `billing_widget.dart` prepares thread-bound models, request parameters, and typed backend decoding inline:
+As long as `billing_widget.dart` prepared thread-bound models, request parameters, and typed backend decoding inline:
 
-- the widget remains an execution coordinator
-- feature behavior stays only partially decoupled
+- the widget remained an execution coordinator
+- feature behavior stayed only partially decoupled
 - Phase 7.1 would be incomplete compared to auth and dashboard
 
 ### Implication
 
-Billing request preparation, typed response validation, and row normalization must be extracted before considering Phase 7.1 functionally complete.
+Billing request preparation, typed response validation, and row normalization had to be extracted before considering Phase 7.1 functionally complete.
+
+This was completed in Phase 7.1.3.
 
 ---
 
@@ -539,17 +528,36 @@ During Phase 7.1.3:
 
 ---
 
+## Decision 25 — Close Phase 7.1 Without Reopening Feature Extraction
+
+Once auth, dashboard, and billing were all extracted and validated, Phase 7.1 should be formally closed instead of kept artificially open.
+
+### Rationale
+
+Keeping Phase 7.1 open after its original objective is already met would:
+
+- blur milestone boundaries
+- delay transition to state work unnecessarily
+- keep transitional documents alive longer than needed
+
+### Implication
+
+The correct next step after validation is:
+
+- formal documentation closure of Phase 7.1
+- removal of residual umbrella documentation from the active set
+- transition to Phase 7.2
+
+---
+
 ## Conclusion
 
-Phase 7 extends the decision system already established in Phase 6.
+The decisions established across Phases 6 and 7.1 collectively ensure that:
 
-The repository is no longer only structurally normalized; it now begins to formalize behavioral ownership as well.
-
-That means future refactors must preserve:
-
-- backend invariants
-- ServiceProvider stability
-- feature-local ownership
-- strict separation between controller responsibility and UI rendering responsibility
+- presentation structure is explicit and normalized
+- backend behavior remains stable
+- feature-local controller boundaries are now established
+- the first behavioral decoupling layer is complete
+- the project is ready to move into Phase 7.2 from a cleaner baseline
 
 This preserves safety while enabling further architectural evolution.
