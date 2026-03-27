@@ -19,7 +19,13 @@ class DashboardPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final dashboardState = _controller.resolveState(ref: ref);
+    final serviceProvider = ref.watch(notifierServiceProvider);
+    final dashboardSourceState = _controller.buildSourceState(
+      serviceProvider: serviceProvider,
+    );
+    final dashboardState = _controller.resolveStateFromSource(
+      source: dashboardSourceState,
+    );
     final userData = dashboardState.activeClient;
 
     final dashboardTitle = Utils.isPlatform == 'Web'
@@ -27,16 +33,14 @@ class DashboardPage extends ConsumerWidget {
         : _buildDashboardMobileTitle(
             context: context,
             ref: ref,
-            activeClientDisplayName: dashboardState.activeClientDisplayName,
-            clientOptions: dashboardState.clientOptions,
+            dashboardState: dashboardState,
           );
 
     final dashboardActions = Utils.isPlatform == 'Web'
         ? _buildDashboardWebActions(
             context: context,
             ref: ref,
-            activeClientDisplayName: dashboardState.activeClientDisplayName,
-            clientOptions: dashboardState.clientOptions,
+            dashboardState: dashboardState,
           )
         : _buildDashboardMobileActions(
             context: context,
@@ -78,8 +82,7 @@ class DashboardPage extends ConsumerWidget {
   Widget _buildDashboardMobileTitle({
     required BuildContext context,
     required WidgetRef ref,
-    required String activeClientDisplayName,
-    required List<DashboardClientOption> clientOptions,
+    required DashboardResolvedState dashboardState,
   }) {
     return Column(
       children: [
@@ -109,7 +112,7 @@ class DashboardPage extends ConsumerWidget {
                 );
               },
               itemBuilder: (BuildContext context) {
-                return clientOptions
+                return dashboardState.clientOptions
                     .map(
                       (option) => PopupMenuItem<int>(
                         value: option.index,
@@ -127,7 +130,7 @@ class DashboardPage extends ConsumerWidget {
               child: Row(
                 children: [
                   Text(
-                    activeClientDisplayName,
+                    dashboardState.activeClientDisplayName,
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
@@ -151,8 +154,7 @@ class DashboardPage extends ConsumerWidget {
   List<Widget> _buildDashboardWebActions({
     required BuildContext context,
     required WidgetRef ref,
-    required String activeClientDisplayName,
-    required List<DashboardClientOption> clientOptions,
+    required DashboardResolvedState dashboardState,
   }) {
     return [
       PopupMenuButton<int>(
@@ -164,7 +166,7 @@ class DashboardPage extends ConsumerWidget {
           );
         },
         itemBuilder: (BuildContext context) {
-          return clientOptions
+          return dashboardState.clientOptions
               .map(
                 (option) => PopupMenuItem<int>(
                   value: option.index,
@@ -175,7 +177,7 @@ class DashboardPage extends ConsumerWidget {
         },
         child: Row(
           children: [
-            Text(activeClientDisplayName),
+            Text(dashboardState.activeClientDisplayName),
             const Icon(Icons.person),
           ],
         ),
@@ -320,7 +322,9 @@ class _DashboardContent extends StatelessWidget {
                     onAction: () => _showPaymentDialog(context, data),
                   ),
                   InfoCard(
-                      title: "Último pago", value: data.ultFechaPago.toES()),
+                    title: "Último pago",
+                    value: data.ultFechaPago.toES(),
+                  ),
                   InfoCard(title: "Estado", value: data.estado),
                   const SizedBox(height: 5),
                 ],

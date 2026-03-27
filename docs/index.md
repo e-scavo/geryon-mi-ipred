@@ -17,7 +17,8 @@ The current documented baseline is:
 - presentation structure cleanup completed
 - Phase 7.1 controller extraction completed
 - Phase 7.2 started
-- billing state-boundary consolidation implemented as the first code-level Phase 7.2 subphase
+- billing state-boundary consolidation implemented
+- dashboard state-derivation normalization implemented
 
 This index reflects that state.
 
@@ -182,15 +183,16 @@ Documents:
 
 - `docs/phase7_application_layer_consolidation_7_2_1_feature_state_inventory.md`
 - `docs/phase7_application_layer_consolidation_7_2_2_billing_state_boundary_consolidation.md`
+- `docs/phase7_application_layer_consolidation_7_2_3_dashboard_state_derivation_normalization.md`
 
 Documents:
 
 - state ownership inventory
 - billing state-boundary consolidation
+- dashboard state-derivation normalization
 
 Planned continuation:
 
-- dashboard state derivation normalization
 - auth & startup initial-boundary cleanup
 - formal closure of Phase 7.2
 
@@ -226,6 +228,7 @@ Planned continuation:
 5. `docs/phase7_application_layer_consolidation_7_1_3_billing_extraction.md`
 6. `docs/phase7_application_layer_consolidation_7_2_1_feature_state_inventory.md`
 7. `docs/phase7_application_layer_consolidation_7_2_2_billing_state_boundary_consolidation.md`
+8. `docs/phase7_application_layer_consolidation_7_2_3_dashboard_state_derivation_normalization.md`
 
 ---
 
@@ -241,8 +244,9 @@ Current reflected status:
 - Phase 6 completed
 - Phase 7.1 completed and formally closed
 - Phase 7.2.1 completed
-- Phase 7.2.2 implemented
-- next planned step: Phase 7.2.3
+- Phase 7.2.2 completed
+- Phase 7.2.3 implemented
+- next planned step: Phase 7.2.4
 
 ---
 
@@ -254,5 +258,5 @@ At this point, the codebase is documented as:
 
 - structurally normalized
 - controller-backed in the main features
-- actively clarifying state ownership
-- already moving billing toward a cleaner feature-state boundary
+- actively clarifying state ownership and derivation boundaries
+- already cleaner in billing and dashboard than in the initial Phase 7 baseline

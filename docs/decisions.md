@@ -141,19 +141,52 @@ This improves ownership without changing the backend/runtime contract.
 
 ---
 
-## Decision 11 — Dashboard Remains the Next Target
+## Decision 11 — Dashboard Derivation Must Be Normalized Without Replacing Reactivity
 
-After billing consolidation, the next safer step remains dashboard derived-state normalization.
+Dashboard did not show the same lifecycle-state problem as billing.
 
-Reason:
+Its main debt was derivation ambiguity.
 
-- dashboard debt is narrower than billing debt
-- dashboard primarily needs source-vs-derived clarification
-- the feature does not show the same level of widget-owned lifecycle spread
+For that reason, the dashboard solution must:
+
+- preserve `ref.watch(...)` in presentation
+- avoid a new provider/notifier architecture
+- clarify the source-to-derived boundary inside the feature
+
+This keeps the change local and low-risk.
 
 ---
 
-## Decision 12 — Auth Cleanup Must Still Include Startup Boundary Cleanup
+## Decision 12 — Dashboard Introduces an Explicit Source Snapshot
+
+Dashboard derivation should no longer begin from `WidgetRef` directly.
+
+The adopted solution is:
+
+- create `DashboardSourceState`
+- build it from the watched `ServiceProvider`
+- derive `DashboardResolvedState` from that explicit source model
+
+This makes the feature input explicit without changing the global source-of-truth.
+
+---
+
+## Decision 13 — `DashboardResolvedState` Must Contain Only Derived State
+
+The resolved dashboard model should not mix global source state with feature-derived state.
+
+Therefore, `DashboardResolvedState` now contains only render-ready derived values such as:
+
+- active client
+- active client index
+- active client display name
+- client options
+
+This makes the resolved-state contract clearer and more truthful.
+
+---
+
+## Decision 14 — Auth Cleanup Must Still Include Startup Boundary Cleanup
 
 The previous inventory remains valid:
 
@@ -167,23 +200,23 @@ and not an auth-only cleanup.
 
 ---
 
-## Decision 13 — No Global Application Service Layer During Phase 7.2
+## Decision 15 — No Global Application Service Layer During Phase 7.2
 
-Even after billing consolidation, Phase 7.2 remains a boundary-clarification phase, not a platform redesign phase.
+Even after billing consolidation and dashboard derivation cleanup, Phase 7.2 remains a boundary-clarification phase, not a platform redesign phase.
 
 For that reason, no new global application service layer is introduced here.
 
 ---
 
-## Decision 14 — Runtime Order Has Priority Over Refactor Elegance
+## Decision 16 — Runtime Order Has Priority Over Refactor Elegance
 
 In all Phase 7.2 work, preserving runtime order has higher priority than achieving the most abstract or elegant internal design.
 
-This is especially important in billing because:
+This is especially important because:
 
-- customer changes drive reload behavior
-- reload timing is user-visible
-- loading/error transitions affect perceived correctness
+- customer changes drive downstream reload behavior
+- dashboard state affects visible UI immediately
+- billing reacts to dashboard-driven customer selection
 
 ---
 
@@ -195,7 +228,8 @@ The active architectural contract is now:
 2. keep controllers feature-local
 3. classify ownership explicitly
 4. consolidate the strongest hotspot first
-5. preserve transitional triggers when needed
-6. continue incrementally with dashboard next
+5. normalize dashboard source-to-derived boundaries next
+6. preserve transitional mechanisms where needed
+7. continue incrementally with auth/startup next
 
 That is the decision chain currently governing Phase 7.2.

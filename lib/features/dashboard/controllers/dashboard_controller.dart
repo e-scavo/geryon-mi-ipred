@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geryon_web_app_ws_v2/common_vars.dart';
 import 'package:geryon_web_app_ws_v2/core/session/session_storage.dart';
+import 'package:geryon_web_app_ws_v2/models/ServiceProvider/data_model.dart';
 import 'package:geryon_web_app_ws_v2/models/ServiceProvider/login_data_user_message_model.dart';
 
 class DashboardClientOption {
@@ -13,32 +14,59 @@ class DashboardClientOption {
   });
 }
 
+class DashboardSourceState {
+  final ServiceProviderLoginDataUserMessageModel? loggedUser;
+  final int? selectedClientIndex;
+
+  const DashboardSourceState({
+    required this.loggedUser,
+    required this.selectedClientIndex,
+  });
+}
+
 class DashboardResolvedState {
-  final dynamic loggedUser;
   final ServiceProviderLoginDataUserMessageModel? activeClient;
+  final int? activeClientIndex;
   final String activeClientDisplayName;
   final List<DashboardClientOption> clientOptions;
 
   const DashboardResolvedState({
-    required this.loggedUser,
     required this.activeClient,
+    required this.activeClientIndex,
     required this.activeClientDisplayName,
     required this.clientOptions,
   });
+
+  bool get hasActiveClient => activeClient != null;
 }
 
 class DashboardController {
-  DashboardResolvedState resolveState({
-    required WidgetRef ref,
+  DashboardSourceState buildSourceState({
+    required ServiceProvider serviceProvider,
   }) {
-    final loggedUser = ref.watch(notifierServiceProvider).loggedUser;
-    final activeClient = _resolveActiveClient(loggedUser);
-    final clientOptions = _buildClientOptions(loggedUser);
+    final loggedUser = serviceProvider.loggedUser;
+
+    return DashboardSourceState(
+      loggedUser: loggedUser,
+      selectedClientIndex: loggedUser?.cCliente,
+    );
+  }
+
+  DashboardResolvedState resolveStateFromSource({
+    required DashboardSourceState source,
+  }) {
+    final activeClientIndex = _resolveActiveClientIndex(source);
+    final activeClient = _resolveActiveClient(
+      source: source,
+      activeClientIndex: activeClientIndex,
+    );
+    final clientOptions = _buildClientOptions(source);
+    final activeClientDisplayName = _resolveDisplayName(activeClient);
 
     return DashboardResolvedState(
-      loggedUser: loggedUser,
       activeClient: activeClient,
-      activeClientDisplayName: _resolveDisplayName(activeClient),
+      activeClientIndex: activeClientIndex,
+      activeClientDisplayName: activeClientDisplayName,
       clientOptions: clientOptions,
     );
   }
@@ -57,31 +85,60 @@ class DashboardController {
     ref.read(notifierServiceProvider).logout();
   }
 
-  ServiceProviderLoginDataUserMessageModel? _resolveActiveClient(
-    dynamic loggedUser,
+  int? _resolveActiveClientIndex(
+    DashboardSourceState source,
   ) {
+    final loggedUser = source.loggedUser;
+
     if (loggedUser == null) {
       return null;
     }
 
-    if (loggedUser.clientes == null || loggedUser.clientes.isEmpty) {
+    if (loggedUser.clientes.isEmpty) {
       return null;
     }
 
-    final int currentIndex = (loggedUser.cCliente <= 0 ||
-            loggedUser.cCliente >= loggedUser.clientes.length)
-        ? 0
-        : loggedUser.cCliente;
+    final selectedClientIndex = source.selectedClientIndex ?? 0;
 
-    return loggedUser.clientes[currentIndex];
+    if (selectedClientIndex < 0 ||
+        selectedClientIndex >= loggedUser.clientes.length) {
+      return 0;
+    }
+
+    return selectedClientIndex;
   }
 
-  List<DashboardClientOption> _buildClientOptions(dynamic loggedUser) {
+  ServiceProviderLoginDataUserMessageModel? _resolveActiveClient({
+    required DashboardSourceState source,
+    required int? activeClientIndex,
+  }) {
+    final loggedUser = source.loggedUser;
+
+    if (loggedUser == null) {
+      return null;
+    }
+
+    if (loggedUser.clientes.isEmpty) {
+      return null;
+    }
+
+    if (activeClientIndex == null) {
+      return null;
+    }
+
+    return loggedUser.clientes[activeClientIndex];
+  }
+
+  List<DashboardClientOption> _buildClientOptions(
+    DashboardSourceState source,
+  ) {
+    final loggedUser = source.loggedUser;
+
     if (loggedUser == null) {
       return const <DashboardClientOption>[];
     }
 
-    if (loggedUser.clientes == null || loggedUser.clientes.isEmpty) {
+    if (loggedUser.clientes.isEmpty) {
       return const <DashboardClientOption>[];
     }
 
@@ -97,7 +154,7 @@ class DashboardController {
         index: entry.key,
         label: label,
       );
-    }).toList();
+    }).toList(growable: false);
   }
 
   String _resolveDisplayName(

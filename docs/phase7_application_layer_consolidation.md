@@ -67,7 +67,7 @@ Without clarifying those boundaries, future application-layer work would become 
 - preservation of the current runtime contract
 - state ownership inventory
 - billing state-boundary consolidation
-- future preparation for dashboard derived-state normalization
+- dashboard state-derivation normalization
 - future preparation for auth/startup initial-boundary cleanup
 - documentation alignment with real runtime structure
 
@@ -128,6 +128,7 @@ The current debt is that some runtime surfaces still contain too much coordinati
 - `docs/phase7_application_layer_consolidation_7_1_3_billing_extraction.md`
 - `docs/phase7_application_layer_consolidation_7_2_1_feature_state_inventory.md`
 - `docs/phase7_application_layer_consolidation_7_2_2_billing_state_boundary_consolidation.md`
+- `docs/phase7_application_layer_consolidation_7_2_3_dashboard_state_derivation_normalization.md`
 
 ---
 
@@ -198,7 +199,7 @@ Result:
 
 ### Phase 7.2.2 — Billing State Boundary Consolidation
 
-This subphase consolidates billing feature state into an explicit feature-local boundary.
+This subphase consolidated billing feature state into an explicit feature-local boundary.
 
 Implemented characteristics:
 
@@ -208,30 +209,33 @@ Implemented characteristics:
 - `listenManual` remains temporarily in place as a low-risk runtime trigger
 - `BillingWidget` now consumes a single aggregated feature state instead of managing dispersed lifecycle variables
 
-Important constraint preserved:
-
-- this is not a state-management redesign
-- this is a billing feature-boundary consolidation
-
 Formal status:
 
-- implemented in code
-- pending local validation in the real project environment
+- completed
 
 ---
 
 ### Phase 7.2.3 — Dashboard State Derivation Normalization
 
-Planned goal:
+This subphase normalizes dashboard state derivation without changing the current reactive source.
 
-- formalize dashboard derived state boundaries
-- make source-of-truth vs derived data clearer
-- keep derivation feature-local
-- avoid widening scope into global application state redesign
+Implemented characteristics:
 
-Status:
+- an explicit `DashboardSourceState` now represents dashboard source input
+- `DashboardResolvedState` now contains only dashboard-derived render-ready state
+- dashboard derivation now follows a source-to-derived flow
+- `DashboardPage` keeps the `ref.watch(...)` reactivity boundary
+- `DashboardController` no longer resolves dashboard state directly from `WidgetRef`
 
-- not started
+Important constraint preserved:
+
+- this is not a new state-management architecture
+- this is a feature-local derivation-boundary cleanup
+
+Formal status:
+
+- implemented in code
+- pending local validation in the real project environment
 
 ---
 
@@ -284,30 +288,39 @@ Previously validated at documentation/architecture level:
 - phase order justified by real risk
 - billing confirmed as the first implementation target
 
-### Phase 7.2.2 validation target
+### Phase 7.2.2 validation baseline
 
-This subphase must validate:
+Validation target already defined:
 
 - billing initial load
 - customer-change reload
 - loading state rendering
 - error state rendering
 - successful data rendering after reload
-- no regression in request flow or thread handling
+
+### Phase 7.2.3 validation target
+
+This subphase must validate:
+
+- dashboard still renders the active customer correctly
+- customer selector still shows the expected options
+- customer switching still updates dashboard data
+- logout still behaves identically
+- embedded billing widgets still react correctly after dashboard-driven client changes
 
 ---
 
 ## Release Impact
 
-Phase 7.2.2 does not change the product release surface.
+Phase 7.2.3 does not change the product release surface.
 
 It affects only internal ownership and maintainability.
 
 Release-relevant impact is indirect:
 
-- lower future refactor risk
-- clearer billing state boundary
-- simpler future debugging of billing lifecycle behavior
+- lower future dashboard refactor risk
+- clearer dashboard derivation boundary
+- simpler future debugging of active-client resolution and rendering data preparation
 
 ---
 
@@ -320,18 +333,18 @@ Release-relevant impact is indirect:
 - startup/auth boundary remains partially mixed
 - later refactors become harder and riskier
 
-### Risk inside 7.2.2
+### Risk inside 7.2.3
 
-- breaking customer-change billing reload
-- duplicating state during the move
-- accidentally widening into a provider redesign
+- breaking active-client resolution
+- breaking dashboard reactivity
+- accidentally widening into a broader provider redesign
 
 ### Mitigation
 
-- keep runtime trigger mechanism in place
-- move ownership gradually
-- consolidate billing only
-- preserve ServiceProvider contract completely
+- keep `ref.watch(...)` in the page
+- normalize only the source-to-derived boundary
+- preserve `ServiceProvider` contract completely
+- avoid touching UI and feature actions beyond derivation cleanup
 
 ---
 
@@ -345,12 +358,12 @@ Phase 7 overall still does not solve:
 - complete ServiceProvider replacement
 - broad lifecycle redesign across all features
 
-Phase 7.2.2 specifically does not solve:
+Phase 7.2.3 specifically does not solve:
 
-- dashboard derived-state normalization
 - auth/startup initial-boundary cleanup
-- removal of `listenManual`
-- introduction of a new billing-specific provider architecture
+- replacement of dashboard reactivity with a new provider model
+- removal of ServiceProvider as the global runtime source
+- global application state modeling
 
 ---
 
@@ -358,16 +371,16 @@ Phase 7.2.2 specifically does not solve:
 
 Phase 7 remains coherent and intentionally incremental.
 
-The project first normalized structure, then extracted request orchestration, and is now clarifying state ownership.
+The project first normalized structure, then extracted request orchestration, then clarified billing feature-state ownership, and now has clarified dashboard derivation boundaries.
 
 That progression is correct.
 
-With Phase 7.2.2, billing now has a substantially clearer feature boundary:
+With Phase 7.2.3, dashboard now has a stronger feature boundary:
 
-- rendering remains in presentation
-- feature-state transitions and reload decisions move into the controller
+- presentation owns reactivity and rendering
+- controller owns source-to-derived normalization
 - runtime behavior remains protected
 
 The next correct continuation, after validating this step locally, is:
 
-- `Phase 7.2.3 — Dashboard State Derivation Normalization`
+- `Phase 7.2.4 — Auth & Startup Initial State Boundary Cleanup`

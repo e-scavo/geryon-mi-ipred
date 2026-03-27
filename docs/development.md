@@ -24,6 +24,7 @@ That part has already been done.
 The current focus is:
 
 - clarifying state ownership
+- normalizing derivation boundaries
 - reducing coordination ambiguity
 - keeping changes incremental and reversible
 
@@ -137,6 +138,33 @@ Do not reintroduce scattered billing lifecycle flags inside the widget.
 
 ---
 
+### Dashboard-Specific Rule After 7.2.3
+
+Dashboard now has an explicit source-to-derived boundary.
+
+That means new dashboard changes must preserve this split:
+
+#### Presentation owns
+
+- `ref.watch(...)` reactivity
+- rendering
+- title/actions/body composition
+- user interaction dispatch
+
+#### Controller owns
+
+- dashboard source snapshot construction
+- active-client resolution
+- client-option derivation
+- display-name derivation
+- render-ready derived-state construction
+
+Do not reintroduce direct `WidgetRef`-based derivation inside the controller.
+
+Do not mix source state back into `DashboardResolvedState` unless strictly necessary and explicitly justified.
+
+---
+
 ## Controller Layer Rules
 
 Controllers may own:
@@ -188,6 +216,14 @@ Validation remains mandatory after each implementation step.
 - error state still clears previous happy-path rendering
 - success state restores normal rendering after reload
 
+### Dashboard-specific checks after 7.2.3
+
+- the active client name still matches the selected client
+- the customer selector still lists the expected client options
+- changing customer still updates dashboard content
+- logout still behaves identically
+- embedded billing widgets still react correctly after dashboard-driven client changes
+
 ---
 
 ## Risk Management
@@ -197,6 +233,7 @@ Validation remains mandatory after each implementation step.
 - reintroducing logic into widgets
 - widening a local refactor into a global redesign
 - breaking customer-driven reload behavior
+- breaking dashboard-derived render state
 - mixing state cleanup with unrelated navigation/runtime changes
 
 ### Mitigation
@@ -204,6 +241,7 @@ Validation remains mandatory after each implementation step.
 - one feature boundary at a time
 - one subphase at a time
 - preserve current runtime trigger order
+- keep reactivity where it already works
 - prefer explicit ownership over clever abstractions
 - document each ownership decision
 
@@ -213,6 +251,7 @@ Validation remains mandatory after each implementation step.
 
 - feature-local controller extension
 - feature-local state objects
+- feature-local source snapshot models
 - derived-state normalization
 - manual coordination reduction when runtime-equivalent
 - documentation alignment
@@ -244,7 +283,7 @@ Validated order:
 Reasoning:
 
 - billing had the highest concentration of dispersed feature state
-- dashboard mainly has derived-state boundary debt
+- dashboard mainly had derived-state boundary debt
 - auth/startup share the same initial-boundary concern
 
 This order should only change with code-backed justification.
@@ -270,8 +309,8 @@ Development at this stage is not about rewriting Mi IP·RED.
 
 It is about tightening boundaries safely.
 
-After Phase 7.2.2, billing is now the first feature where that boundary is materially stronger in code.
+After Phase 7.2.3, dashboard now joins billing as a feature with a materially stronger boundary in code.
 
 The next implementation step should continue that same discipline in:
 
-- `Phase 7.2.3 — Dashboard State Derivation Normalization`
+- `Phase 7.2.4 — Auth & Startup Initial State Boundary Cleanup`
