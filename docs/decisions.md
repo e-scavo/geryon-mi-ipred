@@ -28,6 +28,7 @@ This rule applies to:
 - state-boundary work
 - derived-state normalization
 - startup/auth boundary cleanup
+- formal closure work
 
 ---
 
@@ -61,7 +62,7 @@ Controllers are the correct location for:
 
 Once request orchestration is extracted, ownership ambiguity becomes the next architectural problem.
 
-For that reason, Phase 7.2 treats ownership as an explicit concern.
+For that reason, Phase 7.2 treated ownership as an explicit concern.
 
 State must now be understood as one of:
 
@@ -70,22 +71,24 @@ State must now be understood as one of:
 - derived state
 - global source state
 
+This remains an active rule after closure.
+
 ---
 
 ## Decision 6 — Inventory Before Consolidation
 
-Phase 7.2 begins with ownership inventory before implementation-heavy changes.
+Phase 7.2 began with ownership inventory before implementation-heavy changes.
 
 Reason:
 
 - moving state without classification risks duplication and regression
 - inventory makes later moves deliberate instead of intuitive
 
-That is why `7.2.1` was required before `7.2.2`.
+That is why `7.2.1` was required before the implementation-focused subphases.
 
 ---
 
-## Decision 7 — Billing Is the First Phase 7.2 Implementation Target
+## Decision 7 — Billing Was the First Phase 7.2 Implementation Target
 
 Billing was selected first because the real codebase showed it had the strongest concentration of:
 
@@ -98,68 +101,59 @@ This made billing the safest and highest-value first implementation target.
 
 ---
 
-## Decision 8 — Billing Consolidation Must Remain Local and Incremental
+## Decision 8 — Billing Consolidation Remains Local and Incremental
 
-Billing state-boundary work must not widen into a global state-management redesign.
+Billing state-boundary work was intentionally kept local.
 
-Therefore, `7.2.2` deliberately does **not** introduce:
+Phase 7.2 did **not** introduce:
 
 - a new global application layer
 - a broad provider redesign
 - a ServiceProvider replacement
 - a billing-specific notifier architecture
 
-Instead, it introduces a feature-local state object and keeps the current runtime trigger mechanism.
+Instead, it introduced a feature-local state object and kept the current runtime trigger mechanism.
+
+That remains the correct interpretation of the billing result.
 
 ---
 
-## Decision 9 — Preserve `listenManual` During Billing Consolidation
+## Decision 9 — Preserved Transitional Mechanisms Are Intentional
 
-Although `listenManual` is part of the manual coordination story, removing it in `7.2.2` would widen risk unnecessarily.
+Some mechanisms remained in place after Phase 7.2 on purpose, not by accident.
 
-Therefore, the decision for this subphase is:
+Examples include:
 
-- keep `listenManual`
-- move the billing-specific decisions out of the widget callback
-- preserve runtime ordering while improving ownership clarity
+- `listenManual` in billing
+- `ref.watch(...)` as the dashboard reactive boundary
+- the existing startup trigger sequence in `main.dart`
+- `ServiceProvider` as the protected global runtime source
 
-This is a deliberate transitional decision.
+These should not be documented or interpreted as unresolved mistakes by default.
 
----
-
-## Decision 10 — Billing Functional State Moves Behind a Single Boundary
-
-Billing should no longer expose dispersed lifecycle variables directly in the widget.
-
-The adopted solution is:
-
-- aggregate billing functional state into `BillingFeatureState`
-- let the controller own transition construction
-- let the widget render from a single feature-state instance
-
-This improves ownership without changing the backend/runtime contract.
+They are conservative compatibility decisions aligned with the runtime-protection rule.
 
 ---
 
-## Decision 11 — Dashboard Derivation Must Be Normalized Without Replacing Reactivity
+## Decision 10 — Dashboard Derivation Was Normalized Without Replacing Reactivity
 
 Dashboard did not show the same lifecycle-state problem as billing.
 
 Its main debt was derivation ambiguity.
 
-For that reason, the dashboard solution must:
+For that reason, the adopted solution was to:
 
 - preserve `ref.watch(...)` in presentation
 - avoid a new provider/notifier architecture
 - clarify the source-to-derived boundary inside the feature
 
-This keeps the change local and low-risk.
+This remains the correct dashboard boundary contract after closure.
 
 ---
 
-## Decision 12 — Dashboard Introduces an Explicit Source Snapshot
+## Decision 11 — Dashboard Uses an Explicit Source Snapshot and a Truly Derived Resolved State
 
-Dashboard derivation should no longer begin from `WidgetRef` directly.
+Dashboard derivation no longer begins from `WidgetRef` directly.
 
 The adopted solution is:
 
@@ -167,42 +161,27 @@ The adopted solution is:
 - build it from the watched `ServiceProvider`
 - derive `DashboardResolvedState` from that explicit source model
 
-This makes the feature input explicit without changing the global source-of-truth.
+`DashboardResolvedState` should remain derived and render-ready rather than mixing source state back in casually.
 
 ---
 
-## Decision 13 — `DashboardResolvedState` Must Contain Only Derived State
+## Decision 12 — Auth Cleanup Includes Startup Boundary Cleanup
 
-The resolved dashboard model should not mix global source state with feature-derived state.
+The inventory proved that auth initial state and startup initial state formed a shared boundary concern.
 
-Therefore, `DashboardResolvedState` now contains only render-ready derived values such as:
-
-- active client
-- active client index
-- active client display name
-- client options
-
-This makes the resolved-state contract clearer and more truthful.
-
----
-
-## Decision 14 — Auth Cleanup Must Still Include Startup Boundary Cleanup
-
-The previous inventory remains valid:
-
-- auth initial state and startup initial state form a shared boundary concern
-
-Therefore, the later subphase remains:
+Therefore, the adopted subphase remained:
 
 - `7.2.4 — Auth & Startup Initial State Boundary Cleanup`
 
 and not an auth-only cleanup.
 
+That remains the correct interpretation of the phase result.
+
 ---
 
-## Decision 15 — Auth Initial Boundary Must Distinguish Bootstrap From Submit
+## Decision 13 — Auth Initial Boundary Distinguishes Bootstrap From Submit
 
-The login feature should no longer use a single ambiguous loading flag for both:
+The login feature should no longer rely on a single ambiguous loading flag for both:
 
 - bootstrap autologin loading
 - manual submit loading
@@ -213,13 +192,13 @@ The adopted solution is:
 - separate `isBootstrapLoading` from `isSubmitLoading`
 - let the controller own those transitions
 
-This makes auth initial-boundary behavior more explicit without altering runtime flow.
+This remains the active auth boundary contract after closure.
 
 ---
 
-## Decision 16 — Startup Boundary Must Be Explicit Without Redesigning Startup Flow
+## Decision 14 — Startup Boundary Is Explicit Without Redesigning Startup Flow
 
-The startup surface should no longer rely on a generic local boolean as its only state representation.
+The startup surface should no longer rely only on a generic local boolean as its state representation.
 
 The adopted solution is:
 
@@ -227,28 +206,46 @@ The adopted solution is:
 - make initial-boundary completion explicit
 - preserve the existing trigger sequence and popup flow
 
-This improves ownership clarity without widening scope into lifecycle redesign.
+This remains the correct conservative interpretation of the startup result.
 
 ---
 
-## Decision 17 — No Global Application Service Layer During Phase 7.2
+## Decision 15 — No Global Application Service Layer Was Introduced During Phase 7.2
 
-Even after billing consolidation, dashboard derivation cleanup, and auth/startup boundary cleanup, Phase 7.2 remains a boundary-clarification phase, not a platform redesign phase.
+Even after billing consolidation, dashboard derivation cleanup, and auth/startup boundary cleanup, Phase 7.2 remained a boundary-clarification phase, not a platform redesign phase.
 
-For that reason, no new global application service layer is introduced here.
+For that reason, no new global application service layer was introduced.
+
+This is not an omission.
+
+It is a scope decision.
 
 ---
 
-## Decision 18 — Runtime Order Has Priority Over Refactor Elegance
+## Decision 16 — Runtime Order Has Priority Over Refactor Elegance
 
-In all Phase 7.2 work, preserving runtime order has higher priority than achieving the most abstract or elegant internal design.
+In all Phase 7.2 work, preserving runtime order had higher priority than achieving the most abstract or elegant internal design.
 
-This is especially important because:
+This was especially important because:
 
 - customer changes drive downstream reload behavior
 - dashboard state affects visible UI immediately
 - billing reacts to dashboard-driven customer selection
 - startup/auth sequence affects the entire app entry behavior
+
+This remains the governing principle for interpreting Phase 7.2 outcomes.
+
+---
+
+## Decision 17 — Phase 7.2 Is Now Formally Closed
+
+The current ZIP state shows that the practical objective of Phase 7.2 has already been achieved.
+
+Therefore, the project now adopts this explicit closure decision:
+
+- Phase 7.2 is complete
+- its outcomes are frozen as the current architectural baseline
+- future work should start from this baseline rather than continuing to extend the phase artificially
 
 ---
 
@@ -259,10 +256,8 @@ The active architectural contract is now:
 1. protect runtime
 2. keep controllers feature-local
 3. classify ownership explicitly
-4. consolidate the strongest hotspot first
-5. normalize dashboard source-to-derived boundaries next
-6. clarify auth/startup initial-boundary behavior next
-7. preserve transitional mechanisms where needed
-8. close Phase 7.2 only after local validation
+4. keep preserved transitional mechanisms only when deliberately justified
+5. use the completed Phase 7.2 boundaries as the new baseline
+6. do not reopen closed cleanup work without real code-backed justification
 
-That is the decision chain currently governing Phase 7.2.
+That is the decision chain governing the post-Phase-7.2 state of Mi IP·RED.

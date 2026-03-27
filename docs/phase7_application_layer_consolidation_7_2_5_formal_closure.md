@@ -161,11 +161,11 @@ Formal status:
 
 ### Phase 7.2 — State Coordination Boundaries
 
-Phase 7.2 started only after Phase 7.1 had been validated.
+Phase 7.2 starts only after Phase 7.1 has been validated.
 
-Its goal was never to redesign state management globally.
+Its goal is not to redesign state management globally.
 
-Its goal was to clarify ownership boundaries:
+Its goal is to clarify ownership boundaries:
 
 - UI state
 - feature functional state

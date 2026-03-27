@@ -16,10 +16,7 @@ The current documented baseline is:
 - ServiceProvider decomposition documented
 - presentation structure cleanup completed
 - Phase 7.1 controller extraction completed
-- Phase 7.2 started
-- billing state-boundary consolidation implemented
-- dashboard state-derivation normalization implemented
-- auth/startup initial-boundary cleanup implemented
+- Phase 7.2 completed and formally closed
 
 This index reflects that state.
 
@@ -166,7 +163,8 @@ Documents:
 - feature-local controller introduction
 - Phase 7.1 closure
 - Phase 7.2 scope
-- current subphase progression
+- Phase 7.2 closure
+- current architectural result of the application-layer consolidation effort
 
 #### Phase 7.1
 
@@ -186,6 +184,7 @@ Documents:
 - `docs/phase7_application_layer_consolidation_7_2_2_billing_state_boundary_consolidation.md`
 - `docs/phase7_application_layer_consolidation_7_2_3_dashboard_state_derivation_normalization.md`
 - `docs/phase7_application_layer_consolidation_7_2_4_auth_startup_initial_state_boundary_cleanup.md`
+- `docs/phase7_application_layer_consolidation_7_2_5_formal_closure.md`
 
 Documents:
 
@@ -193,9 +192,6 @@ Documents:
 - billing state-boundary consolidation
 - dashboard state-derivation normalization
 - auth/startup initial-boundary cleanup
-
-Planned continuation:
-
 - formal closure of Phase 7.2
 
 ---
@@ -232,6 +228,7 @@ Planned continuation:
 7. `docs/phase7_application_layer_consolidation_7_2_2_billing_state_boundary_consolidation.md`
 8. `docs/phase7_application_layer_consolidation_7_2_3_dashboard_state_derivation_normalization.md`
 9. `docs/phase7_application_layer_consolidation_7_2_4_auth_startup_initial_state_boundary_cleanup.md`
+10. `docs/phase7_application_layer_consolidation_7_2_5_formal_closure.md`
 
 ---
 
@@ -246,11 +243,7 @@ Current reflected status:
 - Phase 5 completed
 - Phase 6 completed
 - Phase 7.1 completed and formally closed
-- Phase 7.2.1 completed
-- Phase 7.2.2 completed
-- Phase 7.2.3 completed
-- Phase 7.2.4 implemented
-- next planned step: Phase 7.2.5
+- Phase 7.2 completed and formally closed
 
 ---
 
@@ -262,5 +255,5 @@ At this point, the codebase is documented as:
 
 - structurally normalized
 - controller-backed in the main features
-- actively clarifying state ownership and initial-boundary behavior
-- materially cleaner in billing, dashboard, and auth/startup than in the initial Phase 7 baseline
+- clearer in ownership and derivation boundaries than in the initial Phase 7 baseline
+- closed formally for the entire Phase 7.2 workstream
