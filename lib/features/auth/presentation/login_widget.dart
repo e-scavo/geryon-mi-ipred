@@ -15,38 +15,56 @@ class _LoginPageWidgetState extends ConsumerState<LoginPageWidget> {
   final _shakeKey = GlobalKey<ShakeTextFieldState>();
   final _controller = LoginController();
 
-  bool _rememberMe = true;
-  bool _loading = false;
+  late LoginViewState _loginState;
+
+  @override
+  void initState() {
+    super.initState();
+    _loginState = _controller.buildInitialViewState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkAutoLogin();
+    });
+  }
 
   Future<void> _checkAutoLogin() async {
-    final initialState = await _controller.prepareInitialState();
+    final bootstrapResult = await _controller.prepareViewState();
 
     if (!mounted) {
       return;
     }
 
-    _dniController.text = initialState.dni;
+    _dniController.text = bootstrapResult.state.dni;
 
     setState(() {
-      _rememberMe = initialState.rememberMe;
-      _loading = initialState.shouldAutoSubmit;
+      _loginState = bootstrapResult.state;
     });
 
-    if (initialState.shouldAutoSubmit) {
-      await _login();
-      return;
+    if (bootstrapResult.shouldAutoSubmit) {
+      await _login(isAutoSubmit: true);
     }
-
-    setState(() => _loading = false);
   }
 
-  Future<void> _login() async {
-    setState(() => _loading = true);
+  Future<void> _login({
+    bool isAutoSubmit = false,
+  }) async {
+    final currentDni = _dniController.text.trim();
+    final currentRememberMe = _loginState.rememberMe;
+
+    if (!isAutoSubmit) {
+      setState(() {
+        _loginState = _controller.buildSubmitLoadingState(
+          currentState: _loginState,
+          dni: currentDni,
+          rememberMe: currentRememberMe,
+        );
+      });
+    }
 
     final result = await _controller.login(
       ref: ref,
-      dni: _dniController.text,
-      rememberMe: _rememberMe,
+      dni: currentDni,
+      rememberMe: currentRememberMe,
     );
 
     if (!mounted) {
@@ -54,7 +72,13 @@ class _LoginPageWidgetState extends ConsumerState<LoginPageWidget> {
     }
 
     if (!result.success) {
-      setState(() => _loading = false);
+      setState(() {
+        _loginState = _controller.buildSubmitFailureState(
+          currentState: _loginState,
+          dni: currentDni,
+          rememberMe: currentRememberMe,
+        );
+      });
 
       if ((result.errorMessage ?? '').contains('DNI/CUIT válido')) {
         _shakeKey.currentState?.shake();
@@ -78,15 +102,9 @@ class _LoginPageWidgetState extends ConsumerState<LoginPageWidget> {
   }
 
   @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _checkAutoLogin();
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final isLoading = _loginState.isLoading;
+
     return Scaffold(
       body: Center(
         child: Padding(
@@ -108,16 +126,25 @@ class _LoginPageWidgetState extends ConsumerState<LoginPageWidget> {
               Row(
                 children: [
                   Checkbox(
-                      value: _rememberMe,
-                      onChanged: (v) => setState(() => _rememberMe = v!)),
+                    value: _loginState.rememberMe,
+                    onChanged: isLoading
+                        ? null
+                        : (v) {
+                            setState(() {
+                              _loginState = _loginState.copyWith(
+                                rememberMe: v ?? false,
+                              );
+                            });
+                          },
+                  ),
                   Text("Recordarme"),
                 ],
               ),
               SizedBox(height: 16),
               ElevatedButton(
-                onPressed: _loading ? null : _login,
+                onPressed: isLoading ? null : _login,
                 child:
-                    _loading ? CircularProgressIndicator() : Text("Ingresar"),
+                    isLoading ? CircularProgressIndicator() : Text("Ingresar"),
               ),
             ],
           ),
@@ -146,9 +173,10 @@ class PopUpLoginWidget<T> extends PopupRoute<T> {
   Widget buildPage(BuildContext context, Animation<double> animation,
       Animation<double> secondaryAnimation) {
     return const Center(
-        child: Material(
-      type: MaterialType.transparency,
-      child: LoginPageWidget(),
-    ));
+      child: Material(
+        type: MaterialType.transparency,
+        child: LoginPageWidget(),
+      ),
+    );
   }
 }

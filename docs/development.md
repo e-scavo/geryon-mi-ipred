@@ -25,6 +25,7 @@ The current focus is:
 
 - clarifying state ownership
 - normalizing derivation boundaries
+- clarifying initial runtime boundaries
 - reducing coordination ambiguity
 - keeping changes incremental and reversible
 
@@ -165,6 +166,39 @@ Do not mix source state back into `DashboardResolvedState` unless strictly neces
 
 ---
 
+### Auth/Startup-Specific Rule After 7.2.4
+
+Auth and startup now have an explicit initial-boundary split.
+
+That means new changes must preserve this distinction:
+
+#### Startup presentation/runtime surface owns
+
+- rendering the initial loading surface
+- triggering the existing startup flow
+- consuming the local startup boundary state
+
+#### Auth presentation owns
+
+- `_dniController`
+- `_shakeKey`
+- direct user interaction
+- rendering login UI
+
+#### Auth controller owns
+
+- login feature-state construction
+- bootstrap-prepared auth state
+- bootstrap-ready auth state
+- manual submit loading state
+- submit failure recovery state
+
+Do not collapse bootstrap loading and submit loading back into a single ambiguous widget flag.
+
+Do not replace the explicit startup boundary with a generic boolean again without clear justification.
+
+---
+
 ## Controller Layer Rules
 
 Controllers may own:
@@ -198,7 +232,6 @@ Validation remains mandatory after each implementation step.
 - customer switching
 - billing load
 - billing reload on customer change
-- billing error rendering
 - logout
 
 ### Phase 7.2-specific checks
@@ -224,6 +257,16 @@ Validation remains mandatory after each implementation step.
 - logout still behaves identically
 - embedded billing widgets still react correctly after dashboard-driven client changes
 
+### Auth/Startup-specific checks after 7.2.4
+
+- startup still exits bootstrap correctly
+- remembered DNI still hydrates correctly
+- autologin still executes when expected
+- manual login still works identically
+- invalid manual login still produces the same visible feedback
+- login popup still closes correctly after success
+- authenticated runtime still opens correctly after the initial boundary completes
+
 ---
 
 ## Risk Management
@@ -234,6 +277,7 @@ Validation remains mandatory after each implementation step.
 - widening a local refactor into a global redesign
 - breaking customer-driven reload behavior
 - breaking dashboard-derived render state
+- breaking startup/auth initial-entry semantics
 - mixing state cleanup with unrelated navigation/runtime changes
 
 ### Mitigation
@@ -253,6 +297,7 @@ Validation remains mandatory after each implementation step.
 - feature-local state objects
 - feature-local source snapshot models
 - derived-state normalization
+- initial-boundary normalization
 - manual coordination reduction when runtime-equivalent
 - documentation alignment
 - explicit ownership cleanup inside already-scoped features
@@ -267,6 +312,7 @@ Validation remains mandatory after each implementation step.
 - backend flow redesign
 - navigation redesign mixed into feature-boundary cleanup
 - hidden state-management migration
+- broad lifecycle redesign during 7.2.4
 
 ---
 
@@ -284,7 +330,7 @@ Reasoning:
 
 - billing had the highest concentration of dispersed feature state
 - dashboard mainly had derived-state boundary debt
-- auth/startup share the same initial-boundary concern
+- auth/startup shared the same initial-boundary concern
 
 This order should only change with code-backed justification.
 
@@ -309,8 +355,8 @@ Development at this stage is not about rewriting Mi IP·RED.
 
 It is about tightening boundaries safely.
 
-After Phase 7.2.3, dashboard now joins billing as a feature with a materially stronger boundary in code.
+After Phase 7.2.4, auth/startup now join billing and dashboard as areas with materially stronger architectural boundaries in code.
 
 The next implementation step should continue that same discipline in:
 
-- `Phase 7.2.4 — Auth & Startup Initial State Boundary Cleanup`
+- `Phase 7.2.5 — Formal Closure of Phase 7.2`

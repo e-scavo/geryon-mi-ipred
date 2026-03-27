@@ -19,6 +19,7 @@ The current documented baseline is:
 - Phase 7.2 started
 - billing state-boundary consolidation implemented
 - dashboard state-derivation normalization implemented
+- auth/startup initial-boundary cleanup implemented
 
 This index reflects that state.
 
@@ -184,16 +185,17 @@ Documents:
 - `docs/phase7_application_layer_consolidation_7_2_1_feature_state_inventory.md`
 - `docs/phase7_application_layer_consolidation_7_2_2_billing_state_boundary_consolidation.md`
 - `docs/phase7_application_layer_consolidation_7_2_3_dashboard_state_derivation_normalization.md`
+- `docs/phase7_application_layer_consolidation_7_2_4_auth_startup_initial_state_boundary_cleanup.md`
 
 Documents:
 
 - state ownership inventory
 - billing state-boundary consolidation
 - dashboard state-derivation normalization
+- auth/startup initial-boundary cleanup
 
 Planned continuation:
 
-- auth & startup initial-boundary cleanup
 - formal closure of Phase 7.2
 
 ---
@@ -229,6 +231,7 @@ Planned continuation:
 6. `docs/phase7_application_layer_consolidation_7_2_1_feature_state_inventory.md`
 7. `docs/phase7_application_layer_consolidation_7_2_2_billing_state_boundary_consolidation.md`
 8. `docs/phase7_application_layer_consolidation_7_2_3_dashboard_state_derivation_normalization.md`
+9. `docs/phase7_application_layer_consolidation_7_2_4_auth_startup_initial_state_boundary_cleanup.md`
 
 ---
 
@@ -245,8 +248,9 @@ Current reflected status:
 - Phase 7.1 completed and formally closed
 - Phase 7.2.1 completed
 - Phase 7.2.2 completed
-- Phase 7.2.3 implemented
-- next planned step: Phase 7.2.4
+- Phase 7.2.3 completed
+- Phase 7.2.4 implemented
+- next planned step: Phase 7.2.5
 
 ---
 
@@ -258,5 +262,5 @@ At this point, the codebase is documented as:
 
 - structurally normalized
 - controller-backed in the main features
-- actively clarifying state ownership and derivation boundaries
-- already cleaner in billing and dashboard than in the initial Phase 7 baseline
+- actively clarifying state ownership and initial-boundary behavior
+- materially cleaner in billing, dashboard, and auth/startup than in the initial Phase 7 baseline

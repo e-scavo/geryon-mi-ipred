@@ -200,15 +200,46 @@ and not an auth-only cleanup.
 
 ---
 
-## Decision 15 — No Global Application Service Layer During Phase 7.2
+## Decision 15 — Auth Initial Boundary Must Distinguish Bootstrap From Submit
 
-Even after billing consolidation and dashboard derivation cleanup, Phase 7.2 remains a boundary-clarification phase, not a platform redesign phase.
+The login feature should no longer use a single ambiguous loading flag for both:
+
+- bootstrap autologin loading
+- manual submit loading
+
+The adopted solution is:
+
+- introduce `LoginViewState`
+- separate `isBootstrapLoading` from `isSubmitLoading`
+- let the controller own those transitions
+
+This makes auth initial-boundary behavior more explicit without altering runtime flow.
+
+---
+
+## Decision 16 — Startup Boundary Must Be Explicit Without Redesigning Startup Flow
+
+The startup surface should no longer rely on a generic local boolean as its only state representation.
+
+The adopted solution is:
+
+- introduce `AppStartupViewState`
+- make initial-boundary completion explicit
+- preserve the existing trigger sequence and popup flow
+
+This improves ownership clarity without widening scope into lifecycle redesign.
+
+---
+
+## Decision 17 — No Global Application Service Layer During Phase 7.2
+
+Even after billing consolidation, dashboard derivation cleanup, and auth/startup boundary cleanup, Phase 7.2 remains a boundary-clarification phase, not a platform redesign phase.
 
 For that reason, no new global application service layer is introduced here.
 
 ---
 
-## Decision 16 — Runtime Order Has Priority Over Refactor Elegance
+## Decision 18 — Runtime Order Has Priority Over Refactor Elegance
 
 In all Phase 7.2 work, preserving runtime order has higher priority than achieving the most abstract or elegant internal design.
 
@@ -217,6 +248,7 @@ This is especially important because:
 - customer changes drive downstream reload behavior
 - dashboard state affects visible UI immediately
 - billing reacts to dashboard-driven customer selection
+- startup/auth sequence affects the entire app entry behavior
 
 ---
 
@@ -229,7 +261,8 @@ The active architectural contract is now:
 3. classify ownership explicitly
 4. consolidate the strongest hotspot first
 5. normalize dashboard source-to-derived boundaries next
-6. preserve transitional mechanisms where needed
-7. continue incrementally with auth/startup next
+6. clarify auth/startup initial-boundary behavior next
+7. preserve transitional mechanisms where needed
+8. close Phase 7.2 only after local validation
 
 That is the decision chain currently governing Phase 7.2.

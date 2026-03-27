@@ -3,20 +3,13 @@ import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geryon_web_app_ws_v2/common_vars.dart';
+import 'package:geryon_web_app_ws_v2/core/utils/utils.dart';
 import 'package:geryon_web_app_ws_v2/features/dashboard/presentation/dashboard_page.dart';
 import 'package:geryon_web_app_ws_v2/models/GeneralLoadingProgress/popup_model.dart';
-import 'package:geryon_web_app_ws_v2/core/utils/utils.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // final savedDoc = await SessionStorage.getSavedDni();
-  // // runApp(
-  // //   ProviderScope(
-  // //     child: MyApp(
-  // //         startingPage:
-  // //             savedDoc != null ? DashboardPage(dni: savedDoc) : LoginPage()),
-  // //   ),
-  // // );
+
   if (!Utils.isProductionWeb) {
     developer.log(
       '🚀 Main: main: Iniciando la aplicación en modo DEBUG',
@@ -24,6 +17,7 @@ void main() async {
     );
     debug = true;
   }
+
   runApp(
     ProviderScope(
       child: MyApp(),
@@ -32,11 +26,8 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
-  //final Widget startingPage;
-
   const MyApp({
     super.key,
-    //required this.startingPage,
   });
 
   @override
@@ -46,22 +37,25 @@ class MyApp extends StatelessWidget {
       title: 'Mi IP·RED',
       debugShowCheckedModeBanner: false,
       theme: ipredTheme,
-      // theme: ThemeData(
-      //   colorScheme: ipredScheme,
-      //   useMaterial3: true,
-      //   scaffoldBackgroundColor: ipredScheme.surface,
-      //   appBarTheme: AppBarTheme(
-      //     backgroundColor: ipredScheme.primary,
-      //     foregroundColor: ipredScheme.onPrimary,
-      //   ),
-      //   elevatedButtonTheme: ElevatedButtonThemeData(
-      //     style: ElevatedButton.styleFrom(
-      //       backgroundColor: ipredScheme.primary,
-      //       foregroundColor: ipredScheme.onPrimary,
-      //     ),
-      //   ),
-      // ),
       home: MyStartingPage(),
+    );
+  }
+}
+
+class AppStartupViewState {
+  final bool hasCompletedInitialBoundary;
+
+  const AppStartupViewState({
+    required this.hasCompletedInitialBoundary,
+  });
+
+  const AppStartupViewState.initial() : hasCompletedInitialBoundary = false;
+
+  bool get isBootstrapping => !hasCompletedInitialBoundary;
+
+  AppStartupViewState markBoundaryCompleted() {
+    return const AppStartupViewState(
+      hasCompletedInitialBoundary: true,
     );
   }
 }
@@ -76,11 +70,15 @@ class MyStartingPage extends ConsumerStatefulWidget {
 class _MyStartingPageState extends ConsumerState<MyStartingPage> {
   static final String className = '_MyStartingPageState';
   static final String logClassName = '.::$className::.';
-  bool isInit = true;
+
+  late AppStartupViewState _startupState;
   int buildTimes = 0;
+
   @override
   void initState() {
     super.initState();
+    _startupState = const AppStartupViewState.initial();
+
     ref.read(notifierServiceProvider).addListener(() {
       if (debug) {
         developer.log(
@@ -89,26 +87,40 @@ class _MyStartingPageState extends ConsumerState<MyStartingPage> {
         );
       }
     });
+
     if (debug) {
       developer.log(
         '🚀 initState ejecutado',
         name: '$logClassName - .::initState::.',
       );
     }
-    // 🚀 Esto fuerza la ejecución del FutureProvider
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initWork();
     });
   }
 
-  _initWork() async {
-    String functionName = '_initWork';
-    String logFunctionName = '.::$functionName::.';
+  void _completeStartupBoundary() {
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _startupState = _startupState.markBoundaryCompleted();
+    });
+  }
+
+  Future<void> _initWork() async {
+    const functionName = '_initWork';
+    const logFunctionName = '.::_initWork::.';
+
     developer.log(
       'Iniciando trabajo...',
       name: '$logClassName - $logFunctionName',
     );
+
     var appStatus = ref.read(notifierServiceProvider);
+
     developer.log(
       'initStage:${appStatus.initStage.toString()}',
       name: '$logClassName - $logFunctionName',
@@ -118,64 +130,54 @@ class _MyStartingPageState extends ConsumerState<MyStartingPage> {
       name: '$logClassName - $logFunctionName',
     );
 
-    if (!appStatus.isReady) {
-      developer.log(
-        'App no está lista, inicializando...',
-        name: '$logClassName - $logFunctionName',
-      );
-      bool rStatus =
-          await Navigator.of(context).push(ModelGeneralPoPUpLoadingProgress());
-      developer.log(
-        'rStatus: $rStatus',
-        name: '$logClassName - $logFunctionName',
-      );
-      if (!mounted) {
-        return false;
-      }
-      if (!rStatus) {
-        return;
-      }
-      setState(() {
-        isInit = false;
-      });
+    if (appStatus.isReady) {
+      _completeStartupBoundary();
+      return;
     }
-    /*
 
-    appStatus = ref.read(notifierServiceProvider);
-    if (!appStatus.isUserLoggedIn) {
-      //developer.log('appStatus.isUserLoggedIn :${appStatus.isUserLoggedIn}');
-      bool rLogin = await Navigator.of(context).push(ModelGeneralPoPUpLogin());
-      if (!mounted) {
-        return false;
-      }
-      if (!rLogin) {
-        return;
-      }
-      //developer.log('rLogin: ${rLogin} ${appStatus.isReady}');
-      developer.log('22222');
+    developer.log(
+      'App no está lista, inicializando...',
+      name: '$logClassName - $logFunctionName',
+    );
+
+    final rStatus =
+        await Navigator.of(context).push(ModelGeneralPoPUpLoadingProgress());
+
+    developer.log(
+      'rStatus: $rStatus',
+      name: '$logClassName - $logFunctionName',
+    );
+
+    if (!mounted) {
+      return;
     }
-    */
-    //return null;
+
+    if (!rStatus) {
+      return;
+    }
+
+    _completeStartupBoundary();
   }
 
   @override
   Widget build(BuildContext context) {
-    String functionName = 'BUILD';
-    String logFunctionName = '.::$functionName::.';
+    const functionName = 'BUILD';
+    const logFunctionName = '.::BUILD::.';
     buildTimes++;
 
     developer.log(
       'Construyendo la página de inicio... [$buildTimes]',
       name: '$logClassName - $logFunctionName',
     );
-    //final _ = ref.watch(serviceProviderConfigProvider);
+
     final appStatus = ref.watch(notifierServiceProvider);
-    //if (!appStatus.isReady) {
-    if (isInit) {
+
+    if (_startupState.isBootstrapping) {
       developer.log(
-        'isInit es true, AÚN ejecutando _initWork...',
+        'Startup boundary aún en bootstrap...',
         name: '$logClassName - $logFunctionName',
       );
+
       return Container(
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.primaryContainer,
@@ -188,28 +190,28 @@ class _MyStartingPageState extends ConsumerState<MyStartingPage> {
           ),
         ),
       );
-    } else {
-      if (appStatus.isProgress) {
-        developer.log(
-          'App no está lista, mostrando indicador de carga...',
-          name: '$logClassName - $logFunctionName',
-        );
-
-        return Container(
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.primaryContainer,
-          ),
-          child: const Center(
-            child: SizedBox(
-              width: 40,
-              height: 40,
-              child: CircularProgressIndicator(),
-            ),
-          ),
-        );
-      }
-      //return const Placeholder();
-      return DashboardPage(clientID: -1); // Aquí puedes pasar el clientID real
     }
+
+    if (appStatus.isProgress) {
+      developer.log(
+        'App no está lista, mostrando indicador de carga...',
+        name: '$logClassName - $logFunctionName',
+      );
+
+      return Container(
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.primaryContainer,
+        ),
+        child: const Center(
+          child: SizedBox(
+            width: 40,
+            height: 40,
+            child: CircularProgressIndicator(),
+          ),
+        ),
+      );
+    }
+
+    return DashboardPage(clientID: -1);
   }
 }

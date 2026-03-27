@@ -68,7 +68,7 @@ Without clarifying those boundaries, future application-layer work would become 
 - state ownership inventory
 - billing state-boundary consolidation
 - dashboard state-derivation normalization
-- future preparation for auth/startup initial-boundary cleanup
+- auth/startup initial-boundary cleanup
 - documentation alignment with real runtime structure
 
 ### Excluded
@@ -129,6 +129,7 @@ The current debt is that some runtime surfaces still contain too much coordinati
 - `docs/phase7_application_layer_consolidation_7_2_1_feature_state_inventory.md`
 - `docs/phase7_application_layer_consolidation_7_2_2_billing_state_boundary_consolidation.md`
 - `docs/phase7_application_layer_consolidation_7_2_3_dashboard_state_derivation_normalization.md`
+- `docs/phase7_application_layer_consolidation_7_2_4_auth_startup_initial_state_boundary_cleanup.md`
 
 ---
 
@@ -217,7 +218,7 @@ Formal status:
 
 ### Phase 7.2.3 — Dashboard State Derivation Normalization
 
-This subphase normalizes dashboard state derivation without changing the current reactive source.
+This subphase normalized dashboard state derivation without changing the current reactive source.
 
 Implemented characteristics:
 
@@ -227,29 +228,34 @@ Implemented characteristics:
 - `DashboardPage` keeps the `ref.watch(...)` reactivity boundary
 - `DashboardController` no longer resolves dashboard state directly from `WidgetRef`
 
-Important constraint preserved:
-
-- this is not a new state-management architecture
-- this is a feature-local derivation-boundary cleanup
-
 Formal status:
 
-- implemented in code
-- pending local validation in the real project environment
+- completed
 
 ---
 
 ### Phase 7.2.4 — Auth & Startup Initial State Boundary Cleanup
 
-Planned goal:
+This subphase clarifies the shared initial boundary between startup and auth.
 
-- clarify the initial boundary currently distributed across auth and startup
-- separate UI state from feature/bootstrap state
-- preserve current entry ordering and behavior
+Implemented characteristics:
 
-Status:
+- an explicit `LoginViewState` now represents auth feature state during initial entry and submit transitions
+- bootstrap loading and manual submit loading are now distinct
+- `LoginController` now owns auth-state construction and transition helpers
+- `LoginPageWidget` now renders from a single aggregated auth feature state
+- an explicit `AppStartupViewState` now represents startup initial-boundary completion in `main.dart`
+- the existing startup trigger sequence remains in place
 
-- not started
+Important constraint preserved:
+
+- this is not a lifecycle redesign
+- this is a local initial-boundary cleanup
+
+Formal status:
+
+- implemented in code
+- pending local validation in the real project environment
 
 ---
 
@@ -290,7 +296,7 @@ Previously validated at documentation/architecture level:
 
 ### Phase 7.2.2 validation baseline
 
-Validation target already defined:
+Previously defined:
 
 - billing initial load
 - customer-change reload
@@ -298,29 +304,41 @@ Validation target already defined:
 - error state rendering
 - successful data rendering after reload
 
-### Phase 7.2.3 validation target
+### Phase 7.2.3 validation baseline
+
+Previously defined:
+
+- dashboard active customer rendering
+- customer selector behavior
+- dashboard-driven customer update behavior
+- logout behavior
+- embedded billing widget reactivity
+
+### Phase 7.2.4 validation target
 
 This subphase must validate:
 
-- dashboard still renders the active customer correctly
-- customer selector still shows the expected options
-- customer switching still updates dashboard data
-- logout still behaves identically
-- embedded billing widgets still react correctly after dashboard-driven client changes
+- startup still completes correctly
+- startup loading behavior remains correct
+- remembered DNI still hydrates correctly
+- autologin still runs when expected
+- manual login still works
+- invalid login still shows the same visible feedback
+- authenticated runtime still opens correctly after the initial boundary completes
 
 ---
 
 ## Release Impact
 
-Phase 7.2.3 does not change the product release surface.
+Phase 7.2.4 does not change the product release surface.
 
 It affects only internal ownership and maintainability.
 
 Release-relevant impact is indirect:
 
-- lower future dashboard refactor risk
-- clearer dashboard derivation boundary
-- simpler future debugging of active-client resolution and rendering data preparation
+- clearer startup/auth boundary
+- lower future refactor risk around login entry flow
+- simpler debugging of bootstrap-vs-submit behavior
 
 ---
 
@@ -333,18 +351,18 @@ Release-relevant impact is indirect:
 - startup/auth boundary remains partially mixed
 - later refactors become harder and riskier
 
-### Risk inside 7.2.3
+### Risk inside 7.2.4
 
-- breaking active-client resolution
-- breaking dashboard reactivity
-- accidentally widening into a broader provider redesign
+- breaking autologin semantics
+- breaking startup completion
+- widening into an unnecessary lifecycle redesign
 
 ### Mitigation
 
-- keep `ref.watch(...)` in the page
-- normalize only the source-to-derived boundary
-- preserve `ServiceProvider` contract completely
-- avoid touching UI and feature actions beyond derivation cleanup
+- preserve current trigger order
+- preserve current login call path
+- preserve ServiceProvider contract completely
+- only normalize local state boundaries
 
 ---
 
@@ -358,12 +376,12 @@ Phase 7 overall still does not solve:
 - complete ServiceProvider replacement
 - broad lifecycle redesign across all features
 
-Phase 7.2.3 specifically does not solve:
+Phase 7.2.4 specifically does not solve:
 
-- auth/startup initial-boundary cleanup
-- replacement of dashboard reactivity with a new provider model
-- removal of ServiceProvider as the global runtime source
-- global application state modeling
+- global auth provider architecture
+- ServiceProvider replacement
+- full application lifecycle centralization
+- formal closure of Phase 7.2
 
 ---
 
@@ -371,16 +389,17 @@ Phase 7.2.3 specifically does not solve:
 
 Phase 7 remains coherent and intentionally incremental.
 
-The project first normalized structure, then extracted request orchestration, then clarified billing feature-state ownership, and now has clarified dashboard derivation boundaries.
+The project first normalized structure, then extracted request orchestration, then clarified billing and dashboard boundaries, and now has clarified the shared startup/auth initial boundary.
 
 That progression is correct.
 
-With Phase 7.2.3, dashboard now has a stronger feature boundary:
+With Phase 7.2.4, the app now has a stronger initial-boundary contract:
 
-- presentation owns reactivity and rendering
-- controller owns source-to-derived normalization
+- startup boundary is explicit
+- auth bootstrap boundary is explicit
+- submit interaction boundary is explicit
 - runtime behavior remains protected
 
 The next correct continuation, after validating this step locally, is:
 
-- `Phase 7.2.4 — Auth & Startup Initial State Boundary Cleanup`
+- `Phase 7.2.5 — Formal Closure of Phase 7.2`
