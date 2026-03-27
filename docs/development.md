@@ -1,319 +1,351 @@
-# 🛠️ Development Rules
+# 🛠️ Development Guidelines
 
 ## Objective
 
-Define the active engineering rules of Mi IP·RED so that the project can continue improving its internal architecture without breaking the validated runtime behavior that already exists.
-
----
+Define the active implementation rules for Mi IP·RED so that future work preserves runtime stability, respects the current architecture validated in code, and evolves the application layer incrementally without reintroducing ambiguity that earlier phases already removed.
 
 ## Initial Context
 
-Mi IP·RED has already completed:
+Mi IP·RED is an already working application.
 
-- backend/runtime stabilization
-- ServiceProvider decomposition
-- presentation structure cleanup
-- feature-local controller extraction for auth, dashboard, and billing
-- state-coordination boundary clarification in Phase 7.2
+Its current codebase has already gone through:
 
-That means development is no longer focused on moving request logic out of widgets.
+- structural cleanup
+- ServiceProvider decomposition and protection
+- presentation-layer normalization
+- feature-local controller extraction
+- state ownership clarification
 
-That part has already been done.
+The project is now entering Phase 7.3.
 
-The current architectural baseline now includes:
+That means the main architectural risk has shifted.
 
-- controller-backed feature orchestration
-- explicit billing feature-state boundaries
-- explicit dashboard source-to-derived boundaries
-- explicit auth/startup initial-boundary modeling
+The system is no longer mainly threatened by feature-local logic living in widgets.
 
----
+The main visible risk now is implicit coordination between already-separated runtime surfaces.
 
-## Development Principle
+## Problem Statement
 
-The primary rule remains:
+After Phase 7.1 and Phase 7.2, the project has better boundaries inside each feature.
 
-**improve structure without breaking runtime behavior**
+However, application flows still span several files and owners.
 
-This rule overrides convenience and elegance.
+Examples visible in the real code include:
 
----
+- startup bootstrap path in `main.dart`
+- backend-status to login decision in `ServiceProvider`
+- login popup and auto-submit behavior in auth
+- dashboard-driven client change propagating to billing through runtime state
+- logout clearing session storage and then re-entering backend status flow
 
-## Core Constraints
+Without explicit development rules, future work could accidentally:
 
-### Backend Flow Protection
+- reintroduce business-adjacent logic into widgets
+- overload ServiceProvider with app-coordination responsibilities
+- create a broad coordinator too early
+- blur the distinction between session persistence, authenticated runtime context, active client, and startup readiness
 
-The following must remain stable unless a phase explicitly and safely targets them:
+## Scope
 
-- handshake lifecycle
-- login flow sequencing
-- tracked request behavior
-- message structure
-- response parsing semantics
+These guidelines apply to:
 
----
+- `lib/main.dart`
+- `lib/features/auth/**`
+- `lib/features/dashboard/**`
+- `lib/features/billing/**`
+- `lib/models/ServiceProvider/**`
+- `lib/core/session/**`
+- phase documentation related to Phase 7
 
-### ServiceProvider Protection
+These guidelines do not authorize by themselves:
 
-`ServiceProvider` remains protected infrastructure.
-
-Rules:
-
-- do not redesign it casually
-- do not change its public runtime contract
-- do not use structural cleanup as an excuse to alter behavior
-- do not move hidden state semantics into or out of it without scoped justification
-
----
-
-### No Hidden Runtime Redesign
-
-Refactors must not silently include:
-
-- UI redesign
-- navigation redesign
 - backend protocol changes
-- broad lifecycle rewrites
-- state-management migrations disguised as cleanup
-
-Every change must stay within its declared phase boundary.
-
----
-
-## Presentation Layer Rules
-
-### Post-Phase 7.1 Rule
-
-Once a feature already has a controller, widgets must not reabsorb business-adjacent orchestration inline.
-
-This currently applies to:
-
-- auth
-- dashboard
-- billing
-
----
-
-### Post-Phase 7.2 Ownership Rule
-
-Phase 7.2 is now complete.
-
-Its resulting rule remains active:
-
-widgets must not continue accumulating feature functional state once that state has already been identified as non-UI state and successfully normalized behind an explicit feature-local boundary.
-
-This does **not** mean all local state is forbidden.
-
-It means every state value should be judged explicitly as one of:
-
-- UI state
-- feature functional state
-- derived state
-- global source state
-
-If ownership is unclear, document first and move later.
-
----
-
-### Billing-Specific Rule After Phase 7.2
-
-Billing now has an explicit feature-state boundary.
-
-That means new billing changes must preserve this split:
-
-#### Presentation owns
-
-- rendering
-- visual composition
-- scroll controllers
-- view-specific UI behavior
-
-#### Controller owns
-
-- billing functional-state transitions
-- tracked client resolution
-- reload decisions
-- feature-state construction
-
-Do not reintroduce scattered billing lifecycle flags inside the widget.
-
----
-
-### Dashboard-Specific Rule After Phase 7.2
-
-Dashboard now has an explicit source-to-derived boundary.
-
-That means new dashboard changes must preserve this split:
-
-#### Presentation owns
-
-- `ref.watch(...)` reactivity
-- rendering
-- title/actions/body composition
-- user interaction dispatch
-
-#### Controller owns
-
-- dashboard source snapshot construction
-- active-client resolution
-- client-option derivation
-- display-name derivation
-- render-ready derived-state construction
-
-Do not reintroduce direct `WidgetRef`-based derivation inside the controller.
-
-Do not mix source state back into `DashboardResolvedState` unless strictly necessary and explicitly justified.
-
----
-
-### Auth/Startup-Specific Rule After Phase 7.2
-
-Auth and startup now have an explicit initial-boundary split.
-
-That means new changes must preserve this distinction:
-
-#### Startup presentation/runtime surface owns
-
-- rendering the initial loading surface
-- triggering the existing startup flow
-- consuming the local startup boundary state
-
-#### Auth presentation owns
-
-- `_dniController`
-- `_shakeKey`
-- direct user interaction
-- rendering login UI
-
-#### Auth controller owns
-
-- login feature-state construction
-- bootstrap-prepared auth state
-- bootstrap-ready auth state
-- manual submit loading state
-- submit failure recovery state
-
-Do not collapse bootstrap loading and submit loading back into a single ambiguous widget flag.
-
-Do not replace the explicit startup boundary with a generic boolean again without clear justification.
-
----
-
-## Controller Layer Rules
-
-Controllers may own:
-
-- request orchestration
-- input normalization
-- feature lifecycle decisions
-- derived state construction
-- feature-local state transition helpers
-- session/runtime coordination when feature-scoped
-
-Controllers must not own:
-
-- rendering concerns
-- widget-specific animation behavior
-- decorative UI rules
-- broad global orchestration unless a later phase explicitly introduces it
-
----
-
-## Validation Policy
-
-Validation remains mandatory after each implementation step.
-
-### Core checks
-
-- app startup
-- login failure
-- login success
-- dashboard render
-- customer switching
-- billing load
-- billing reload on customer change
-- logout
-
-### Consolidated Phase 7 baseline
-
-Any future phase starting from this point should preserve:
-
-- startup exits bootstrap correctly
-- remembered DNI hydrates correctly
-- autologin executes when expected
-- manual login works identically
-- invalid manual login produces the same visible feedback
-- dashboard active-client rendering stays correct
-- customer switching still updates dependent content
-- billing still loads and reloads correctly
-- logout still behaves correctly
-
----
-
-## Risk Management
-
-### Current risks
-
-- reintroducing logic into widgets
-- widening a local refactor into a global redesign
-- breaking customer-driven reload behavior
-- breaking dashboard-derived render state
-- breaking startup/auth initial-entry semantics
-- mixing ownership cleanup with unrelated navigation/runtime changes
-
-### Mitigation
-
-- preserve current runtime trigger order
-- keep reactivity where it already works
-- prefer explicit ownership over clever abstractions
-- document each ownership decision
-- do not reopen Phase 7.2 implicitly unless a real new problem justifies it
-
----
-
-## Allowed Changes
-
-- feature-local controller extension
-- feature-local state objects
-- feature-local source snapshot models
-- derived-state normalization where a new feature actually needs it
-- manual coordination reduction when runtime-equivalent
-- documentation alignment
-- explicit ownership cleanup inside already-scoped features
-
----
-
-## Not Allowed Changes
-
-- global application service layer introduction without explicit phase scope
-- full provider architecture replacement
 - ServiceProvider redesign
-- backend flow redesign
-- navigation redesign mixed into feature-boundary cleanup
-- hidden state-management migration
-- reopening closed Phase 7.2 work without real code-backed justification
+- navigation redesign
+- UI redesign
+- full state-management replacement
+- broad new application-layer infrastructure without explicit phase justification
 
----
+## Root Cause Analysis
 
-## Current Working Rule
+Mi IP·RED evolved correctly in practical order:
 
-Before moving any state, answer these questions:
+1. make the runtime work
+2. protect backend flow
+3. organize structure
+4. extract feature-local logic
+5. clarify state ownership
+6. only then inventory coordination between already-separated features
 
-1. Is it purely UI state?
-2. Is it feature functional state?
-3. Is it derived from another source-of-truth?
-4. Is it still manually coordinated only because the boundary has not yet been formalized?
+This order matters.
 
-If the answer is unclear, do not move it yet.
+If a coordination layer had been introduced before feature-local extraction and ownership clarification, the project would likely have created abstractions on top of unstable boundaries.
 
----
+Phase 7.3 is valid precisely because Phase 7.1 and Phase 7.2 are already complete.
+
+## Files Affected
+
+Runtime areas governed by these rules:
+
+- `lib/main.dart`
+- `lib/features/auth/controllers/login_controller.dart`
+- `lib/features/auth/presentation/login_widget.dart`
+- `lib/features/dashboard/controllers/dashboard_controller.dart`
+- `lib/features/dashboard/presentation/dashboard_page.dart`
+- `lib/features/billing/controllers/billing_controller.dart`
+- `lib/features/billing/presentation/billing_widget.dart`
+- `lib/models/ServiceProvider/data_model.dart`
+- `lib/core/session/session_storage.dart`
+
+Documentation governed by these rules:
+
+- `docs/development.md`
+- `docs/decisions.md`
+- `docs/phase7_application_layer_consolidation.md`
+- `docs/phase7_application_layer_consolidation_7_3_1_application_flow_inventory.md`
+
+## Implementation Characteristics
+
+### 1. Runtime Preservation Rule
+
+The backend/runtime contract remains the highest-priority constraint.
+
+This includes preserving:
+
+- startup initialization behavior
+- handshake and channel subscription flow
+- backend status validation
+- login request/response behavior
+- authenticated user materialization
+- client selection propagation
+- billing reload behavior
+- logout fallback to backend-status flow
+
+No cleanup or coordination work may silently change those semantics.
+
+### 2. Active Architectural Shape
+
+The active architectural interpretation remains:
+
+presentation → controller → ServiceProvider
+
+This shape is still valid.
+
+Presentation may:
+
+- render UI
+- capture user interaction
+- host strictly local widget concerns
+- host reactive bindings to runtime state where already required by the implementation
+
+Controllers may:
+
+- own feature-local orchestration
+- normalize inputs
+- derive feature-local render-ready state
+- dispatch to ServiceProvider where required by the existing runtime
+
+ServiceProvider may:
+
+- remain the protected backend/runtime source
+- own backend interaction flow
+- own authenticated runtime context
+- own current active client context
+- notify downstream listeners
+
+### 3. Feature-Local Logic Must Stay Feature-Local
+
+Feature-local logic must not be pushed back into widgets.
+
+Examples:
+
+- auth submit preparation belongs in `LoginController`
+- dashboard source-to-derived resolution belongs in `DashboardController`
+- billing feature-state transitions belong in `BillingController`
+
+This remains true during and after Phase 7.3.1.
+
+### 4. Cross-Feature Coordination Must Be Named Explicitly
+
+Cross-feature interaction is now a first-class architecture concern.
+
+That means any dependency between features or between a feature and the global runtime source must be understood in explicit terms such as:
+
+- startup flow dependency
+- authenticated runtime transition
+- session/app-context transition
+- downstream feature refresh dependency
+- application-flow sequencing
+
+This does not yet require a new coordinator.
+
+It does require explicit naming and documentation.
+
+### 5. Do Not Introduce a Broad Coordinator Prematurely
+
+Phase 7.3.1 is an inventory step.
+
+Therefore, it does not justify:
+
+- a global app coordinator
+- a new application service layer
+- a broad provider redesign
+- a ServiceProvider replacement
+- a new navigation architecture
+
+A future minimal coordinator is only valid if the inventory proves a repeated coordination concern that cannot remain safely distributed.
+
+### 6. Startup Rule
+
+`main.dart` currently owns the startup boundary.
+
+That includes:
+
+- `AppStartupViewState`
+- bootstrap rendering
+- launching `_initWork()`
+- determining when the startup boundary has completed
+
+It must not start absorbing unrelated feature coordination logic beyond startup entry behavior.
+
+### 7. Auth Rule
+
+Auth currently remains split correctly across three responsibilities:
+
+#### Auth presentation
+- user input
+- local widget feedback
+- visual loading behavior
+- popup rendering
+
+#### Auth controller
+- initial state construction
+- bootstrap-prepared state
+- manual submit loading state
+- submit failure state recovery
+- login request dispatch preparation
+
+#### ServiceProvider
+- actual backend login request
+- callback processing
+- authenticated runtime context materialization
+
+That split must be preserved.
+
+### 8. Dashboard Rule
+
+Dashboard currently owns feature-local derivation from the watched runtime source.
+
+That means:
+
+#### Dashboard presentation
+- watches `notifierServiceProvider`
+- renders responsive dashboard UI
+- dispatches client selection
+- dispatches logout
+
+#### Dashboard controller
+- builds `DashboardSourceState`
+- resolves `DashboardResolvedState`
+- normalizes active-client selection
+- defines display data and options
+- exposes select-client and logout helpers
+
+Dashboard may trigger downstream effects indirectly through runtime-state mutation, but it must not absorb billing logic.
+
+### 9. Billing Rule
+
+Billing remains a feature with:
+
+- explicit feature-local state
+- a runtime-triggered reload dependency on current client context
+
+That means:
+
+#### Billing presentation
+- manages local scroll/widget concerns
+- attaches a listener to the runtime source
+- renders loading/error/ready states
+
+#### Billing controller
+- owns billing feature-state transitions
+- resolves bootstrap decision
+- resolves client-change reload decision
+- performs billing reload orchestration
+
+Billing must not become the owner of active-client context.
+
+### 10. Session and App Context Rule
+
+The current runtime contains several related but distinct concepts:
+
+- persisted DNI in `SessionStorage`
+- authenticated runtime user in `ServiceProvider.loggedUser`
+- active client in `loggedUser.cCliente`
+- provider readiness in `ServiceProvider.isReady`
+- startup-boundary completion in `AppStartupViewState`
+
+Until a later subphase explicitly normalizes them, they must remain documented as distinct responsibilities.
+
+### 11. Validation Rule
+
+Any future implementation after this point should validate at minimum:
+
+- startup bootstrap
+- login popup path
+- auto-submit path with saved DNI
+- manual login path
+- dashboard render after authenticated context exists
+- client switch from dashboard
+- billing reload after client switch
+- logout and return to unauthenticated path
+
+## Validation
+
+These rules are valid only if they remain aligned with the current ZIP.
+
+At the current baseline, the code confirms:
+
+- startup boundary still lives in `main.dart`
+- login decision bridge still lives in `ServiceProvider`
+- login feature still owns popup submit behavior
+- dashboard still drives active-client selection
+- billing still reacts to active-client changes via runtime source
+- logout still clears session storage and resets runtime auth flow
+
+## Release Impact
+
+These guidelines do not change runtime behavior.
+
+They reduce the risk of architectural regressions during the next subphases of Phase 7.3.
+
+## Risks
+
+The main risks from this point forward are:
+
+- over-engineering coordination too early
+- hiding feature interaction under vague global refresh behavior
+- reintroducing feature logic into widgets
+- turning ServiceProvider into both backend engine and broad application coordinator
+- collapsing several runtime concepts into one imprecise “session” notion
+
+## What it does NOT solve
+
+This document does not by itself solve:
+
+- session/app-context normalization
+- explicit feature interaction contracts
+- the introduction of a minimal coordinator
+- flow-level automated tests
+
+Those belong to later validated subphases.
 
 ## Conclusion
 
-Development at this stage is not about rewriting Mi IP·RED.
+The active development rule is now:
 
-It is about continuing from a clearer baseline.
-
-Phase 7.2 is now complete and closed.
-
-That means future work should build on its results, not keep extending the same cleanup phase indefinitely.
+- keep feature logic local
+- keep runtime source protected
+- document cross-feature coordination explicitly
+- inventory real flows before abstracting them
+- introduce no new global coordination layer unless the real code proves it is necessary

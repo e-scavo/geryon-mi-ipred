@@ -1,263 +1,281 @@
 # 🧠 Decisions — Phase 7 Alignment
 
+## Objective
+
+Record the active architectural decisions that define how Mi IP·RED must be interpreted and evolved after the closure of Phase 7.2 and the opening of Phase 7.3.
+
+## Initial Context
+
+Phase 7 of Mi IP·RED has not been a single one-step refactor.
+
+It has progressed in layers:
+
+- Phase 7.1 extracted feature-local controllers
+- Phase 7.2 clarified ownership and state boundaries
+- Phase 7.3 now begins documenting and normalizing application-flow coordination
+
+These decisions capture the baseline that must remain stable while the next subphases continue.
+
+## Problem Statement
+
+Without an explicit decisions document, future work could misread the current repository and incorrectly assume one of the following:
+
+- that Phase 7 is still mainly about more state cleanup
+- that ServiceProvider should now become a global app coordinator
+- that cross-feature coordination does not exist because it lacks a dedicated coordinator
+- that distributed coordination can be abstracted safely without first inventorying it
+
+Those assumptions would be incorrect according to the current ZIP.
+
+## Scope
+
+These decisions govern:
+
+- interpretation of the current runtime
+- sequencing of future Phase 7.3 work
+- allowed architectural moves
+- prohibited shortcuts and over-reaches
+
+They do not implement behavior on their own.
+
+## Root Cause Analysis
+
+The current codebase reached a point where feature-local cleanup has already produced enough clarity to expose a new class of debt:
+
+- real runtime flows still span multiple surfaces
+- feature interaction is real but partially implicit
+- downstream behavior is triggered through runtime context propagation rather than explicit contracts
+
+This required a new decision set rather than continuing to extend the old Phase 7.2 framing.
+
+## Files Affected
+
+These decisions apply to:
+
+- `lib/main.dart`
+- `lib/features/auth/**`
+- `lib/features/dashboard/**`
+- `lib/features/billing/**`
+- `lib/models/ServiceProvider/**`
+- `lib/core/session/**`
+
+They also govern:
+
+- `docs/development.md`
+- `docs/phase7_application_layer_consolidation.md`
+- `docs/phase7_application_layer_consolidation_7_3_1_application_flow_inventory.md`
+
+## Implementation Characteristics
+
 ## Decision 1 — Preserve Backend Flow as Immutable Constraint
 
-The backend communication model remains the highest-priority invariant of the system.
+The backend communication model remains the highest-priority invariant.
 
 This includes:
 
 - handshake lifecycle
 - token negotiation
-- message structure
 - tracked request flow
-- request/response timing assumptions
+- callback processing
+- backend status validation
+- login request semantics
 
-All Phase 7 work must preserve these behaviors.
+All Phase 7.3 work must preserve these behaviors.
 
----
+## Decision 2 — Structural and Application-Layer Work Must Not Imply Silent Behavioral Change
 
-## Decision 2 — Structural and Application-Layer Work Must Not Imply Behavioral Change
+Phase 7 is a consolidation phase, not a runtime redesign phase.
 
-Mi IP·RED is already functional.
+That means documentation, refactors, and later coordination work must not silently alter actual runtime semantics.
 
-Therefore, refactors in Phase 7 must not silently alter runtime semantics.
+## Decision 3 — Controllers Remain Feature-Local Boundaries
 
-This rule applies to:
+Phase 7.1 established controllers as feature-local application boundaries.
 
-- controller extraction
-- state-boundary work
-- derived-state normalization
-- startup/auth boundary cleanup
-- formal closure work
+That remains the correct model.
 
----
-
-## Decision 3 — Shared UI and Feature UI Remain Separate
-
-The Phase 6 boundary remains valid.
-
-Shared UI belongs under shared areas.
-
-Feature UI belongs under feature presentation areas.
-
-Phase 7 builds on top of that structure and must not collapse it.
-
----
-
-## Decision 4 — Controllers Are Feature-Local Boundaries
-
-Phase 7.1 introduced controllers to stop widgets from owning business-adjacent orchestration.
-
-That decision remains active.
-
-Controllers are the correct location for:
+Controllers are still the correct place for:
 
 - feature-local orchestration
 - feature-local state transitions
 - feature-local derived-state rules
 
----
+## Decision 4 — State Ownership Clarified in Phase 7.2 Remains Frozen as Baseline
 
-## Decision 5 — State Ownership Must Be Explicit After Phase 7.1
-
-Once request orchestration is extracted, ownership ambiguity becomes the next architectural problem.
-
-For that reason, Phase 7.2 treated ownership as an explicit concern.
-
-State must now be understood as one of:
+Phase 7.2 clarified the distinction between:
 
 - UI state
 - feature functional state
 - derived state
 - global source state
 
-This remains an active rule after closure.
+That classification remains valid and should not be reopened casually inside Phase 7.3.
 
----
+## Decision 5 — Transitional Mechanisms Preserved in Earlier Phases Remain Intentional
 
-## Decision 6 — Inventory Before Consolidation
+The current code still contains mechanisms such as:
 
-Phase 7.2 began with ownership inventory before implementation-heavy changes.
+- `ref.watch(notifierServiceProvider)` in dashboard
+- `listenManual(...)` in billing
+- startup-boundary logic in `main.dart`
+- login-popup triggering inside `ServiceProvider`
 
-Reason:
+These are not automatically mistakes.
 
-- moving state without classification risks duplication and regression
-- inventory makes later moves deliberate instead of intuitive
+They are conservative compatibility decisions aligned with runtime preservation.
 
-That is why `7.2.1` was required before the implementation-focused subphases.
+## Decision 6 — Dashboard Uses Explicit Source-to-Derived Resolution
 
----
+Dashboard derivation now flows through:
 
-## Decision 7 — Billing Was the First Phase 7.2 Implementation Target
+- `DashboardSourceState`
+- `DashboardResolvedState`
 
-Billing was selected first because the real codebase showed it had the strongest concentration of:
+That is the correct current dashboard interpretation.
 
-- widget-owned feature lifecycle state
-- manual coordination
-- customer-change synchronization logic
-- loading/error/data flags dispersed in presentation
+Dashboard consumes runtime source state and derives render-ready feature state from it.
 
-This made billing the safest and highest-value first implementation target.
+## Decision 7 — Billing Owns Feature State But Not Global Client Context
 
----
+Billing owns its feature-local load lifecycle.
 
-## Decision 8 — Billing Consolidation Remains Local and Incremental
+It does not own the global active client.
 
-Billing state-boundary work was intentionally kept local.
+Billing reacts to client changes through the runtime source.
 
-Phase 7.2 did **not** introduce:
+This remains the intended current arrangement.
 
-- a new global application layer
-- a broad provider redesign
-- a ServiceProvider replacement
-- a billing-specific notifier architecture
+## Decision 8 — Auth and Startup Boundaries Were Correctly Split but Remain Connected
 
-Instead, it introduced a feature-local state object and kept the current runtime trigger mechanism.
+The current app distinguishes:
 
-That remains the correct interpretation of the billing result.
+- startup boundary completion
+- login bootstrap state
+- login submit state
 
----
+That distinction was necessary and remains valid.
 
-## Decision 9 — Preserved Transitional Mechanisms Are Intentional
+However, the runtime still connects those surfaces through real application flows, which is why Phase 7.3 exists.
 
-Some mechanisms remained in place after Phase 7.2 on purpose, not by accident.
+## Decision 9 — Phase 7.2 Is Formally Closed
 
-Examples include:
+The current ZIP confirms that Phase 7.2 has already reached formal closure.
 
-- `listenManual` in billing
-- `ref.watch(...)` as the dashboard reactive boundary
-- the existing startup trigger sequence in `main.dart`
-- `ServiceProvider` as the protected global runtime source
+Future work must not keep extending it artificially.
 
-These should not be documented or interpreted as unresolved mistakes by default.
+## Decision 10 — Phase 7.3 Begins From Coordination, Not More State Cleanup
 
-They are conservative compatibility decisions aligned with the runtime-protection rule.
+The strongest next architectural concern visible in the ZIP is not additional feature-local state cleanup.
 
----
+It is:
 
-## Decision 10 — Dashboard Derivation Was Normalized Without Replacing Reactivity
+- application-flow sequencing
+- session/runtime transition ownership
+- feature interaction visibility
+- reduction of implicit controller coupling
 
-Dashboard did not show the same lifecycle-state problem as billing.
+Therefore, Phase 7.3 correctly begins as a coordination-focused phase.
 
-Its main debt was derivation ambiguity.
+## Decision 11 — Flow Inventory Must Precede Contracts or Coordinators
 
-For that reason, the adopted solution was to:
+Before introducing:
 
-- preserve `ref.watch(...)` in presentation
-- avoid a new provider/notifier architecture
-- clarify the source-to-derived boundary inside the feature
+- feature interaction contracts
+- session/app-context normalization
+- a minimal application coordinator
 
-This remains the correct dashboard boundary contract after closure.
+the project must first inventory the real flows already present in code.
 
----
+This is why `7.3.1` is the correct first step.
 
-## Decision 11 — Dashboard Uses an Explicit Source Snapshot and a Truly Derived Resolved State
+## Decision 12 — Distributed Coordination Is Still Real Coordination
 
-Dashboard derivation no longer begins from `WidgetRef` directly.
+The current app already has cross-feature coordination even though it does not yet have a dedicated coordinator.
 
-The adopted solution is:
+Examples verified in the ZIP include:
 
-- create `DashboardSourceState`
-- build it from the watched `ServiceProvider`
-- derive `DashboardResolvedState` from that explicit source model
+- startup → backend status → auth decision
+- login success → authenticated runtime context → dashboard render
+- dashboard client selection → runtime client mutation → billing reload
+- logout → session clear → runtime reset → backend status fallback
 
-`DashboardResolvedState` should remain derived and render-ready rather than mixing source state back in casually.
+The absence of a coordinator does not mean the absence of coordination.
 
----
+## Decision 13 — ServiceProvider Remains the Runtime Source, Not the Automatic Future Coordinator
 
-## Decision 12 — Auth Cleanup Includes Startup Boundary Cleanup
+ServiceProvider remains:
 
-The inventory proved that auth initial state and startup initial state formed a shared boundary concern.
+- the backend/runtime source
+- the holder of authenticated user context
+- the holder of active client context
+- the protected communication boundary
 
-Therefore, the adopted subphase remained:
+That does not automatically make it the correct place for all future app-flow coordination logic.
 
-- `7.2.4 — Auth & Startup Initial State Boundary Cleanup`
+## Decision 14 — Downstream Reactions Must Stay Visible
 
-and not an auth-only cleanup.
+A user action in one feature may trigger downstream effects in another feature.
 
-That remains the correct interpretation of the phase result.
+That is already true in the real code.
 
----
+Those dependencies must remain visible and documented rather than hidden under vague global refresh behavior.
 
-## Decision 13 — Auth Initial Boundary Distinguishes Bootstrap From Submit
+## Decision 15 — Session Persistence, Authenticated User, Active Client, and Startup Readiness Are Distinct Concepts
 
-The login feature should no longer rely on a single ambiguous loading flag for both:
+The current runtime contains several related but non-equivalent concepts:
 
-- bootstrap autologin loading
-- manual submit loading
+- saved DNI in `SessionStorage`
+- authenticated user in `ServiceProvider.loggedUser`
+- active client in `loggedUser.cCliente`
+- provider readiness in `ServiceProvider.isReady`
+- startup boundary completion in `AppStartupViewState`
 
-The adopted solution is:
+They must not be collapsed into one unnamed concept before a dedicated normalization subphase.
 
-- introduce `LoginViewState`
-- separate `isBootstrapLoading` from `isSubmitLoading`
-- let the controller own those transitions
+## Validation
 
-This remains the active auth boundary contract after closure.
+These decisions are validated against the current ZIP because the codebase shows all of the following:
 
----
+- startup remains owned by `main.dart`
+- login decision bridge remains in `ServiceProvider`
+- authenticated runtime context is materialized in `doLoginCallback()`
+- dashboard drives active-client changes
+- billing reacts to client changes via runtime-source listening
+- logout clears persisted session data and resets auth flow
 
-## Decision 14 — Startup Boundary Is Explicit Without Redesigning Startup Flow
+## Release Impact
 
-The startup surface should no longer rely only on a generic local boolean as its state representation.
+This decisions document has no direct release-facing runtime impact.
 
-The adopted solution is:
+Its effect is to protect future implementation choices.
 
-- introduce `AppStartupViewState`
-- make initial-boundary completion explicit
-- preserve the existing trigger sequence and popup flow
+## Risks
 
-This remains the correct conservative interpretation of the startup result.
+Without these decisions, the project risks:
 
----
+- over-designing Phase 7.3
+- misusing ServiceProvider
+- losing visibility over feature interaction
+- reopening already-closed ownership problems
+- introducing abstractions without proving the real need first
 
-## Decision 15 — No Global Application Service Layer Was Introduced During Phase 7.2
+## What it does NOT solve
 
-Even after billing consolidation, dashboard derivation cleanup, and auth/startup boundary cleanup, Phase 7.2 remained a boundary-clarification phase, not a platform redesign phase.
+This document does not by itself implement:
 
-For that reason, no new global application service layer was introduced.
+- session/app-context normalization
+- interaction contracts
+- minimal coordinator logic
+- tests
 
-This is not an omission.
-
-It is a scope decision.
-
----
-
-## Decision 16 — Runtime Order Has Priority Over Refactor Elegance
-
-In all Phase 7.2 work, preserving runtime order had higher priority than achieving the most abstract or elegant internal design.
-
-This was especially important because:
-
-- customer changes drive downstream reload behavior
-- dashboard state affects visible UI immediately
-- billing reacts to dashboard-driven customer selection
-- startup/auth sequence affects the entire app entry behavior
-
-This remains the governing principle for interpreting Phase 7.2 outcomes.
-
----
-
-## Decision 17 — Phase 7.2 Is Now Formally Closed
-
-The current ZIP state shows that the practical objective of Phase 7.2 has already been achieved.
-
-Therefore, the project now adopts this explicit closure decision:
-
-- Phase 7.2 is complete
-- its outcomes are frozen as the current architectural baseline
-- future work should start from this baseline rather than continuing to extend the phase artificially
-
----
+It only fixes the current architectural interpretation.
 
 ## Conclusion
 
-The active architectural contract is now:
+The active interpretation of Mi IP·RED is now:
 
-1. protect runtime
-2. keep controllers feature-local
-3. classify ownership explicitly
-4. keep preserved transitional mechanisms only when deliberately justified
-5. use the completed Phase 7.2 boundaries as the new baseline
-6. do not reopen closed cleanup work without real code-backed justification
-
-That is the decision chain governing the post-Phase-7.2 state of Mi IP·RED.
+1. protect runtime behavior
+2. preserve feature-local controller boundaries
+3. preserve state-boundary clarity from Phase 7.2
+4. treat flow coordination as the next explicit concern
+5. inventory real flows before introducing new abstractions
