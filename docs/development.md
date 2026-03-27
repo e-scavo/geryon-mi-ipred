@@ -303,3 +303,17 @@ This creates a stable foundation for:
 - Phase 6.3 (legacy cleanup)
 - Phase 7 (domain organization)
 - Phase 8 (session and configuration hardening)
+
+---
+
+## Post-Phase 6 Rule — No Legacy Paths Allowed
+
+After Phase 6 completion:
+
+- no legacy presentation paths must exist
+- no export-based shims must remain
+- all imports must use canonical paths
+
+Any new code introducing legacy-style paths is considered a violation of architecture rules.
+
+---

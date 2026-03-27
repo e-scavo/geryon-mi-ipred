@@ -2,7 +2,7 @@
 
 ## Objective
 
-Provide a structured and accurate entry point to all technical documentation of Mi IP·RED, ensuring that every document reflects the real implementation state of the system, including historical evolution, structural decisions, and current architectural boundaries after Phase 6.
+Provide a structured and accurate entry point to all technical documentation of Mi IP·RED, ensuring that every document reflects the real implementation state of the system, including historical evolution, structural decisions, and current architectural boundaries after Phase 6 completion.
 
 ---
 
@@ -22,8 +22,9 @@ However:
 - presentation layer structure was not aligned with documentation
 - UI ownership boundaries were not clearly represented
 - legacy paths were still treated as primary references
+- structural duplication existed across models and pages
 
-Phase 6 introduced structural normalization that required documentation alignment.
+Phase 6 introduced a complete normalization of the presentation layer, requiring full documentation alignment and historical traceability.
 
 ---
 
@@ -36,6 +37,8 @@ Documentation in Mi IP·RED follows these principles:
 - explains decisions, not only results
 - prioritizes clarity over brevity
 - evolves together with the codebase
+- preserves transitional states when relevant
+- explicitly documents migration strategies and outcomes
 
 ---
 
@@ -62,6 +65,7 @@ Provides a detailed breakdown of:
 - request lifecycle
 - message tracking system
 - internal execution flow
+- backend interaction guarantees
 
 ---
 
@@ -113,6 +117,7 @@ Defines all architectural and structural decisions, including:
 - presentation normalization strategy
 - migration approach
 - compatibility rules
+- shim strategy and removal policy
 
 ---
 
@@ -124,6 +129,7 @@ Defines development rules and constraints:
 - what is allowed vs restricted
 - validation requirements
 - migration workflow
+- post-Phase 6 architectural rules
 
 ---
 
@@ -149,6 +155,7 @@ Covers:
 - internal restructuring of ServiceProvider
 - stabilization of backend interaction
 - preparation for safe UI refactor
+- definition of protected runtime boundaries
 
 ---
 
@@ -162,7 +169,8 @@ Covers:
 - separation between shared and feature UI
 - compatibility shim strategy
 - canonical import introduction
-- migration order and rationale
+- controlled migration order
+- complete removal of legacy presentation paths
 
 Includes:
 
@@ -171,31 +179,37 @@ Includes:
 - Phase 6.2.1 — Controlled migration sequence
 - Phase 6.2.2 — Import normalization
 - Phase 6.2.3 — Documentation alignment
+- Phase 6.3 — Legacy shim audit and removal
 
 ---
 
 ## Current System State
 
-After Phase 6:
+After Phase 6 completion:
 
-- presentation layer is structurally normalized
+- presentation layer is fully normalized
 - shared UI is isolated under lib/shared
 - feature UI is isolated under lib/features
-- canonical paths are established
-- imports reflect ownership
-- legacy paths exist only as compatibility shims
+- canonical paths are the only active paths
+- all imports reflect real ownership
+- no legacy presentation paths remain
+- no compatibility shims exist
+- no duplicated UI structures exist
+
+The repository structure now accurately reflects runtime behavior and ownership boundaries.
 
 ---
 
-## Known Transitional Elements
+## Removed Transitional Elements
 
-The system still contains transitional elements:
+The following elements no longer exist after Phase 6.3:
 
-- export-based shims in legacy paths
-- residual legacy imports (expected to decrease)
-- duplicated access paths (temporary)
+- export-based compatibility shims
+- legacy presentation paths under lib/models and lib/pages
+- duplicated UI access paths
+- fallback import surfaces
 
-These are intentional and controlled.
+All transitional structures introduced during Phase 6 migration have been fully removed.
 
 ---
 
@@ -207,8 +221,9 @@ At this stage, documentation does not yet include:
 - application service layer
 - session persistence redesign
 - advanced state management architecture
+- business logic isolation from presentation
 
-These will be addressed in future phases.
+These will be addressed in upcoming phases.
 
 ---
 
@@ -216,19 +231,12 @@ These will be addressed in future phases.
 
 The next expected updates will correspond to:
 
-Phase 6.3
-
-- legacy shim audit
-- identification of unused compatibility layers
-- safe removal strategy
-
----
-
 Phase 7
 
 - domain model organization
 - separation of business logic from presentation
 - introduction of domain boundaries
+- progressive decoupling from ServiceProvider
 
 ---
 
@@ -237,18 +245,20 @@ Phase 8
 - session and configuration hardening
 - persistence improvements
 - user experience stability enhancements
+- production-level robustness
 
 ---
 
 ## Conclusion
 
-The documentation set is now aligned with the real structure of the system.
+The documentation set is now fully aligned with the real structure of the system after Phase 6 completion.
 
 It provides:
 
-- historical traceability
-- structural clarity
-- explicit ownership boundaries
-- safe foundation for future evolution
+- complete historical traceability
+- explicit architectural decisions
+- clear ownership boundaries
+- removal of transitional ambiguity
+- a stable foundation for future evolution
 
-Documentation must continue evolving together with the system, preserving both technical accuracy and architectural intent.
+Documentation must continue evolving together with the system, preserving both technical accuracy and architectural intent while enabling safe and controlled growth.

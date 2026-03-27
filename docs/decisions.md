@@ -344,3 +344,25 @@ The system now has:
 - controlled import surface
 - documented migration strategy
 - stable foundation for further refactoring
+---
+
+## Decision 16 — Remove Compatibility Layer After Full Validation
+
+Once:
+
+- canonical imports are fully adopted
+- no active usage of legacy paths remains
+- runtime validation is complete
+
+Then:
+
+all compatibility shims must be removed.
+
+### Rationale
+
+- prevents structural duplication
+- enforces single source of truth
+- eliminates hidden dependencies
+
+This was executed in Phase 6.3.
+---
