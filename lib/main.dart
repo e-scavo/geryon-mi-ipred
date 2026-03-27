@@ -3,7 +3,7 @@ import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geryon_web_app_ws_v2/common_vars.dart';
-import 'package:geryon_web_app_ws_v2/features/dashboard/presentation/dashboard_widget.dart';
+import 'package:geryon_web_app_ws_v2/features/dashboard/presentation/dashboard_page.dart';
 import 'package:geryon_web_app_ws_v2/models/GeneralLoadingProgress/popup_model.dart';
 import 'package:geryon_web_app_ws_v2/core/utils/utils.dart';
 
