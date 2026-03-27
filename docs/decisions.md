@@ -2,7 +2,7 @@
 
 ## Objective
 
-Record the active architectural decisions that define how Mi IP·RED must be interpreted and evolved after the closure of Phase 7.2, the completion of Phase 7.3.1, and the implementation of Phase 7.3.2.
+Record the active architectural decisions that define how Mi IP·RED must be interpreted and evolved after the closure of Phase 7.2, the completion of Phase 7.3.1, the implementation of Phase 7.3.2, and the implementation of Phase 7.3.3.
 
 ## Initial Context
 
@@ -12,6 +12,7 @@ Phase 7 of Mi IP·RED has progressed in layers:
 - Phase 7.2 clarified ownership and state boundaries
 - Phase 7.3.1 inventoried real application flows
 - Phase 7.3.2 normalized session and app-context semantics
+- Phase 7.3.3 froze current cross-feature meaning as explicit interaction contracts
 
 These decisions capture the baseline that must remain stable while the next subphases continue.
 
@@ -19,12 +20,12 @@ These decisions capture the baseline that must remain stable while the next subp
 
 Without an explicit decisions document, future work could misread the current repository and incorrectly assume one of the following:
 
-- that persisted login hint equals authenticated session
-- that logout should keep clearing all storage forever
-- that raw reads from `ServiceProvider` internals are the long-term shared-context contract
-- that context normalization requires a new coordinator immediately
+- that real feature interactions do not yet exist because there is no coordinator
+- that current interactions are only incidental implementation details
+- that introducing a coordinator can happen before freezing the current interaction meaning
+- that declarative contracts should already execute runtime behavior
 
-Those assumptions would be incorrect according to the current ZIP.
+Those assumptions would be incorrect according to the current ZIP and the current phase baseline.
 
 ## Scope
 
@@ -39,13 +40,13 @@ They do not implement behavior on their own.
 
 ## Root Cause Analysis
 
-The current codebase reached a point where feature-local cleanup and flow inventory already produced enough clarity to expose the next class of debt:
+The current codebase reached a point where feature-local cleanup, ownership clarification, flow inventory, and context normalization already produced enough clarity to expose the next class of debt:
 
-- shared runtime context was real
-- but its semantics were still partially implicit
-- and storage cleanup behavior was broader than the actual ownership of the logout path
+- shared interaction meaning was real
+- but it was still partially implicit
+- and later phases would risk coordinating behavior whose meaning had not yet been frozen explicitly
 
-This required a new decision set rather than stretching the previous 7.3.1 framing beyond its scope.
+This required a new decision set rather than stretching the previous 7.3.2 framing beyond its scope.
 
 ## Files Affected
 
@@ -55,6 +56,7 @@ These decisions apply to:
 - `lib/features/auth/**`
 - `lib/features/dashboard/**`
 - `lib/features/billing/**`
+- `lib/features/contracts/**`
 - `lib/models/ServiceProvider/**`
 - `lib/core/session/**`
 
@@ -64,6 +66,7 @@ They also govern:
 - `docs/phase7_application_layer_consolidation.md`
 - `docs/phase7_application_layer_consolidation_7_3_1_application_flow_inventory.md`
 - `docs/phase7_application_layer_consolidation_7_3_2_session_app_context_normalization.md`
+- `docs/phase7_application_layer_consolidation_7_3_3_feature_interaction_contracts.md`
 
 ## Implementation Characteristics
 
@@ -111,7 +114,7 @@ Phase 7.2 clarified the distinction between:
 
 That classification remains valid and should not be reopened casually inside Phase 7.3.
 
-## Decision 5 — Flow Inventory Was Required Before Context Normalization
+## Decision 5 — Flow Inventory Had to Precede Context Normalization
 
 Phase 7.3.1 came before 7.3.2 on purpose.
 
@@ -119,7 +122,20 @@ The project first needed to map real flow ownership before normalizing the meani
 
 That sequencing remains the correct interpretation of the current baseline.
 
-## Decision 6 — Persisted Login Hint Is Not an Authenticated Session
+## Decision 6 — Context Normalization Had to Precede Contract Freezing
+
+Phase 7.3.2 came before 7.3.3 on purpose.
+
+The project first needed to separate:
+
+- persisted login hint
+- authenticated runtime context
+- active operational context
+- startup boundary context
+
+Only after those meanings were explicit did it become safe to freeze interaction contracts built on top of them.
+
+## Decision 7 — Persisted Login Hint Is Not an Authenticated Session
 
 The current storage abstraction only persists remembered DNI/CUIT information.
 
@@ -127,7 +143,7 @@ It must be interpreted as a persisted login hint.
 
 It must not be documented or consumed as if it were a backend-validated authenticated session.
 
-## Decision 7 — Authenticated Runtime Context Remains In-Memory and Owned by ServiceProvider
+## Decision 8 — Authenticated Runtime Context Remains In-Memory and Owned by ServiceProvider
 
 The actual authenticated runtime context continues to live in `ServiceProvider` through the in-memory authenticated user state.
 
@@ -137,9 +153,9 @@ That context remains owned by:
 - runtime reset logic
 - current runtime provider instance
 
-Phase 7.3.2 did not move that ownership elsewhere.
+Later phases do not move that ownership elsewhere unless explicitly redesigned.
 
-## Decision 8 — Active Operational Context Is Distinct From “Logged In”
+## Decision 9 — Active Operational Context Is Distinct From “Logged In”
 
 The active client/company context is a separate runtime concern from merely being authenticated.
 
@@ -147,9 +163,9 @@ It remains owned by `ServiceProvider` and is consumed downstream by features suc
 
 That distinction must remain explicit.
 
-## Decision 9 — Persisted Login Hint Lifecycle Must Be Symmetric
+## Decision 10 — Persisted Login Hint Lifecycle Must Stay Symmetric
 
-Remember-me behavior is now explicitly symmetric.
+Remember-me behavior remains explicitly symmetric.
 
 That means:
 
@@ -159,7 +175,7 @@ That means:
 
 Leaving stale persisted login hints is no longer considered acceptable behavior.
 
-## Decision 10 — Logout Cleanup Must Be Specific to Its Actual Responsibility
+## Decision 11 — Logout Cleanup Must Stay Specific to Its Actual Responsibility
 
 The dashboard logout path no longer clears all session storage blindly.
 
@@ -167,7 +183,7 @@ Its storage responsibility is limited to the persisted login hint it actually ow
 
 Broader storage cleanup would exceed the current semantic responsibility of logout.
 
-## Decision 11 — ServiceProvider Remains the Runtime Source, Not the Automatic Future Coordinator
+## Decision 12 — ServiceProvider Remains the Runtime Source, Not the Automatic Future Coordinator
 
 `ServiceProvider` remains:
 
@@ -178,11 +194,9 @@ Broader storage cleanup would exceed the current semantic responsibility of logo
 
 That still does not automatically make it the place for future application coordination logic.
 
-## Decision 12 — Shared Runtime Context May Be Read Through Explicit Accessors
+## Decision 13 — Shared Runtime Context May Be Read Through Explicit Accessors
 
-Phase 7.3.2 introduced minimal read-only accessors on `ServiceProvider` for shared-context consumption.
-
-This is now the preferred way for cross-feature consumers to read:
+The normalized read-only accessors on `ServiceProvider` remain the preferred way for cross-feature consumers to read:
 
 - authenticated user context
 - active client index
@@ -192,31 +206,76 @@ This is now the preferred way for cross-feature consumers to read:
 
 This reduces coupling without moving ownership.
 
-## Decision 13 — Dashboard and Billing May Normalize Reads Without Owning Context
+## Decision 14 — Real Feature Interactions Now Exist as Explicit Declarative Contracts
 
-Dashboard and billing now consume normalized reads in their critical paths.
+Phase 7.3.3 now freezes the current interaction meaning through explicit declarative contracts.
 
-That does not change ownership.
+At minimum, the active contract baseline includes:
 
-They remain consumers of shared runtime context, not owners of it.
+- active client change
+- logout reset
+- auth resolution
+- shared runtime context read
 
-## Decision 14 — Startup Boundary Remains Separate
+These contracts document real current architecture.
+They are not theoretical placeholders.
+
+## Decision 15 — Declarative Contracts Are Not a Runtime Engine
+
+The current contract layer is intentionally:
+
+- declarative
+- lightweight
+- non-executing
+- non-owning
+- non-reactive
+
+It must not be reinterpreted as:
+
+- a coordinator
+- an event bus
+- a runtime dispatcher
+- a state-management abstraction
+
+If later phases need execution-layer coordination, that must be introduced explicitly and separately.
+
+## Decision 16 — Contracts Do Not Move Ownership
+
+The existence of a contract does not transfer ownership.
+
+Examples:
+
+- active client change contract does not make dashboard own billing state
+- logout reset contract does not make dashboard own runtime reset
+- auth resolution contract does not make auth UI own startup boundary
+- shared runtime context read contract does not make consumers owners of provider state
+
+Contracts describe interaction meaning across existing boundaries.
+
+## Decision 17 — Dashboard and Billing Remain Consumers, Not Cross-Owners
+
+Dashboard remains the producer of active client change and logout intent.
+
+Billing remains a downstream consumer of active client context changes.
+
+Neither feature becomes owner of the other feature’s state or lifecycle.
+
+## Decision 18 — Startup Boundary Remains Separate
 
 Startup readiness remains a distinct context owned by `main.dart` through `AppStartupViewState`.
 
-Phase 7.3.2 did not merge it into storage or authenticated runtime context, and future phases must preserve that distinction unless explicitly redesigned later.
+Later phases must preserve that distinction unless explicitly redesigned.
 
 ## Validation
 
 These decisions are validated against the current ZIP because the codebase now shows all of the following:
 
 - startup remains owned by `main.dart`
-- persisted login hint now has explicit save/remove semantics
+- persisted login hint remains explicit and narrow
 - authenticated runtime context is still materialized in `doLoginCallback()`
 - active client/company context is still owned by `ServiceProvider`
-- dashboard reads normalized shared-context accessors
-- billing reads normalized shared-context accessors in its critical data-loading path
-- logout removes remembered login hint explicitly and still resets runtime auth flow
+- dashboard and billing continue to consume shared runtime context without becoming owners
+- the current interaction meaning can now be frozen through declarative contracts without changing runtime behavior
 
 ## Release Impact
 
@@ -228,20 +287,20 @@ Its effect is to protect future implementation choices.
 
 Without these decisions, the project risks:
 
-- confusing persisted login hint with real session state
-- over-designing 7.3.3 and 7.3.4
-- losing visibility over context ownership
-- reverting to broad storage cleanup behavior
-- reintroducing raw provider-shape coupling as the implicit contract
+- introducing coordinator logic before freezing contract meaning
+- confusing declarative contracts with executable infrastructure
+- losing visibility over cross-feature semantics
+- regressing to raw mechanics without explicit interaction meaning
+- reintroducing vague ownership assumptions
 
 ## What it does NOT solve
 
 This document does not by itself implement:
 
+- minimal application coordinator logic
+- event-driven architecture
 - backend-persisted authenticated session validation
-- explicit feature interaction contracts
-- minimal coordinator logic
-- tests
+- automated flow-level contract tests
 
 It only fixes the current architectural interpretation.
 
@@ -253,5 +312,5 @@ The active interpretation of Mi IP·RED is now:
 2. preserve feature-local controller boundaries
 3. preserve state-boundary clarity from Phase 7.2
 4. preserve flow inventory clarity from Phase 7.3.1
-5. keep context concepts explicit and separate in Phase 7.3.2
-6. use explicit shared-context reads before introducing later coordination contracts
+5. preserve context semantics from Phase 7.3.2
+6. freeze real cross-feature meaning through declarative contracts in Phase 7.3.3 before introducing later coordination mechanisms

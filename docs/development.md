@@ -16,30 +16,36 @@ Its current codebase has already gone through:
 - feature-local controller extraction
 - state ownership clarification
 - application-flow inventory
+- session and app-context normalization
 
-The project is now in Phase 7.3.2.
+The project is now in Phase 7.3.3.
 
-That means the most visible architectural risk is no longer only implicit flow coordination.
+That means the most visible architectural risk is no longer only implicit flow coordination or vague shared-context semantics.
 
-The next visible risk is semantic ambiguity around the different context concepts already shared across the runtime.
+The next visible risk is leaving real cross-feature interactions undocumented as contracts while later phases prepare to coordinate them more explicitly.
 
 ## Problem Statement
 
-After Phase 7.3.1, the real ZIP shows that the app already distinguishes multiple runtime-related concepts in practice, but not yet through a normalized contract.
+After Phase 7.3.2, the real ZIP shows that the app already has:
 
-Those concepts include:
+- explicit feature-local boundaries
+- explicit state ownership
+- explicit shared-context semantics
+- explicit read-only runtime-context access paths
 
-- startup boundary state
-- persisted login hint state
-- authenticated runtime context
-- active operational context
+However, several cross-feature interactions are still represented mainly through:
 
-Without explicit rules, future work could accidentally:
+- provider mutations
+- runtime listeners
+- local consumer decisions
+- distributed knowledge across multiple files
 
-- treat persisted login hint as a real authenticated session
-- keep deleting too much storage during logout
-- keep coupling feature controllers to raw `ServiceProvider` fields
-- build feature contracts on top of ambiguous semantics
+Without explicit contract rules, future work could accidentally:
+
+- preserve mechanics while changing interaction meaning
+- introduce coordinator logic before current interaction meaning is frozen
+- regress to vague cross-feature assumptions
+- treat current distributed coordination as an incidental implementation detail rather than active architecture
 
 ## Scope
 
@@ -49,6 +55,7 @@ These guidelines apply to:
 - `lib/features/auth/**`
 - `lib/features/dashboard/**`
 - `lib/features/billing/**`
+- `lib/features/contracts/**`
 - `lib/models/ServiceProvider/**`
 - `lib/core/session/**`
 - phase documentation related to Phase 7
@@ -72,11 +79,14 @@ Mi IP·RED evolved correctly in practical order:
 4. extract feature-local logic
 5. clarify state ownership
 6. inventory coordination between already-separated features
-7. normalize shared context semantics only after the previous steps are stable
+7. normalize shared context semantics
+8. freeze feature interaction meaning as contracts before attempting coordinator work
 
 This order matters.
 
-If shared-context normalization had been introduced before ownership and flow inventory were stabilized, the project would likely have created abstractions on top of unclear boundaries.
+If feature interaction contracts had been introduced earlier, they would likely have been built on top of unstable boundaries.
+
+If coordinator work were introduced now without explicit contracts, it would risk coordinating mechanics whose meaning was still only implicit.
 
 ## Files Affected
 
@@ -89,6 +99,7 @@ Runtime areas governed by these rules:
 - `lib/features/dashboard/presentation/dashboard_page.dart`
 - `lib/features/billing/controllers/billing_controller.dart`
 - `lib/features/billing/presentation/billing_widget.dart`
+- `lib/features/contracts/feature_interaction_contracts.dart`
 - `lib/models/ServiceProvider/data_model.dart`
 - `lib/core/session/session_storage.dart`
 - `lib/core/session/session_storage_io.dart`
@@ -101,6 +112,7 @@ Documentation governed by these rules:
 - `docs/phase7_application_layer_consolidation.md`
 - `docs/phase7_application_layer_consolidation_7_3_1_application_flow_inventory.md`
 - `docs/phase7_application_layer_consolidation_7_3_2_session_app_context_normalization.md`
+- `docs/phase7_application_layer_consolidation_7_3_3_feature_interaction_contracts.md`
 
 ## Implementation Characteristics
 
@@ -161,25 +173,21 @@ Examples:
 - dashboard source-to-derived resolution belongs in `DashboardController`
 - billing feature-state transitions belong in `BillingController`
 
-This remains true during and after Phase 7.3.2.
+This remains true during and after Phase 7.3.3.
 
 ### 4. Shared Context Concepts Must Remain Explicitly Separate
 
-The project now treats the following as distinct concepts:
+The project continues to treat the following as distinct concepts:
 
 #### StartupBoundaryContext
 Owned by `main.dart` through `AppStartupViewState`.
 
 This only represents whether the app can leave the startup boundary.
 
-It is not a session concept.
-
 #### PersistedLoginHintContext
 Owned by `SessionStorage`.
 
 This only represents the remembered DNI/CUIT hint used by auth bootstrap.
-
-It is not an authenticated session.
 
 #### AuthenticatedRuntimeContext
 Owned by `ServiceProvider`.
@@ -193,9 +201,9 @@ This represents the currently active company/client context used by downstream f
 
 These concepts must not be casually merged or renamed as if they were interchangeable.
 
-### 5. Persisted Login Hint Lifecycle Must Be Symmetric
+### 5. Persisted Login Hint Lifecycle Must Stay Symmetric
 
-Remember-me behavior must be symmetric.
+Remember-me behavior remains symmetric.
 
 That means:
 
@@ -203,17 +211,17 @@ That means:
 - successful login with remember-me disabled removes any previously stored DNI hint
 - logout removes the remembered DNI explicitly instead of clearing all storage indiscriminately
 
-This rule is now part of the active architecture baseline.
+This rule remains part of the active architecture baseline.
 
-### 6. Shared Runtime Context Should Be Consumed Through Explicit Read Paths
+### 6. Shared Runtime Context Must Continue to Be Read Through Explicit Read Paths
 
 Do not redesign `ServiceProvider`.
 
 Do not move ownership out of it.
 
-Do normalize reads through explicit read-only accessors when shared context is consumed by multiple features.
+Continue consuming shared runtime context through explicit read-only accessors when shared context is used by multiple features.
 
-Examples now valid in the runtime:
+Examples valid in the runtime:
 
 - `authenticatedUser`
 - `hasAuthenticatedRuntimeContext`
@@ -225,7 +233,62 @@ Examples now valid in the runtime:
 
 This reduces implicit coupling without creating a new application layer.
 
-### 7. Startup Rule
+### 7. Feature Interaction Contracts Are Declarative, Not Executable
+
+Phase 7.3.3 introduces explicit feature interaction contracts.
+
+These contracts are:
+
+- declarative
+- lightweight
+- non-owning
+- non-reactive
+- non-executing
+
+They exist to freeze interaction meaning, not to dispatch runtime behavior.
+
+They must not become:
+
+- a contract runtime engine
+- a new event bus
+- a hidden coordinator
+- a new state-management layer
+
+### 8. Active Cross-Feature Contracts Must Remain Explicit
+
+The current architecture now recognizes, at minimum, these active contracts:
+
+#### Active Client Change Contract
+Dashboard produces active client context changes.
+Billing consumes downstream active client changes through the runtime source and reloads feature-local state.
+
+#### Logout Reset Contract
+Dashboard produces logout intent.
+Runtime reset and unauthenticated continuation remain owned by ServiceProvider/runtime flow.
+
+#### Auth Resolution Contract
+Runtime auth requirement leads into auth flow, which resolves whether authenticated continuation can proceed.
+
+#### Shared Runtime Context Read Contract
+Consumers read shared runtime context through explicit read-only accessors.
+Ownership remains in ServiceProvider.
+
+These contracts must remain explicit as the system evolves.
+
+### 9. Contracts Must Not Move Ownership
+
+A contract does not change who owns the data or who owns the runtime flow.
+
+Examples:
+
+- active client change contract does not make dashboard own billing state
+- logout reset contract does not make dashboard own global runtime reset
+- auth resolution contract does not make auth UI own startup boundary
+- shared runtime context read contract does not make consumers owners of provider state
+
+Contracts only describe interaction meaning across existing ownership boundaries.
+
+### 10. Startup Rule
 
 `main.dart` currently owns the startup boundary.
 
@@ -238,7 +301,7 @@ That includes:
 
 It must not start absorbing unrelated feature coordination logic beyond startup entry behavior.
 
-### 8. Auth Rule
+### 11. Auth Rule
 
 Auth currently remains split correctly across three responsibilities:
 
@@ -263,7 +326,7 @@ Auth currently remains split correctly across three responsibilities:
 
 That split must be preserved.
 
-### 9. Dashboard Rule
+### 12. Dashboard Rule
 
 Dashboard currently owns feature-local derivation from the watched runtime source.
 
@@ -282,9 +345,9 @@ That means:
 - defines display data and options
 - exposes select-client and logout helpers
 
-Dashboard may now consume explicit read-only runtime context accessors instead of raw provider fields, but it still must not own global runtime context.
+Dashboard may remain the producer of active client change and logout intent without becoming owner of downstream consumers or global runtime reset.
 
-### 10. Billing Rule
+### 13. Billing Rule
 
 Billing remains a feature with:
 
@@ -303,11 +366,11 @@ That means:
 - resolves bootstrap decision
 - resolves client-change reload decision
 - performs billing reload orchestration
-- may consume normalized runtime context reads
+- consumes normalized runtime context reads
 
 Billing must not become the owner of active-client or company context.
 
-### 11. Validation Rule
+### 14. Validation Rule
 
 Any future implementation after this point should validate at minimum:
 
@@ -321,6 +384,8 @@ Any future implementation after this point should validate at minimum:
 - billing reload after client switch
 - logout and return to unauthenticated path
 
+It should also preserve the explicit meaning of the active feature interaction contracts.
+
 ## Validation
 
 These rules are valid only if they remain aligned with the current ZIP.
@@ -331,9 +396,10 @@ At the current baseline, the code confirms:
 - persisted login hint still lives in `SessionStorage`
 - authenticated runtime context still lives in `ServiceProvider`
 - active company/client context still lives in `ServiceProvider`
-- dashboard now reads normalized runtime-context accessors
-- billing now reads normalized runtime-context accessors in its critical paths
-- logout now clears remembered login hint explicitly instead of clearing all storage
+- dashboard continues to read normalized runtime-context accessors
+- billing continues to read normalized runtime-context accessors in critical paths
+- logout continues to clear remembered login hint explicitly
+- the current interaction contracts can now be declared without changing runtime behavior
 
 ## Release Impact
 
@@ -345,19 +411,19 @@ They reduce the risk of semantic regression during the next subphases of Phase 7
 
 The main risks from this point forward are:
 
-- over-engineering context normalization into a hidden coordinator
-- confusing persisted login hint with authenticated runtime context again
-- moving ownership accidentally out of `ServiceProvider`
-- expanding logout cleanup beyond what it actually owns
-- collapsing several runtime concepts into one imprecise “session” notion
+- over-engineering declarative contracts into a runtime engine
+- introducing coordinator behavior too early
+- confusing contract declaration with ownership transfer
+- regressing to vague cross-feature assumptions
+- collapsing contract meaning back into raw runtime mechanics only
 
 ## What it does NOT solve
 
 This document does not by itself solve:
 
+- minimal application coordinator implementation
 - backend-persisted authenticated sessions
-- explicit feature interaction contracts
-- the introduction of a minimal coordinator
+- event-driven runtime architecture
 - flow-level automated tests
 
 Those belong to later validated subphases.
@@ -369,6 +435,5 @@ The active development rule is now:
 - keep feature logic local
 - keep runtime source protected
 - keep context concepts explicit and separate
-- normalize persisted login hint lifecycle symmetrically
-- consume shared runtime context through explicit read-only paths
-- introduce no new coordination layer unless later subphases prove it is necessary
+- continue consuming shared runtime context through explicit read-only paths
+- declare real interactions explicitly as contracts before introducing later coordination mechanisms

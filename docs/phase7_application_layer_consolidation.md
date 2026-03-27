@@ -2,7 +2,7 @@
 
 ## Objective
 
-Consolidate the application layer of Mi IP·RED by progressively separating presentation from business-adjacent logic, introducing explicit feature-local controller boundaries, clarifying state ownership, documenting the real coordination flows that connect already-separated features, and now normalizing the meaning and access patterns of shared runtime context without changing the validated runtime contract of the application.
+Consolidate the application layer of Mi IP·RED by progressively separating presentation from business-adjacent logic, introducing explicit feature-local controller boundaries, clarifying state ownership, documenting the real coordination flows that connect already-separated features, normalizing the meaning and access patterns of shared runtime context, and now freezing the current cross-feature meaning as explicit interaction contracts without changing the validated runtime contract of the application.
 
 ## Initial Context
 
@@ -32,11 +32,13 @@ After that, Phase 7.2 clarified state ownership and completed:
 
 Phase 7.3.1 then documented the real flows already connecting the separated runtime surfaces.
 
-With that baseline complete, the next visible concern in the current ZIP was not lack of flow visibility anymore.
+Phase 7.3.2 then normalized the semantics and read paths of the shared contexts used by those flows.
 
-The next visible concern was that several shared context concepts were already present, but still partially consumed through implicit semantics.
+With that baseline complete, the next visible concern in the current ZIP was no longer undocumented flow or ambiguous shared-context meaning.
 
-That is why Phase 7.3.2 now exists.
+The next visible concern was that real interactions already existed, but their meaning was still only partially implicit.
+
+That is why Phase 7.3.3 now exists.
 
 ## Problem Statement
 
@@ -46,14 +48,15 @@ Phase 7.2 solved the problem of unclear ownership between UI state, feature stat
 
 Phase 7.3.1 solved the problem of undocumented application-flow sequencing.
 
-But even after those steps, the codebase still showed ambiguity around the meaning of several context concepts that already existed in runtime:
+Phase 7.3.2 solved the problem of vague shared-context semantics.
 
-- startup boundary state
-- persisted login hint state
-- authenticated runtime context
-- active operational context
+But even after those steps, the codebase still showed one remaining kind of ambiguity:
 
-Without normalizing those meanings and read paths first, any future feature interaction contract or coordinator would risk being built on top of vague semantics.
+- active interactions already existed
+- the mechanics already worked
+- but the meaning of those interactions was still distributed across mutations, listeners, and local consumer logic
+
+Without freezing those interactions as explicit contracts first, any later coordinator or coordination abstraction would risk being built on top of implicit semantics.
 
 ## Scope
 
@@ -65,7 +68,8 @@ Phase 7 includes:
 - runtime-preserving normalization work
 - explicit inventory of real application flows
 - session and app-context normalization
-- preparation for future coordination contracts
+- explicit declarative feature interaction contracts
+- preparation for future coordination mechanisms
 
 Phase 7 does not include:
 
@@ -74,7 +78,8 @@ Phase 7 does not include:
 - navigation redesign
 - UI redesign
 - full state-management replacement
-- broad new application service infrastructure during 7.3.2
+- broad new application service infrastructure during 7.3.3
+- coordinator execution logic during 7.3.3
 
 ## Root Cause Analysis
 
@@ -86,11 +91,12 @@ Mi IP·RED matured in the correct practical order:
 4. extract feature-local logic
 5. clarify state ownership
 6. inventory cross-feature coordination
-7. normalize shared runtime-context semantics only after the previous layers were explicit
+7. normalize shared runtime-context semantics
+8. freeze real cross-feature meaning as explicit contracts only after the previous layers were already explicit
 
-This means Phase 7.3.2 is not a redesign.
+This means Phase 7.3.3 is not a redesign.
 
-It is a conservative normalization pass that became visible only after the earlier application-layer layers were successfully completed.
+It is a conservative semantic freeze over interactions that already exist and already work in the current runtime.
 
 ## Files Affected
 
@@ -100,6 +106,7 @@ Core runtime surfaces involved in Phase 7 include:
 - `lib/features/auth/**`
 - `lib/features/dashboard/**`
 - `lib/features/billing/**`
+- `lib/features/contracts/**`
 - `lib/models/ServiceProvider/**`
 - `lib/core/session/**`
 
@@ -119,6 +126,7 @@ Phase 7 documentation includes:
 - `docs/phase7_application_layer_consolidation_7_2_5_formal_closure.md`
 - `docs/phase7_application_layer_consolidation_7_3_1_application_flow_inventory.md`
 - `docs/phase7_application_layer_consolidation_7_3_2_session_app_context_normalization.md`
+- `docs/phase7_application_layer_consolidation_7_3_3_feature_interaction_contracts.md`
 
 ## Implementation Characteristics
 
@@ -178,6 +186,7 @@ Its focus is:
 - application-flow sequencing
 - explicit documentation of dependencies that today remain distributed
 - normalization of shared context semantics before contract/coordinator work
+- explicit freezing of interaction meaning before any minimal coordinator is considered
 
 Validated structure for Phase 7.3:
 
@@ -187,7 +196,7 @@ Validated structure for Phase 7.3:
 - `7.3.4 — Application Coordinator (mínimo)`
 - `7.3.5 — Formal Closure of Phase 7.3`
 
-At the current project state, both `7.3.1` and `7.3.2` are already active and completed in sequence.
+At the current project state, `7.3.1`, `7.3.2`, and `7.3.3` are already active and completed in sequence.
 
 ### Phase 7.3.1 — Application Flow Inventory
 
@@ -201,21 +210,42 @@ It did not introduce runtime changes.
 
 ### Phase 7.3.2 — Session & App Context Normalization
 
-This subphase is intentionally conservative.
+This subphase was intentionally conservative.
 
-Its goal is not to redesign auth or create a new layer.
+Its goal was not to redesign auth or create a new layer.
 
-Its goal is to normalize the meaning, lifecycle, and read paths of the context concepts already used by the current runtime.
+Its goal was to normalize the meaning, lifecycle, and read paths of the context concepts already used by the current runtime.
 
-The implemented normalization includes:
+Its output was a safer semantic baseline for later contracts without changing backend flow ownership.
 
-- explicit persisted login hint removal support in platform storage
-- symmetric remember-me behavior in `LoginController`
-- explicit logout cleanup of remembered login hint instead of blanket storage clearing
-- minimal read-only shared-context accessors in `ServiceProvider`
-- normalized context reads in dashboard and billing critical paths
+### Phase 7.3.3 — Feature Interaction Contracts
 
-Its output is a safer semantic baseline for later contracts without changing backend flow ownership.
+This subphase is also intentionally conservative.
+
+Its goal is not to redesign execution.
+
+Its goal is to freeze the meaning of the interactions that the current runtime already implements.
+
+The implemented baseline includes explicit declarative contracts for:
+
+- active client change
+- logout reset
+- auth resolution
+- shared runtime context read
+
+Its output is:
+
+- a lightweight declarative code anchor for the contracts
+- documentation that defines what each contract means
+- documentation that defines what each contract does not mean
+- a safer gate before 7.3.4 coordinator work
+
+This subphase does not introduce:
+
+- a coordinator
+- an event bus
+- a runtime contract engine
+- a new state-management layer
 
 ## Validation
 
@@ -228,51 +258,50 @@ Phase 7 as a whole remains valid because the current ZIP still preserves:
 - billing reload behavior driven by active client changes
 - logout reset behavior
 
-Phase 7.3.2 specifically is valid because the current code now also preserves:
+Phase 7.3.3 specifically is valid because the current code now also preserves:
 
-- remembered DNI bootstrap behavior
-- explicit remembered DNI removal semantics
-- unchanged ownership of authenticated runtime context
-- unchanged ownership of active operational context
+- the existing runtime mechanics unchanged
+- the existing ownership boundaries unchanged
+- the current cross-feature meaning explicitly frozen as declarative contracts
 
 ## Release Impact
 
-Phase 7.3.2 has no intended feature-level redesign.
+Phase 7.3.3 has no intended feature-level redesign.
 
 Its impact is architectural and semantic:
 
 - it reduces ambiguity
-- it prevents stale remembered-login state
-- it narrows logout cleanup to its actual responsibility
-- it prepares future coordination work more safely
+- it freezes cross-feature meaning
+- it protects future coordinator work from inventing semantics that the current code never had
 
 ## Risks
 
 The main current risks are:
 
-- over-extending context normalization into a coordinator prematurely
-- confusing persisted login hint with authenticated session state again
-- moving ownership out of `ServiceProvider`
-- expanding semantic cleanup beyond what the current runtime actually owns
+- over-extending declarative contracts into a runtime execution layer
+- treating contracts as ownership transfer
+- introducing coordinator behavior before the current contracts are frozen
+- using 7.3.3 as a disguised refactor of runtime mechanics
 
 ## What it does NOT solve
 
 At the current stage, Phase 7 does not yet solve:
 
-- backend-persisted authenticated sessions
-- explicit interaction contract types
 - minimal coordinator implementation
+- backend-persisted authenticated sessions
+- event-driven architecture
 - flow-level automated tests
 
 Those belong to later validated Phase 7.3 subphases.
 
 ## Conclusion
 
-Phase 7 is now best understood in four progressive layers:
+Phase 7 is now best understood in five progressive layers:
 
 1. extract feature-local logic
 2. clarify state ownership boundaries
 3. inventory cross-feature coordination flows
-4. normalize shared runtime-context semantics before introducing later coordination contracts
+4. normalize shared runtime-context semantics
+5. freeze real cross-feature meaning as explicit contracts before introducing later coordination mechanisms
 
-The current ZIP confirms that Mi IP·RED has now completed that fourth preparatory layer through `7.3.2 — Session & App Context Normalization`.
+The current ZIP confirms that Mi IP·RED has now completed that fifth preparatory layer through `7.3.3 — Feature Interaction Contracts`.

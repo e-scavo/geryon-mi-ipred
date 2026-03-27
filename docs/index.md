@@ -14,27 +14,27 @@ At the current project baseline, the repository has already completed:
 - Phase 7.1 — Feature-local controller extraction
 - Phase 7.2 — State ownership and boundary clarification
 - Phase 7.3.1 — Application Flow Inventory
+- Phase 7.3.2 — Session & App Context Normalization
 
-The project is now advancing through Phase 7.3.2.
+The project is now advancing through Phase 7.3.3.
 
 This subphase does not introduce a coordinator yet.
 
-Instead, it normalizes the meaning and consumption of runtime context already shared across startup, auth, dashboard, billing, logout, and persisted login hint behavior.
+Instead, it freezes the already-existing cross-feature interactions of the current codebase as explicit feature interaction contracts.
 
 ## Problem Statement
 
-After Phase 7.3.1, the project already has an explicit inventory of its real application flows.
+After Phase 7.3.2, the codebase already has:
 
-The next visible problem in the real ZIP is no longer flow discovery.
+- documented flows
+- normalized context semantics
+- explicit read-only shared runtime-context access paths
 
-The next visible problem is semantic ambiguity between different kinds of context that already exist in code:
+However, the meaning of several cross-feature interactions is still distributed across runtime mutations, listeners, and local feature decisions.
 
-- startup boundary context
-- persisted login hint
-- authenticated runtime context
-- active operational context
+That means the interactions already exist, but they are still not declared as explicit contracts.
 
-Without making those distinctions explicit, future work could accidentally build feature contracts or coordination logic on top of vague assumptions.
+Without making those contracts explicit now, future work could preserve mechanics while accidentally changing intended meaning.
 
 ## Scope
 
@@ -44,7 +44,7 @@ This index covers:
 - development governance documents
 - historical phase documents
 - the current Phase 7 baseline
-- the new Phase 7.3.2 session and app-context normalization document
+- the newly opened and implemented Phase 7.3.3 feature interaction contract document
 
 It does not attempt to redefine architecture beyond the real codebase.
 
@@ -56,9 +56,10 @@ The documentation needed to evolve in the same order as the implementation:
 2. then feature extraction
 3. then state-boundary clarification
 4. then flow inventory
-5. only after that normalize shared runtime-context semantics
+5. then context normalization
+6. and only after that freeze real interactions as explicit contracts
 
-That sequencing remains important because context normalization only became safe after the previous layers were clarified.
+That sequencing remains important because feature interaction contracts only became safe after the earlier layers were made explicit.
 
 ## Files Affected
 
@@ -77,6 +78,7 @@ Primary documents indexed here include:
 - `docs/phase7_application_layer_consolidation_7_2_5_formal_closure.md`
 - `docs/phase7_application_layer_consolidation_7_3_1_application_flow_inventory.md`
 - `docs/phase7_application_layer_consolidation_7_3_2_session_app_context_normalization.md`
+- `docs/phase7_application_layer_consolidation_7_3_3_feature_interaction_contracts.md`
 
 ## Implementation Characteristics
 
@@ -153,13 +155,15 @@ These preserve historical rationale and structural evolution context.
 ##### Phase 7.3
 - `docs/phase7_application_layer_consolidation_7_3_1_application_flow_inventory.md`
 - `docs/phase7_application_layer_consolidation_7_3_2_session_app_context_normalization.md`
+- `docs/phase7_application_layer_consolidation_7_3_3_feature_interaction_contracts.md`
 
-Phase 7.3 is now split into two already-defined layers:
+Phase 7.3 is now split into three already-defined layers:
 
 - flow inventory
 - context normalization
+- feature interaction contracts
 
-The current active concern is still coordination-focused, but 7.3.2 narrows that concern into explicit semantics for shared context before contracts or coordinator logic are introduced.
+The current active concern remains coordination-focused, but 7.3.3 freezes the current interactions as explicit contracts before any minimal coordinator is considered.
 
 ## Validation
 
@@ -177,6 +181,7 @@ At this point, the correct reading order for a technical review is:
 8. `docs/phase7_application_layer_consolidation_7_2_5_formal_closure.md`
 9. `docs/phase7_application_layer_consolidation_7_3_1_application_flow_inventory.md`
 10. `docs/phase7_application_layer_consolidation_7_3_2_session_app_context_normalization.md`
+11. `docs/phase7_application_layer_consolidation_7_3_3_feature_interaction_contracts.md`
 
 ## Release Impact
 
@@ -184,26 +189,26 @@ This update does not change user-facing architecture by itself.
 
 Its impact is documentary and architectural:
 
-- it exposes the real active documentation baseline
-- it makes 7.3.2 visible as a distinct subphase
-- it improves future onboarding for coordination and context work
+- it exposes 7.3.3 as a distinct implemented subphase
+- it freezes the current interaction meaning before any coordinator work
+- it improves future onboarding for cross-feature coordination work
 
 ## Risks
 
 If this index is not updated, future work may:
 
-- treat 7.3.2 as undefined or optional
-- confuse persisted login hint with authenticated runtime state
-- miss the fact that context normalization is now the active concern before contracts/coordinator work
+- treat 7.3.3 as undefined or optional
+- assume current interactions are only incidental mechanics
+- introduce a coordinator without first freezing the meaning of the interactions it would coordinate
 
 ## What it does NOT solve
 
 This document does not by itself:
 
-- introduce feature interaction contracts
-- introduce an application coordinator
-- redesign backend session behavior
-- change implementation
+- introduce a coordinator
+- introduce an event bus
+- redesign runtime execution
+- change implementation behavior
 
 It only reflects the real documentation baseline.
 
@@ -215,4 +220,5 @@ The documentation index now reflects the real project state:
 - Phase 7.1 completed
 - Phase 7.2 completed and closed
 - Phase 7.3.1 completed as flow inventory
-- Phase 7.3.2 opened and implemented as session and app-context normalization
+- Phase 7.3.2 completed as session and app-context normalization
+- Phase 7.3.3 completed as feature interaction contract baseline
