@@ -13,6 +13,7 @@ The current ZIP confirms:
 - Phase 8 is active
 - Phase 8.1 documented runtime failure surfaces
 - Phase 8.2 introduced explicit failure-boundary normalization
+- Phase 8.3 introduced explicit recovery-trigger and policy-decision hardening
 
 ## Problem Statement
 
@@ -53,6 +54,8 @@ These decisions directly govern interpretation of:
 - `lib/models/ServiceProvider/failure_boundary_scope_model.dart`
 - `lib/models/ServiceProvider/failure_recovery_expectation_model.dart`
 - `lib/models/ServiceProvider/failure_boundary_state_model.dart`
+- `lib/models/ServiceProvider/runtime_recovery_trigger_model.dart`
+- `lib/models/ServiceProvider/runtime_recovery_policy_decision_model.dart`
 - `lib/features/billing/controllers/billing_controller.dart`
 - `lib/core/transport/geryonsocket_model.dart`
 - `lib/core/transport/geryonsocket_model_io.dart`
@@ -60,6 +63,7 @@ These decisions directly govern interpretation of:
 - `docs/phase8_runtime_reliability_failure_semantics_hardening.md`
 - `docs/phase8_runtime_reliability_failure_semantics_hardening_8_1_runtime_failure_surface_inventory.md`
 - `docs/phase8_runtime_reliability_failure_semantics_hardening_8_2_failure_boundary_normalization.md`
+- `docs/phase8_runtime_reliability_failure_semantics_hardening_8_3_retry_reboot_reconnect_policy_hardening.md`
 
 ## Implementation Characteristics
 
@@ -106,7 +110,16 @@ The project now explicitly recognizes:
 
 These models are now the shared language for interpreting runtime and feature failure boundaries.
 
-### Decision 6 — Policy changes must follow semantics, not precede them
+### Decision 6 — Recovery execution must remain trigger-aware
+
+The project now also explicitly recognizes:
+
+- `ServiceProviderRuntimeRecoveryTrigger`
+- `ServiceProviderRuntimeRecoveryPolicyDecision`
+
+Recovery entry points must remain routed through explicit trigger-aware policy decisions rather than reintroducing raw reboot-style direct calls.
+
+### Decision 7 — Policy changes must follow semantics, not precede them
 
 Retry / reboot / reconnect / reset behavior must not be changed first and explained later.
 
@@ -114,7 +127,7 @@ The semantic classification must come first.
 
 That is why 8.2 precedes 8.3.
 
-### Decision 7 — Billing is now an explicit example of boundary distinction
+### Decision 8 — Billing is now an explicit example of boundary distinction
 
 Billing now formally distinguishes between:
 
@@ -124,7 +137,7 @@ Billing now formally distinguishes between:
 
 This distinction is part of the current repository baseline.
 
-### Decision 8 — Error-presentation heterogeneity is still evidence, not redesign permission
+### Decision 9 — Error-presentation heterogeneity is still evidence, not redesign permission
 
 The current code still presents errors through different UI surfaces.
 
@@ -132,7 +145,7 @@ That remains evidence that semantics were historically distributed.
 
 It is not, by itself, justification for a new global error framework.
 
-### Decision 9 — Runtime-global and feature-local failures must not be merged implicitly
+### Decision 10 — Runtime-global and feature-local failures must not be merged implicitly
 
 The following remain distinct categories:
 
@@ -144,7 +157,7 @@ The following remain distinct categories:
 
 Later work must preserve that distinction.
 
-### Decision 10 — The active Phase 8 order remains explicit
+### Decision 11 — The active Phase 8 order remains explicit
 
 The recommended order remains:
 
@@ -180,6 +193,7 @@ If these decisions are ignored, future work may:
 - overreact to local errors with global policy changes
 - conflate active-client issues with transport issues
 - reintroduce architecture drift under the label of reliability work
+- bypass explicit trigger-aware recovery entry points
 
 ## What it does NOT solve
 
@@ -203,5 +217,6 @@ The current project baseline is now:
 - Phase 8 active
 - failure surfaces inventoried in 8.1
 - failure boundaries normalized in 8.2
+- recovery execution hardened in 8.3
 
-Future work must now continue under that explicit semantic baseline.
+Future work must now continue under that explicit semantic baseline, and runtime recovery entry points must remain routed through explicit trigger-aware policy decisions.

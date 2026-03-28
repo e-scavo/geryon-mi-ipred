@@ -13,6 +13,7 @@ The current ZIP confirms this baseline:
 - Phase 8 active
 - Phase 8.1 completed as runtime failure surface inventory
 - Phase 8.2 completed as failure boundary normalization
+- Phase 8.3 completed as retry / reboot / reconnect policy hardening
 
 That means the repository is no longer in a structural extraction phase.
 
@@ -69,6 +70,8 @@ Main files governed by the current baseline include:
 - `lib/models/ServiceProvider/failure_boundary_scope_model.dart`
 - `lib/models/ServiceProvider/failure_recovery_expectation_model.dart`
 - `lib/models/ServiceProvider/failure_boundary_state_model.dart`
+- `lib/models/ServiceProvider/runtime_recovery_trigger_model.dart`
+- `lib/models/ServiceProvider/runtime_recovery_policy_decision_model.dart`
 - `lib/models/ServiceProvider/init_stages_enum_model.dart`
 - `lib/models/ServiceProvider/auth_requirement_model.dart`
 - `lib/models/ServiceProvider/login_continuation_result_model.dart`
@@ -117,7 +120,16 @@ That means runtime changes should be interpreted through:
 
 This is now part of the repository baseline.
 
-### 4. ServiceProvider may be hardened, not replaced
+### 4. Recovery execution must stay trigger-aware
+
+Any later work touching runtime recovery entry points must route through explicit trigger-aware policy decisions instead of introducing new direct reboot-style calls from UI or coordinator layers.
+
+This means the current baseline now also includes:
+
+- `ServiceProviderRuntimeRecoveryTrigger`
+- `ServiceProviderRuntimeRecoveryPolicyDecision`
+
+### 5. ServiceProvider may be hardened, not replaced
 
 `ServiceProvider` remains the runtime owner of:
 
@@ -125,12 +137,13 @@ This is now part of the repository baseline.
 - authenticated runtime lifecycle
 - active operational context
 - startup/runtime continuation
+- recovery policy execution
 
 It may be clarified and hardened.
 
 It must not be replaced or bypassed by a new runtime engine.
 
-### 5. Widgets must not become recovery-policy owners
+### 6. Widgets must not become recovery-policy owners
 
 Widgets may:
 
@@ -140,7 +153,7 @@ Widgets may:
 
 Widgets must not become the place where recovery policy is invented.
 
-### 6. Feature-local failure and runtime-global failure must stay distinct
+### 7. Feature-local failure and runtime-global failure must stay distinct
 
 This distinction is mandatory.
 
@@ -150,7 +163,7 @@ Examples:
 - missing active client context is not the same as a transport disconnect
 - startup blocked state is not the same as a feature-local reload problem
 
-### 7. Phase 8 must continue in explicit order
+### 8. Phase 8 must continue in explicit order
 
 The current recommended order remains:
 
@@ -160,7 +173,7 @@ The current recommended order remains:
 - `8.4 — Runtime Diagnostic & Observability Signals`
 - `8.5 — Formal Closure of Phase 8`
 
-### 8. No hidden redesign under the label of hardening
+### 9. No hidden redesign under the label of hardening
 
 The following remain explicitly disallowed unless the ZIP later proves a narrowly justified need:
 
@@ -180,6 +193,7 @@ Future work is aligned with the current baseline only if all of the following re
 - the 8.2 boundary model is consulted before policy changes
 - policy is hardened only after semantics are already explicit
 - feature-local logic remains outside widgets where already extracted
+- runtime recovery execution continues to flow through explicit trigger-aware entry points
 
 ## Release Impact
 
@@ -195,6 +209,7 @@ If these rules are ignored, future work may:
 - bypass the normalized boundary model
 - implement retry or reconnect behavior ad hoc
 - move operational logic into the wrong layer
+- reintroduce direct reboot-style policy from UI code
 
 ## What it does NOT solve
 
@@ -216,5 +231,6 @@ The active development baseline is now:
 - Phase 8 active
 - failure surfaces inventoried
 - failure boundaries normalized
+- runtime recovery execution hardened through explicit trigger-aware policy
 
-Future work must now continue from that explicit semantic baseline.
+Future work must now continue from that explicit semantic baseline, with runtime recovery execution routed through explicit recovery triggers and policy decisions instead of ad hoc direct reboot calls.

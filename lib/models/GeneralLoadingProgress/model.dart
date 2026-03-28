@@ -38,17 +38,13 @@ class _ModelGeneralLoadingProgressState
         final String logLocalFunc = '.::$functionName::.';
         var today = CommonDateTimeModel.fromNow();
         var dataPrev =
-            'Prev:[IsReady:${prev?.isReady}, IsProgress:${prev?.isProgress}, IsUserLoggedIn:${prev?.isUserLoggedIn}]';
-        var dataNext =
-            'Next:[IsReady:${next.isReady}, IsProgress:${next.isProgress}, IsUserLoggedIn:${next.isUserLoggedIn}]';
-
+            prev != null ? prev.runtimeType.toString() : next.runtimeType;
         if (debug) {
           developer.log(
-            'ServiceProviderNotifier: [1] - ${today.toES()} Cambios detectados - $dataPrev -> $dataNext',
+            '=> ServiceProviderNotifier: [1] - ${today.toES()} SERVICE_PROVIDER Next=> ${next.runtimeType} / isReady:${next.isReady} isProgress:${next.isProgress} isUserLoggedIn:${next.isUserLoggedIn} prev=>$dataPrev',
             name: '$logClassName - $logLocalFunc',
           );
         }
-
         final ServiceProviderStartupAuthContinuationCoordinatorState
             coordinatorState =
             next.evaluateStartupAuthContinuationCoordinatorState(
@@ -82,7 +78,7 @@ class _ModelGeneralLoadingProgressState
               name: '$logClassName - $logLocalFunc',
             );
           }
-          next.reboot();
+          next.requestStartupRecovery();
         }
       },
     );
@@ -106,18 +102,18 @@ class _ModelGeneralLoadingProgressState
 
   @override
   Widget build(BuildContext context) {
-    final String functioName = 'BUILD';
-    final String logLocalFunc = '.::$functioName::.';
-    if (debug) {
-      developer.log(
-        'ServiceStatus: PROGRESS NotifyListener:New Progress build',
-        name: '$logClassName - $logLocalFunc',
-      );
-    }
-
     final appStatus = ref.watch(notifierServiceProvider);
 
+    const String functionName = 'build';
+    const String logLocalFunc = '.::$functionName::.';
+
     if (debug) {
+      developer.log(
+        '$logClassName - $logLocalFunc - ServiceStatus: ${appStatus.isReady} / progressLoading: ${appStatus.isProgress}',
+      );
+      developer.log(
+        '$logClassName - $logLocalFunc - ServiceStatus: PROGRESS progressLoading: ${appStatus.initStage}-${appStatus.initStageError}',
+      );
       developer.log(
         '$logClassName - $logLocalFunc - ServiceStatus: PROGRESS progressLoading: errorRequestingBackend ${appStatus.initStage}-${appStatus.initStageError}',
       );
@@ -135,31 +131,39 @@ class _ModelGeneralLoadingProgressState
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Image.asset(
-              'assets/logo.png',
-              scale: 4,
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(0.00, 5.00, 0.00, 5.00),
-              child: Text(appStatus.initStage.typeDsc),
+              'assets/images/full_logo.png',
+              fit: BoxFit.contain,
+              width: 200,
             ),
             if (appStatus.initStageAdditionalMsg != null &&
                 appStatus.initStage !=
                     ServiceProviderInitStages.errorConnecting &&
                 appStatus.initStage !=
                     ServiceProviderInitStages.errorReConnecting)
-              Padding(
-                padding: const EdgeInsets.fromLTRB(0.00, 2.00, 0.00, 0.00),
-                child: Column(
-                  children: [
-                    Text(appStatus.initStageAdditionalMsg!),
-                    if (appStatus.initStageError != null) ...[
-                      Text('Code: ${appStatus.initStageError!.errorCode}'),
-                      if (appStatus.initStageError!.propertyName != null)
-                        Text(
-                            'Property: ${appStatus.initStageError!.propertyName}'),
-                      Text('Message: ${appStatus.initStageError!.errorDsc}'),
-                    ]
-                  ],
+              SizedBox(
+                height: 10,
+                width: 200,
+                child: Text(
+                  appStatus.initStageAdditionalMsg!,
+                  style: const TextStyle(
+                    fontSize: 8,
+                    color: Colors.black45,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            const SizedBox(height: 3),
+            if (appStatus.initStage ==
+                    ServiceProviderInitStages.errorConnecting ||
+                appStatus.initStage ==
+                    ServiceProviderInitStages.errorReConnecting)
+              const SizedBox(
+                height: 20,
+                width: 20,
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.black38),
+                  backgroundColor: Colors.transparent,
+                  strokeWidth: 1.5,
                 ),
               ),
             if (appStatus.connRetry > 0 &&
@@ -187,14 +191,7 @@ class _ModelGeneralLoadingProgressState
                           borderRadius: BorderRadius.all(Radius.circular(2.5))),
                     ),
                     onPressed: () {
-                      setState(() {
-                        appStatus.connRetry = 0;
-                        appStatus.initStageAdditionalMsg = null;
-                        appStatus.initStage =
-                            ServiceProviderInitStages.connecting;
-                        appStatus.canRetry = false;
-                      });
-                      appStatus.reboot();
+                      appStatus.requestManualRecovery();
                     },
                     child: const Text('Retry'),
                   ),

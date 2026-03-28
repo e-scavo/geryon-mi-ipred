@@ -17,6 +17,7 @@ The current ZIP confirms the following phase baseline:
 - Phase 8 opened
 - Phase 8.1 completed as runtime failure surface inventory
 - Phase 8.2 completed as failure boundary normalization
+- Phase 8.3 completed as retry / reboot / reconnect policy hardening
 
 ## Problem Statement
 
@@ -63,6 +64,7 @@ Primary entry documents include:
 - `docs/phase8_runtime_reliability_failure_semantics_hardening.md`
 - `docs/phase8_runtime_reliability_failure_semantics_hardening_8_1_runtime_failure_surface_inventory.md`
 - `docs/phase8_runtime_reliability_failure_semantics_hardening_8_2_failure_boundary_normalization.md`
+- `docs/phase8_runtime_reliability_failure_semantics_hardening_8_3_retry_reboot_reconnect_policy_hardening.md`
 
 ## Implementation Characteristics
 
@@ -154,6 +156,9 @@ Primary entry documents include:
 ##### Phase 8.2
 - `docs/phase8_runtime_reliability_failure_semantics_hardening_8_2_failure_boundary_normalization.md`
 
+##### Phase 8.3
+- `docs/phase8_runtime_reliability_failure_semantics_hardening_8_3_retry_reboot_reconnect_policy_hardening.md`
+
 ## Validation
 
 Recommended current reading order:
@@ -167,6 +172,7 @@ Recommended current reading order:
 7. `docs/phase8_runtime_reliability_failure_semantics_hardening.md`
 8. `docs/phase8_runtime_reliability_failure_semantics_hardening_8_1_runtime_failure_surface_inventory.md`
 9. `docs/phase8_runtime_reliability_failure_semantics_hardening_8_2_failure_boundary_normalization.md`
+10. `docs/phase8_runtime_reliability_failure_semantics_hardening_8_3_retry_reboot_reconnect_policy_hardening.md`
 
 ## Release Impact
 
@@ -200,5 +206,6 @@ The current project baseline is:
 - Phase 8 active
 - Phase 8.1 completed
 - Phase 8.2 completed
+- Phase 8.3 completed
 
 That is now the correct documentation entry point for Mi IP·RED.

@@ -7,6 +7,8 @@ import 'package:geryon_web_app_ws_v2/models/ServiceProvider/auth_requirement_mod
 import 'package:geryon_web_app_ws_v2/models/ServiceProvider/failure_boundary_scope_model.dart';
 import 'package:geryon_web_app_ws_v2/models/ServiceProvider/failure_boundary_state_model.dart';
 import 'package:geryon_web_app_ws_v2/models/ServiceProvider/failure_recovery_expectation_model.dart';
+import 'package:geryon_web_app_ws_v2/models/ServiceProvider/runtime_recovery_policy_decision_model.dart';
+import 'package:geryon_web_app_ws_v2/models/ServiceProvider/runtime_recovery_trigger_model.dart';
 import 'package:flutter/material.dart';
 import 'package:geryon_web_app_ws_v2/common_vars.dart';
 import 'package:geryon_web_app_ws_v2/features/auth/presentation/login_widget.dart';
@@ -89,6 +91,8 @@ class ServiceProvider extends ChangeNotifier {
   late ErrorHandler? initStageError;
   late bool canRetry;
   late List<ServiceProviderChannel> channels;
+  late bool isRecoveryInProgress;
+  late ServiceProviderRuntimeRecoveryTrigger? activeRecoveryTrigger;
 
   late ServiceProviderLoginDataUserMessageModel? loggedUser;
 
@@ -117,6 +121,8 @@ class ServiceProvider extends ChangeNotifier {
       ServiceProviderChannel(name: 'GERYON_General_SCRUD'),
       //ServiceProviderChannel(name: 'GERYON_Customers'),
     ];
+    isRecoveryInProgress = false;
+    activeRecoveryTrigger = null;
     loggedUser = null;
     cEmpresa = TableEmpresaModel.fromDefault();
     developer.log(
@@ -134,6 +140,8 @@ class ServiceProvider extends ChangeNotifier {
   }) {
     isUserLoggedIn = false;
     if (clearLoggedUser) {
+      isRecoveryInProgress = false;
+      activeRecoveryTrigger = null;
       loggedUser = null;
     }
     cEmpresa = TableEmpresaModel.fromDefault();
@@ -434,6 +442,180 @@ class ServiceProvider extends ChangeNotifier {
 
   ServiceProviderFailureRecoveryExpectation get failureRecoveryExpectation =>
       evaluateFailureBoundaryState().recoveryExpectation;
+
+  bool get hasRecoveryInProgress => isRecoveryInProgress;
+
+  ServiceProviderRuntimeRecoveryTrigger? get currentRecoveryTrigger =>
+      activeRecoveryTrigger;
+
+  ServiceProviderRuntimeRecoveryPolicyDecision evaluateRuntimeRecoveryPolicy({
+    required ServiceProviderRuntimeRecoveryTrigger trigger,
+  }) {
+    const String functionName = 'evaluateRuntimeRecoveryPolicy';
+    final ServiceProviderFailureBoundaryState boundaryState =
+        evaluateFailureBoundaryState();
+
+    if (boundaryState.recoveryExpectation ==
+        ServiceProviderFailureRecoveryExpectation.fatalBlocked) {
+      return ServiceProviderRuntimeRecoveryPolicyDecision.blocked(
+        trigger: trigger,
+        failureBoundaryState: boundaryState,
+        reasonCode: 'recovery_blocked_by_fatal_boundary',
+        description:
+            'Runtime recovery is blocked because the current boundary is marked as fatalBlocked.',
+      );
+    }
+
+    if (isRecoveryInProgress) {
+      return ServiceProviderRuntimeRecoveryPolicyDecision.blocked(
+        trigger: trigger,
+        failureBoundaryState: boundaryState,
+        reasonCode: 'recovery_already_in_progress',
+        description:
+            'Runtime recovery request was ignored because another recovery is already in progress.',
+      );
+    }
+
+    switch (trigger) {
+      case ServiceProviderRuntimeRecoveryTrigger.manualRetry:
+        return ServiceProviderRuntimeRecoveryPolicyDecision.allow(
+          trigger: trigger,
+          failureBoundaryState: boundaryState,
+          reasonCode: 'manual_retry_allowed',
+          description:
+              'Manual retry may attempt a controlled runtime recovery from the current boundary.',
+          shouldOpenLoadingPopup: true,
+          shouldResetRetryCounter: true,
+          shouldResetSessionToken: true,
+        );
+      case ServiceProviderRuntimeRecoveryTrigger.startupCoordinator:
+        return ServiceProviderRuntimeRecoveryPolicyDecision.allow(
+          trigger: trigger,
+          failureBoundaryState: boundaryState,
+          reasonCode: 'startup_recovery_allowed',
+          description:
+              'Startup/auth continuation may attempt a controlled runtime recovery from the current boundary.',
+          shouldOpenLoadingPopup: true,
+          shouldResetRetryCounter: false,
+          shouldResetSessionToken: true,
+        );
+      case ServiceProviderRuntimeRecoveryTrigger.transportDone:
+        return ServiceProviderRuntimeRecoveryPolicyDecision.allow(
+          trigger: trigger,
+          failureBoundaryState: boundaryState,
+          reasonCode: 'transport_recovery_allowed',
+          description:
+              'Transport disconnect may attempt a controlled runtime recovery when the boundary is not fatal.',
+          shouldOpenLoadingPopup: true,
+          shouldResetRetryCounter: false,
+          shouldResetSessionToken: true,
+        );
+      case ServiceProviderRuntimeRecoveryTrigger.runtimeReset:
+        return ServiceProviderRuntimeRecoveryPolicyDecision.allow(
+          trigger: trigger,
+          failureBoundaryState: boundaryState,
+          reasonCode: 'runtime_reset_recovery_allowed',
+          description:
+              'Runtime reset may re-enter controlled initialization from the current state.',
+          shouldOpenLoadingPopup: false,
+          shouldResetRetryCounter: true,
+          shouldResetSessionToken: true,
+        );
+      case ServiceProviderRuntimeRecoveryTrigger.unknown:
+        return ServiceProviderRuntimeRecoveryPolicyDecision.blocked(
+          trigger: trigger,
+          failureBoundaryState: boundaryState,
+          reasonCode: 'recovery_trigger_unknown',
+          description:
+              'Runtime recovery requires an explicit trigger classification before execution.',
+        );
+    }
+  }
+
+  void _completeRuntimeRecovery({
+    required String calledFrom,
+  }) {
+    isRecoveryInProgress = false;
+    activeRecoveryTrigger = null;
+    updateListeners(calledFrom: calledFrom);
+  }
+
+  void _requestRuntimeRecovery({
+    required ServiceProviderRuntimeRecoveryTrigger trigger,
+    required String calledFrom,
+  }) {
+    final ServiceProviderRuntimeRecoveryPolicyDecision policyDecision =
+        evaluateRuntimeRecoveryPolicy(trigger: trigger);
+
+    if (debug) {
+      developer.log(
+        'Runtime recovery requested => $policyDecision',
+        name: '$logClassName - .::$calledFrom::.',
+      );
+    }
+
+    if (!policyDecision.shouldAttemptRecovery) {
+      updateListeners(calledFrom: calledFrom);
+      return;
+    }
+
+    isRecoveryInProgress = true;
+    activeRecoveryTrigger = trigger;
+    isNew = true;
+    isReady = false;
+    canRetry = false;
+    initStageAdditionalMsg = null;
+    initStage = ServiceProviderInitStages.connecting;
+
+    if (policyDecision.shouldResetRetryCounter) {
+      connRetry = 0;
+    }
+
+    if (policyDecision.shouldResetSessionToken) {
+      sessionTokenID = '';
+    }
+
+    if (policyDecision.shouldOpenLoadingPopup && !isProgress) {
+      isProgress = true;
+      if (navigatorKey.currentState != null) {
+        navigatorKey.currentState?.push(ModelGeneralPoPUpLoadingProgress());
+      }
+    }
+
+    updateListeners(calledFrom: calledFrom);
+
+    init().whenComplete(() {
+      _completeRuntimeRecovery(calledFrom: calledFrom);
+    });
+  }
+
+  void requestManualRecovery() {
+    _requestRuntimeRecovery(
+      trigger: ServiceProviderRuntimeRecoveryTrigger.manualRetry,
+      calledFrom: 'requestManualRecovery',
+    );
+  }
+
+  void requestStartupRecovery() {
+    _requestRuntimeRecovery(
+      trigger: ServiceProviderRuntimeRecoveryTrigger.startupCoordinator,
+      calledFrom: 'requestStartupRecovery',
+    );
+  }
+
+  void requestTransportRecovery() {
+    _requestRuntimeRecovery(
+      trigger: ServiceProviderRuntimeRecoveryTrigger.transportDone,
+      calledFrom: 'requestTransportRecovery',
+    );
+  }
+
+  void requestRuntimeResetRecovery() {
+    _requestRuntimeRecovery(
+      trigger: ServiceProviderRuntimeRecoveryTrigger.runtimeReset,
+      calledFrom: 'requestRuntimeResetRecovery',
+    );
+  }
 
   bool _isHandshakeMessage(ServiceProviderWholeMessageModel message) {
     return message.data.isNew;
@@ -1180,8 +1362,11 @@ class ServiceProvider extends ChangeNotifier {
       className: className,
       functionName: functionName,
     );
+    initStage = ServiceProviderInitStages.disconnected;
+    isReady = false;
+    isProgress = false;
     updateListeners(calledFrom: functionName);
-    reboot();
+    requestTransportRecovery();
   }
 
   Future<ErrorHandler?> init() async {
@@ -2044,25 +2229,7 @@ class ServiceProvider extends ChangeNotifier {
   }
 
   void reboot() {
-    const String functionName = 'reboot';
-    const logFunctionName = '.::$functionName::.';
-    if (debug) {
-      developer.log(
-        'Reboot => Rebooting ServiceProvider...',
-        name: '$logClassName - $logFunctionName',
-      );
-    }
-    isNew = true;
-    sessionTokenID = '';
-    isReady = false;
-    if (!isProgress) {
-      isProgress = true;
-      if (navigatorKey.currentState != null) {
-        navigatorKey.currentState?.push(ModelGeneralPoPUpLoadingProgress());
-      }
-    }
-    updateListeners(calledFrom: functionName);
-    init();
+    requestStartupRecovery();
   }
 
   Future<ErrorHandler> subscribeChannel() async {
@@ -2659,7 +2826,7 @@ class ServiceProvider extends ChangeNotifier {
 
   void logout() {
     _resetAuthenticatedRuntimeState();
-    getBackendStatus();
+    requestRuntimeResetRecovery();
   }
 
   void setCurrentCliente(int clientID) {
