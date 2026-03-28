@@ -2,7 +2,7 @@
 
 ## Objective
 
-Define the active development rules for Mi IP·RED so that future changes preserve the production runtime, respect the current architecture, and evolve the startup/auth continuation boundary incrementally.
+Define the active development rules for Mi IP·RED so that future changes preserve the production runtime, respect the current architecture, and evolve the application in explicitly scoped phases.
 
 ## Initial Context
 
@@ -10,16 +10,17 @@ The current ZIP confirms a stable architecture with the following baseline:
 
 - `presentation → controller → ServiceProvider`
 - Phase 7.3 already closed
-- Phase 7.4 active as a narrow continuation-hardening phase
+- Phase 7.4 completed and formally closed
 - `7.4.2` completed as auth-requirement boundary normalization
 - `7.4.3` completed as login resolution continuation contract normalization
 - `7.4.4` completed as minimal startup/auth continuation coordination normalization
+- `7.4.5` completed as formal closure of Phase 7.4
 
 ## Problem Statement
 
-Without updated rules, later work could easily overreach and turn a narrow hardening task into a redesign.
+Without updated rules, later work could easily overreach and turn a closed hardening task into a stealth redesign.
 
-The biggest current risk is confusing boundary normalization with broader runtime restructuring.
+The biggest current risk is treating the already-closed startup/auth continuation bridge as if it were still open for incremental modification under Phase 7.4.
 
 ## Scope
 
@@ -52,6 +53,8 @@ What remained was narrower:
 
 Phase 7.4 addressed those concerns incrementally and conservatively.
 
+That work is now complete and frozen.
+
 ## Files Affected
 
 Main files governed by the current baseline include:
@@ -65,7 +68,7 @@ Main files governed by the current baseline include:
 - `lib/models/ServiceProvider/startup_auth_continuation_coordinator_model.dart`
 - `lib/models/ServiceProvider/data_model.dart`
 - `docs/phase7_application_layer_consolidation.md`
-- `docs/phase7_application_layer_consolidation_7_4_4_minimal_startup_auth_continuation_coordinator.md`
+- `docs/phase7_application_layer_consolidation_7_4_5_formal_closure.md`
 
 ## Implementation Characteristics
 
@@ -83,7 +86,7 @@ Do not move feature logic back into widgets.
 - authenticated runtime context
 - active client/company context
 
-Phase 7.4.4 does not change that ownership.
+Phase 7.4 did not change that ownership.
 
 ### Rule 3 — Auth requirement must remain explicit
 
@@ -106,15 +109,15 @@ The preferred post-login continuation boundary remains:
 
 Raw popup return values must not become the primary semantic source of continuation logic.
 
-### Rule 5 — Startup/auth minimal coordination must now be consumed explicitly
+### Rule 5 — Startup/auth minimal coordination must remain explicit
 
-The preferred startup/auth boundary-coordination model is now:
+The preferred startup/auth boundary-coordination model remains:
 
 - `ServiceProviderStartupAuthContinuationDisposition`
 - `ServiceProviderStartupAuthContinuationCoordinatorState`
 - `evaluateStartupAuthContinuationCoordinatorState(...)`
 
-Loading-popup close / keep-waiting / reboot decisions must prefer this explicit coordinator state instead of widget-local condition combinations.
+Loading-popup close / keep-waiting / reboot decisions must continue to prefer this explicit coordinator state instead of widget-local condition combinations.
 
 ### Rule 6 — Login UI remains feature-local
 
@@ -125,13 +128,13 @@ The auth feature still owns:
 - login submit UX
 - local failure rendering
 
-Do not use Phase 7.4 as a reason to move UI logic into `ServiceProvider` or `main.dart`.
+Do not use post-7.4 work as a reason to move UI logic into `ServiceProvider` or `main.dart`.
 
 ### Rule 7 — Startup boundary remains local to `main.dart`
 
 `main.dart` continues owning whether the initial startup boundary is completed.
 
-Phase 7.4.4 did not change that.
+Phase 7.4 did not change that.
 
 ### Rule 8 — Persisted DNI/CUIT remains a login hint
 
@@ -152,7 +155,7 @@ The auth-requirement boundary is reached from:
 - initial startup
 - logout reentry
 
-Future hardening work must preserve both paths.
+Future hardening work must preserve both paths when relevant.
 
 ### Rule 11 — No broad redesign under cleanup language
 
@@ -166,9 +169,21 @@ Do not introduce under the label of cleanup:
 
 unless a later phase explicitly justifies it against the real code.
 
+### Rule 12 — Phase 7.4 is closed and must not be extended implicitly
+
+The startup/auth continuation bridge is now considered stable.
+
+Future changes must:
+
+- not extend Phase 7.4 implicitly
+- not introduce new coordination logic inside loading popup as a hidden continuation of 7.4
+- not bypass the explicit auth / continuation / coordinator models that Phase 7.4 established
+
+Any new work must be introduced under a new phase with explicit justification grounded in the real code.
+
 ## Validation
 
-Any change after 7.4.4 must preserve all of the following:
+Any change after Phase 7.4 closure must preserve all of the following:
 
 - startup with no remembered user still opens login correctly
 - startup with remembered local user still behaves conservatively
@@ -178,21 +193,23 @@ Any change after 7.4.4 must preserve all of the following:
 - authenticated runtime context still materializes correctly
 - loading popup closes only when coordinator state resolves authenticated continuation
 - explicit blocked states do not silently close startup boundary
-- logout still reenters unauthenticated flow safely
+- logout still reenters unauthenticated flow safely when relevant
+- Phase 7.4 baseline is not bypassed implicitly
 
 ## Release Impact
 
 These rules do not change runtime behavior directly.
 
-They constrain how future work is allowed to evolve the code.
+They constrain how future work is allowed to evolve the code after the formal closure of Phase 7.4.
 
 ## Risks
 
 Without these rules, future work may:
 
-- add new hidden semantics on top of old ones
+- add new hidden semantics on top of the frozen baseline
 - redesign `ServiceProvider` too early
-- break the current startup/auth bridge while claiming to clean it up
+- break the current startup/auth bridge while claiming to “continue Phase 7.4”
+- reopen a closed phase without acknowledging it
 
 ## What it does NOT solve
 
@@ -201,15 +218,18 @@ This document does not by itself:
 - relocate popup ownership
 - redesign startup semantics
 - introduce a global startup/auth coordinator
+- define a future phase
 
-It only freezes the correct implementation discipline.
+It only freezes the correct implementation discipline after Phase 7.4 closure.
 
 ## Conclusion
 
-The current development baseline is conservative:
+The current development baseline is conservative and explicit:
 
 - keep runtime behavior stable
 - prefer explicit auth-requirement meaning
 - prefer explicit login continuation meaning
 - prefer explicit minimal startup/auth coordinator meaning
-- move to `7.4.5` as the formal closure step
+- treat Phase 7.4 as formally closed
+
+Any further evolution must proceed under a new phase.

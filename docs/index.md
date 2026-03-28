@@ -12,22 +12,23 @@ The current ZIP confirms the following phase status:
 - Phase 7.1 completed
 - Phase 7.2 completed and formally closed
 - Phase 7.3 completed and formally closed
-- Phase 7.4 active
+- Phase 7.4 completed and formally closed
 
-Current active completed subphases inside 7.4:
+Current completed subphases inside 7.4:
 
 - `7.4.1 — Startup/Auth Continuation Inventory`
 - `7.4.2 — Auth Requirement Boundary Normalization`
 - `7.4.3 — Login Resolution Continuation Contract`
 - `7.4.4 — Minimal Startup/Auth Continuation Coordinator`
+- `7.4.5 — Formal Closure of Phase 7.4`
 
 ## Problem Statement
 
 The documentation index must reflect the real current state of the project.
 
-At this point, the remaining application-layer work is not a generic cleanup pass.
+At this point, the remaining application-layer work is no longer an open continuation-hardening pass under Phase 7.4.
 
-It is a narrow continuation-hardening pass over the startup/auth bridge.
+Phase 7.4 is now closed and must be treated as a frozen baseline.
 
 ## Scope
 
@@ -37,7 +38,7 @@ This index covers:
 - governance documents
 - historical phase documents
 - current Phase 7 baseline
-- current 7.4 documentation
+- the completed and closed 7.4 documentation set
 
 It does not define runtime behavior.
 
@@ -45,7 +46,7 @@ It does not define runtime behavior.
 
 The documentation has been built phase by phase together with the implementation.
 
-That means the index must preserve the same reading order as the real architecture work.
+That means the index must preserve the same reading order as the real architecture work and clearly show which phases remain active versus formally closed.
 
 ## Files Affected
 
@@ -65,6 +66,7 @@ Primary entry documents include:
 - `docs/phase7_application_layer_consolidation_7_4_2_auth_requirement_boundary_normalization.md`
 - `docs/phase7_application_layer_consolidation_7_4_3_login_resolution_continuation_contract.md`
 - `docs/phase7_application_layer_consolidation_7_4_4_minimal_startup_auth_continuation_coordinator.md`
+- `docs/phase7_application_layer_consolidation_7_4_5_formal_closure.md`
 
 ## Implementation Characteristics
 
@@ -142,6 +144,7 @@ Primary entry documents include:
 - `docs/phase7_application_layer_consolidation_7_4_2_auth_requirement_boundary_normalization.md`
 - `docs/phase7_application_layer_consolidation_7_4_3_login_resolution_continuation_contract.md`
 - `docs/phase7_application_layer_consolidation_7_4_4_minimal_startup_auth_continuation_coordinator.md`
+- `docs/phase7_application_layer_consolidation_7_4_5_formal_closure.md`
 
 ## Validation
 
@@ -158,20 +161,21 @@ Recommended current reading order:
 9. `docs/phase7_application_layer_consolidation_7_4_2_auth_requirement_boundary_normalization.md`
 10. `docs/phase7_application_layer_consolidation_7_4_3_login_resolution_continuation_contract.md`
 11. `docs/phase7_application_layer_consolidation_7_4_4_minimal_startup_auth_continuation_coordinator.md`
+12. `docs/phase7_application_layer_consolidation_7_4_5_formal_closure.md`
 
 ## Release Impact
 
 This document has no direct runtime impact.
 
-It keeps the documentation aligned with the real current phase baseline.
+It keeps the documentation aligned with the real current phase baseline and makes the formal closure of Phase 7.4 explicit.
 
 ## Risks
 
 If this index is not aligned, future work may:
 
-- treat Phase 7.3 as reopened
-- skip the explicit 7.4 documentation path
-- misread the startup/auth work as generic cleanup
+- treat Phase 7.4 as still active
+- reopen the startup/auth bridge implicitly
+- misread the frozen baseline as still pending
 
 ## What it does NOT solve
 
@@ -180,6 +184,7 @@ This index does not by itself:
 - change runtime behavior
 - normalize auth requirement semantics
 - define continuation contracts
+- coordinate startup/auth behavior
 
 It only reflects the real current baseline.
 
@@ -191,4 +196,6 @@ The current documentation baseline is:
 - Phase 7.1 completed
 - Phase 7.2 completed and closed
 - Phase 7.3 completed and closed
-- Phase 7.4 active with `7.4.4` now documented
+- Phase 7.4 completed and formally closed
+
+Future work must proceed under a new phase.

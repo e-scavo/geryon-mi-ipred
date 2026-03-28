@@ -13,14 +13,14 @@ The current ZIP confirms the following progression:
 - Phase 7.1 completed
 - Phase 7.2 completed and formally closed
 - Phase 7.3 completed and formally closed
-- Phase 7.4 opened as a narrow startup/auth continuation hardening phase
+- Phase 7.4 completed and formally closed as a narrow startup/auth continuation hardening phase
 
 At the current baseline:
 
 - `presentation → controller → ServiceProvider` remains the active architecture
 - `ServiceProvider` remains the runtime source for authenticated context
 - startup continuation still depends on popup-based readiness flow
-- the remaining narrow work focuses on auth requirement, continuation semantics, and minimal boundary coordination
+- the startup/auth bridge has now been explicitly hardened and frozen
 
 ## Problem Statement
 
@@ -35,7 +35,9 @@ What remained was not a generic architecture issue, but one sensitive runtime br
 - authenticated continuation
 - loading-popup completion and narrow reboot coordination
 
-Phase 7.4 exists to harden that bridge incrementally.
+Phase 7.4 existed to harden that bridge incrementally.
+
+That work is now complete.
 
 ## Scope
 
@@ -69,6 +71,8 @@ The project needed to mature in a safe order:
 4. freeze interaction semantics
 5. anchor only the narrowest safe coordination concerns
 6. return to the remaining startup/auth continuation bridge
+7. harden that bridge without redesigning the rest of the runtime
+8. freeze the resulting baseline formally
 
 That is exactly the order the current ZIP reflects.
 
@@ -140,12 +144,13 @@ Main result:
 
 ### Phase 7.4 — Startup/Auth Continuation Boundary Hardening
 
-Current completed subphases:
+Completed:
 
 - `7.4.1 — Startup/Auth Continuation Inventory`
 - `7.4.2 — Auth Requirement Boundary Normalization`
 - `7.4.3 — Login Resolution Continuation Contract`
 - `7.4.4 — Minimal Startup/Auth Continuation Coordinator`
+- `7.4.5 — Formal Closure of Phase 7.4`
 
 #### 7.4.1 Outcome
 
@@ -164,7 +169,7 @@ Also introduced:
 - transitional mapping back to legacy `ErrorHandler` behavior
 - removal of direct magic-code branching from `_handleBackendStatusSuccessFlow(...)`
 
-This phase did **not** redesign popup ownership, startup boundary ownership, or login widget behavior.
+This subphase did **not** redesign popup ownership, startup boundary ownership, or login widget behavior.
 
 #### 7.4.3 Outcome
 
@@ -179,7 +184,7 @@ Also introduced:
 - explicit resolution of success vs failure vs cancellation vs invalid result
 - replacement of the old hybrid post-login handler with an explicit continuation consumer
 
-This phase did **not** move popup ownership, change startup boundary ownership, or redesign the login widget.
+This subphase did **not** move popup ownership, change startup boundary ownership, or redesign the login widget.
 
 #### 7.4.4 Outcome
 
@@ -194,7 +199,20 @@ Also introduced:
 - popup-close / keep-waiting / reboot decisions consumed from explicit coordinator state
 - removal of inline widget-local startup/auth coordination branching in the loading popup
 
-This phase did **not** introduce a broad coordinator, move popup ownership, or redesign the rest of the runtime.
+This subphase did **not** introduce a broad coordinator, move popup ownership, or redesign the rest of the runtime.
+
+#### 7.4.5 Outcome
+
+Formally closed Phase 7.4 and froze the startup/auth continuation bridge as a stable baseline.
+
+This closure confirms that the startup/auth bridge is now:
+
+- explicitly modeled
+- minimally coordinated
+- locally owned
+- sufficiently hardened for the intended scope of Phase 7
+
+No further work should be added under Phase 7.4 without new justification grounded in the real code.
 
 ## Validation
 
@@ -206,44 +224,53 @@ The Phase 7 baseline remains valid only if all of the following still hold:
 - billing refresh flow remains intact
 - logout reset flow remains intact
 - minimal coordinator remains narrow and unchanged outside the startup/auth bridge
+- Phase 7.4 remains formally closed and does not continue implicitly
 
 ## Release Impact
 
-Phase 7.4.4 has low intended release impact from the user perspective.
+Phase 7 has remained a low-risk application-layer consolidation effort from the user perspective.
 
-Its purpose is semantic hardening, not visible UX redesign.
+Its main value is structural and semantic:
+
+- clearer feature boundaries
+- clearer interaction semantics
+- clearer shared context semantics
+- explicit startup/auth bridge hardening
+- frozen baseline for future phases
 
 ## Risks
 
-The main risk in late Phase 7 work is overreaching.
+The main risk after Phase 7 closure is overreaching in future work.
 
 Incorrect follow-up work could:
 
-- reopen Phase 7.3 implicitly
+- reopen Phase 7.3 or 7.4 implicitly
 - broaden coordinator scope without justification
-- redesign ServiceProvider too early
+- redesign `ServiceProvider` too early
 - confuse login hint persistence with authenticated runtime persistence
 
 ## What it does NOT solve
 
-Phase 7, even after 7.4.4, does not yet solve:
+Phase 7, even after 7.4.5, does not solve:
 
 - popup ownership relocation
 - unified startup/logout orchestration abstraction beyond the narrow local coordinator
 - backend-persisted authenticated session validation
+- broader runtime redesign
+
+Those concerns remain outside the scope of Phase 7.
 
 ## Conclusion
 
-Phase 7 remains a conservative application-layer consolidation phase.
+Phase 7 is now complete through the formal closure of Phase 7.4.
 
 The current ZIP confirms:
 
 - Phase 7.1 closed
 - Phase 7.2 closed
 - Phase 7.3 closed
-- Phase 7.4 active
-- `7.4.4` completed as minimal startup/auth continuation coordination hardening
+- Phase 7.4 closed
 
-The next safe target is:
+The startup/auth continuation bridge is now considered stable and frozen.
 
-- `Phase 7.4.5 — Formal Closure of Phase 7.4`
+The next step must be introduced as a new phase with a new justified scope.
