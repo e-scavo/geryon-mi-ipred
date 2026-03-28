@@ -13,22 +13,37 @@ The current ZIP confirms the following phase status:
 - Phase 7.2 completed and formally closed
 - Phase 7.3 completed and formally closed
 - Phase 7.4 completed and formally closed
+- Phase 7.5 completed and formally closed
 
-Current completed subphases inside 7.4:
+Current completed subphases inside the Phase 7 consolidation effort are:
 
+- `7.1.1 — Auth extraction`
+- `7.1.2 — Dashboard extraction`
+- `7.1.3 — Billing extraction`
+- `7.2.1 — Feature State Inventory & Ownership Definition`
+- `7.2.2 — Billing State Boundary Consolidation`
+- `7.2.3 — Dashboard State Derivation Normalization`
+- `7.2.4 — Auth & Startup Initial State Boundary Cleanup`
+- `7.2.5 — Formal Closure of Phase 7.2`
+- `7.3.1 — Application Flow Inventory`
+- `7.3.2 — Session & App Context Normalization`
+- `7.3.3 — Feature Interaction Contracts`
+- `7.3.4 — Application Coordinator (mínimo)`
+- `7.3.5 — Formal Closure of Phase 7.3`
 - `7.4.1 — Startup/Auth Continuation Inventory`
 - `7.4.2 — Auth Requirement Boundary Normalization`
 - `7.4.3 — Login Resolution Continuation Contract`
 - `7.4.4 — Minimal Startup/Auth Continuation Coordinator`
 - `7.4.5 — Formal Closure of Phase 7.4`
+- `7.5 — Formal Closure of Phase 7`
 
 ## Problem Statement
 
 The documentation index must reflect the real current state of the project.
 
-At this point, the remaining application-layer work is no longer an open continuation-hardening pass under Phase 7.4.
+At this point, the Application Layer Consolidation effort is no longer active work.
 
-Phase 7.4 is now closed and must be treated as a frozen baseline.
+Phase 7 is now formally closed and must be treated as a frozen baseline.
 
 ## Scope
 
@@ -37,8 +52,8 @@ This index covers:
 - core architecture documents
 - governance documents
 - historical phase documents
-- current Phase 7 baseline
-- the completed and closed 7.4 documentation set
+- the completed Phase 7 baseline
+- the closed documentary set for the whole Application Layer Consolidation effort
 
 It does not define runtime behavior.
 
@@ -67,6 +82,7 @@ Primary entry documents include:
 - `docs/phase7_application_layer_consolidation_7_4_3_login_resolution_continuation_contract.md`
 - `docs/phase7_application_layer_consolidation_7_4_4_minimal_startup_auth_continuation_coordinator.md`
 - `docs/phase7_application_layer_consolidation_7_4_5_formal_closure.md`
+- `docs/phase7_application_layer_consolidation_7_5_formal_closure.md`
 
 ## Implementation Characteristics
 
@@ -146,6 +162,9 @@ Primary entry documents include:
 - `docs/phase7_application_layer_consolidation_7_4_4_minimal_startup_auth_continuation_coordinator.md`
 - `docs/phase7_application_layer_consolidation_7_4_5_formal_closure.md`
 
+##### Phase 7.5
+- `docs/phase7_application_layer_consolidation_7_5_formal_closure.md`
+
 ## Validation
 
 Recommended current reading order:
@@ -162,19 +181,20 @@ Recommended current reading order:
 10. `docs/phase7_application_layer_consolidation_7_4_3_login_resolution_continuation_contract.md`
 11. `docs/phase7_application_layer_consolidation_7_4_4_minimal_startup_auth_continuation_coordinator.md`
 12. `docs/phase7_application_layer_consolidation_7_4_5_formal_closure.md`
+13. `docs/phase7_application_layer_consolidation_7_5_formal_closure.md`
 
 ## Release Impact
 
 This document has no direct runtime impact.
 
-It keeps the documentation aligned with the real current phase baseline and makes the formal closure of Phase 7.4 explicit.
+It keeps the documentation aligned with the real current phase baseline and makes the formal closure of the whole Phase 7 effort explicit.
 
 ## Risks
 
 If this index is not aligned, future work may:
 
-- treat Phase 7.4 as still active
-- reopen the startup/auth bridge implicitly
+- treat Phase 7 as still active
+- reopen closed application-layer concerns implicitly
 - misread the frozen baseline as still pending
 
 ## What it does NOT solve
@@ -185,6 +205,7 @@ This index does not by itself:
 - normalize auth requirement semantics
 - define continuation contracts
 - coordinate startup/auth behavior
+- define the next phase
 
 It only reflects the real current baseline.
 
@@ -196,6 +217,7 @@ The current documentation baseline is:
 - Phase 7.1 completed
 - Phase 7.2 completed and closed
 - Phase 7.3 completed and closed
-- Phase 7.4 completed and formally closed
+- Phase 7.4 completed and closed
+- Phase 7.5 completed and closed
 
 Future work must proceed under a new phase.

@@ -14,6 +14,7 @@ The current ZIP confirms the following progression:
 - Phase 7.2 completed and formally closed
 - Phase 7.3 completed and formally closed
 - Phase 7.4 completed and formally closed as a narrow startup/auth continuation hardening phase
+- Phase 7.5 completed and formally closed as the final closure of the whole phase
 
 At the current baseline:
 
@@ -21,23 +22,24 @@ At the current baseline:
 - `ServiceProvider` remains the runtime source for authenticated context
 - startup continuation still depends on popup-based readiness flow
 - the startup/auth bridge has now been explicitly hardened and frozen
+- the whole Application Layer Consolidation effort is now formally closed
 
 ## Problem Statement
 
-By the time Phase 7.3 closed, broad application coordination had already been clarified and bounded.
+By the time the earlier subphases closed, broad application coordination had already been clarified and bounded.
 
-What remained was not a generic architecture issue, but one sensitive runtime bridge:
+What remained throughout Phase 7 was not a generic architecture rewrite issue, but a sequence of application-layer consolidation concerns:
 
-- startup
-- backend status
-- auth requirement
-- login popup entry
-- authenticated continuation
-- loading-popup completion and narrow reboot coordination
-
-Phase 7.4 existed to harden that bridge incrementally.
+- extracted feature-local orchestration ownership
+- clarified state boundaries
+- clarified shared runtime/app-context semantics
+- clarified cross-feature contracts
+- clarified narrow coordination
+- hardened the startup/auth continuation bridge
 
 That work is now complete.
+
+The final remaining requirement was to close the whole phase as one frozen baseline.
 
 ## Scope
 
@@ -50,6 +52,7 @@ Phase 7 includes:
 - feature interaction contracts
 - minimal application coordinator
 - startup/auth continuation hardening
+- final formal closure of the whole phase
 
 Phase 7 does not include:
 
@@ -72,7 +75,8 @@ The project needed to mature in a safe order:
 5. anchor only the narrowest safe coordination concerns
 6. return to the remaining startup/auth continuation bridge
 7. harden that bridge without redesigning the rest of the runtime
-8. freeze the resulting baseline formally
+8. freeze the resulting startup/auth baseline
+9. close the entire Application Layer Consolidation effort as a completed phase
 
 That is exactly the order the current ZIP reflects.
 
@@ -205,14 +209,33 @@ This subphase did **not** introduce a broad coordinator, move popup ownership, o
 
 Formally closed Phase 7.4 and froze the startup/auth continuation bridge as a stable baseline.
 
-This closure confirms that the startup/auth bridge is now:
+This closure confirmed that the startup/auth bridge is now:
 
 - explicitly modeled
 - minimally coordinated
 - locally owned
 - sufficiently hardened for the intended scope of Phase 7
 
-No further work should be added under Phase 7.4 without new justification grounded in the real code.
+### Phase 7.5 — Formal Closure of Phase 7
+
+Completed:
+
+- `7.5 — Formal Closure of Phase 7`
+
+#### 7.5 Outcome
+
+Formally closed the whole Application Layer Consolidation phase and froze its final architectural baseline.
+
+This closure confirms that Phase 7 as a whole achieved its intended results without re-architecting the application and without introducing a new global runtime layer.
+
+The final Phase 7 baseline is now:
+
+- `presentation → controller → ServiceProvider`
+- explicit feature-local controller ownership
+- explicit state and derived-state boundaries
+- explicit shared context and interaction semantics
+- narrow coordination only where justified
+- explicit and minimally coordinated startup/auth continuation behavior
 
 ## Validation
 
@@ -223,8 +246,8 @@ The Phase 7 baseline remains valid only if all of the following still hold:
 - authenticated runtime context still lives in `ServiceProvider`
 - billing refresh flow remains intact
 - logout reset flow remains intact
-- minimal coordinator remains narrow and unchanged outside the startup/auth bridge
-- Phase 7.4 remains formally closed and does not continue implicitly
+- minimal coordination remains narrow and unchanged outside the already-closed startup/auth bridge
+- Phase 7 remains formally closed and does not continue implicitly
 
 ## Release Impact
 
@@ -237,6 +260,7 @@ Its main value is structural and semantic:
 - clearer shared context semantics
 - explicit startup/auth bridge hardening
 - frozen baseline for future phases
+- explicit formal closure of the full phase
 
 ## Risks
 
@@ -244,25 +268,26 @@ The main risk after Phase 7 closure is overreaching in future work.
 
 Incorrect follow-up work could:
 
-- reopen Phase 7.3 or 7.4 implicitly
+- reopen closed 7.x concerns implicitly
 - broaden coordinator scope without justification
 - redesign `ServiceProvider` too early
 - confuse login hint persistence with authenticated runtime persistence
 
 ## What it does NOT solve
 
-Phase 7, even after 7.4.5, does not solve:
+Phase 7, even after 7.5, does not solve:
 
 - popup ownership relocation
 - unified startup/logout orchestration abstraction beyond the narrow local coordinator
 - backend-persisted authenticated session validation
 - broader runtime redesign
+- new product-surface expansion
 
 Those concerns remain outside the scope of Phase 7.
 
 ## Conclusion
 
-Phase 7 is now complete through the formal closure of Phase 7.4.
+Phase 7 is now complete through the formal closure of Phase 7.5.
 
 The current ZIP confirms:
 
@@ -270,7 +295,8 @@ The current ZIP confirms:
 - Phase 7.2 closed
 - Phase 7.3 closed
 - Phase 7.4 closed
+- Phase 7.5 closed
 
-The startup/auth continuation bridge is now considered stable and frozen.
+The Application Layer Consolidation effort is now considered stable and frozen.
 
 The next step must be introduced as a new phase with a new justified scope.
