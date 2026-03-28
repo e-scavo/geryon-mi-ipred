@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer' as developer;
 
+import 'package:geryon_web_app_ws_v2/models/ServiceProvider/auth_requirement_model.dart';
 import 'package:flutter/material.dart';
 import 'package:geryon_web_app_ws_v2/common_vars.dart';
 import 'package:geryon_web_app_ws_v2/features/auth/presentation/login_widget.dart';
@@ -158,6 +159,26 @@ class ServiceProvider extends ChangeNotifier {
   bool get hasAuthenticatedRuntimeContext => loggedUser != null;
 
   ServiceProviderLoginDataUserMessageModel? get authenticatedUser => loggedUser;
+
+  ServiceProviderAuthRequirement evaluateAuthRequirement() {
+    if (loggedUser == null) {
+      return ServiceProviderAuthRequirement.loginRequiredNoRememberedUser(
+        className: className,
+        functionName: 'evaluateAuthRequirement',
+      );
+    }
+
+    return ServiceProviderAuthRequirement.loginRequiredFromRememberedUser(
+      className: className,
+      functionName: 'evaluateAuthRequirement',
+    );
+  }
+
+  ErrorHandler _toLegacyAuthRequirementError(
+    ServiceProviderAuthRequirement requirement,
+  ) {
+    return requirement.toLegacyErrorHandler();
+  }
 
   int? get activeClientIndex {
     if (loggedUser == null) {
@@ -1174,26 +1195,31 @@ class ServiceProvider extends ChangeNotifier {
       functionName: functionName,
     );
 
-    ErrorHandler rCheckLoggedUser = await doCheckLogin();
+    final authRequirement = evaluateAuthRequirement();
+    ErrorHandler rCheckLoggedUser =
+        _toLegacyAuthRequirementError(authRequirement);
+
     if (rCheckLoggedUser.errorCode != 0) {
       if (debug) {
         developer.log(
-          'GetBackendStatus => Error checking logged user: ${rCheckLoggedUser.toString()}',
+          'GetBackendStatus => Error checking logged user: ${rCheckLoggedUser.toString()} / requirement: ${authRequirement.kind.name}',
           name: '$logClassName - $logFunctionName',
         );
       }
 
-      if (rCheckLoggedUser.errorCode == -1000 ||
-          rCheckLoggedUser.errorCode == 1001 ||
-          rCheckLoggedUser.errorCode == 1002) {
+      if (authRequirement.requiresInteractiveLogin) {
         developer.log(
-          '-1000 1 => $navigatorKey ${navigatorKey.currentState}',
+          'Auth requirement 1 => ${authRequirement.kind.name} / $navigatorKey ${navigatorKey.currentState}',
           name: '$logClassName - $logFunctionName',
         );
 
+        if (authRequirement.shouldResetAuthenticatedRuntimeState) {
+          _resetAuthenticatedRuntimeState(clearLoggedUser: false);
+        }
+
         if (navigatorKey.currentState != null) {
           developer.log(
-            '-1000 2 => $navigatorKey ${navigatorKey.currentState}',
+            'Auth requirement 2 => ${authRequirement.kind.name} / $navigatorKey ${navigatorKey.currentState}',
             name: '$logClassName - $logFunctionName',
           );
 
@@ -1201,7 +1227,7 @@ class ServiceProvider extends ChangeNotifier {
               ?.push(PopUpLoginWidget<ErrorHandler>());
 
           developer.log(
-            '-1000 3 => $navigatorKey ${navigatorKey.currentState} $rLogin',
+            'Auth requirement 3 => ${authRequirement.kind.name} / $navigatorKey ${navigatorKey.currentState} $rLogin',
             name: '$logClassName - $logFunctionName',
           );
 
@@ -1521,6 +1547,7 @@ class ServiceProvider extends ChangeNotifier {
   Future<ErrorHandler> doCheckLogin() async {
     const String functionName = 'doCheckLogin';
     const logFunctionName = '.::$functionName::.';
+
     if (debug) {
       developer.log(
         'DoCheckLogin => Checking logged user...',
@@ -1528,33 +1555,40 @@ class ServiceProvider extends ChangeNotifier {
       );
     }
 
+    /// Legacy compatibility wrapper.
+    ///
+    /// Real auth requirement meaning is now produced by
+    /// [evaluateAuthRequirement] and then mapped back to the previous
+    /// ErrorHandler-based contract while the rest of the runtime keeps
+    /// using the old shape.
+    ///
     /// Error Codes:
     /// -1000: user is not logged-in. MUST FORCE login
-    /// -1001: user is logged-in. I MUST validate against backend.
-    /// -1002: user validation (from -1001) has failed. MUST FORCE login again.
+    /// -1001: user is logged-in locally. MUST FORCE login continuation.
+    /// -1002: user validation has failed. MUST FORCE login again.
     /// 0: user is logged (no matter what)
     initStage = ServiceProviderInitStages.checkingLoginStatus;
     initStageAdditionalMsg = "";
     updateListeners(calledFrom: functionName);
-    if (loggedUser == null) {
-      /// User is not logged at all. Not even once.
+
+    final authRequirement = evaluateAuthRequirement();
+
+    if (authRequirement.kind == ServiceProviderAuthRequirementKind.none) {
+      return _toLegacyAuthRequirementError(authRequirement);
+    }
+
+    if (authRequirement.kind ==
+        ServiceProviderAuthRequirementKind.loginRequiredNoRememberedUser) {
       initStage = ServiceProviderInitStages.userIsNotloggedIn;
       initStageAdditionalMsg = "";
       updateListeners(calledFrom: functionName);
-      return ErrorHandler(
-        errorCode: -1000,
-        errorDsc: 'User is not logged in.',
-        className: className,
-        functionName: functionName,
-      );
     }
-    _resetAuthenticatedRuntimeState(clearLoggedUser: false);
-    return ErrorHandler(
-      errorCode: -1001,
-      errorDsc: 'User is not logged in. <<FORCED>>',
-      className: className,
-      functionName: functionName,
-    );
+
+    if (authRequirement.shouldResetAuthenticatedRuntimeState) {
+      _resetAuthenticatedRuntimeState(clearLoggedUser: false);
+    }
+
+    return _toLegacyAuthRequirementError(authRequirement);
 
     // Map<String, dynamic> pRequest = {};
     // pRequest['ChannelName'] = 'GERYON_General';
@@ -1563,307 +1597,6 @@ class ServiceProvider extends ChangeNotifier {
     // pParams['JSON_Data'] = true;
     // pParams['UserRememberMe'] = true;
     // pParams['UserEmail'] = loggedUser!.userEMail;
-    // pParams['UserPassword'] = 'password';
-    // pParams['UserHashConfirm'] = loggedUser!.userHashConfirm;
-    // pParams['UserPreferredLanguage'] = 'es-AR';
-    // pParams['ActionRequest'] = 'Auth:ValidateSessionLogin';
-    // pParams['FormAction'] = '';
-    // pParams['GRecaptchaResponse'] = '';
-    // pParams['Lang'] = 'es-AR';
-    // pParams['Location'] = '';
-    // pRequest['pParams'] = pParams;
-    // ErrorHandler rSendMessage = await sendMessageV2(
-    //   pData: pRequest,
-    //   isAsync: true,
-    //   pNotifyListeners: true,
-    //   pShowWorkInProgress: false,
-    //   callBackFunction: doCheckLoginCallback,
-    // );
-    // if (rSendMessage.errorCode != 0) {
-    //   if (debug) {
-    //     developer.log(
-    //       'DoCheckLogin => Error sending check login request: ${rSendMessage.toString()}',
-    //       name: '$logClassName - $logFunctionName',
-    //     );
-    //   }
-    //   return rSendMessage;
-    // }
-    // CommonRPCMessageResponse? rMessageResponse =
-    //     wssMessagesTrackingV2.get(rSendMessage.messageID);
-    // if (rMessageResponse == null) {
-    //   var rSendMessageReturn = ErrorHandler(
-    //     errorCode: 400000,
-    //     errorDsc:
-    //         'No pudimos encontrar la referencia al mensaje enviado al backend',
-    //     messageID: rSendMessage.messageID,
-    //     className: className,
-    //     functionName: functionName,
-    //     propertyName: 'MessageID',
-    //     propertyValue: null,
-    //     stacktrace: StackTrace.current,
-    //   );
-    //   return rSendMessageReturn;
-    // }
-    // rMessageResponse.replyWithError = false;
-    // rMessageResponse.localError = null;
-    // whileLoop:
-    // while (true) {
-    //   if (rMessageResponse.recordOldHash !=
-    //       rMessageResponse.recordNew.hashCode) {
-    //     break;
-    //   } else {
-    //     switch (rMessageResponse.status) {
-    //       case "init":
-    //         if (debug) {
-    //           developer.log(
-    //             'Message ${rMessageResponse.messageID} is initialized but not sent yet to backend.',
-    //             name: '$logClassName - $logFunctionName',
-    //           );
-    //         }
-    //         break;
-    //       case "sent":
-    //         if (debug) {
-    //           developer.log(
-    //             'Message ${rMessageResponse.messageID} sent to backend. Waiting response from server',
-    //             name: '$logClassName - $logFunctionName',
-    //           );
-    //         }
-    //         break;
-    //       case "queued":
-    //         if (debug) {
-    //           developer.log(
-    //             'Message ${rMessageResponse.messageID} queued for processing. Waiting response from server',
-    //             name: '$logClassName - $logFunctionName',
-    //           );
-    //         }
-    //         break;
-    //       case "processing":
-    //         if (debug) {
-    //           developer.log(
-    //             'Message ${rMessageResponse.messageID} replied from backend. Processing reply received',
-    //             name: '$logClassName - $logFunctionName',
-    //           );
-    //         }
-    //         break;
-    //       case "ok":
-    //         if (debug) {
-    //           developer.log(
-    //             'Message ${rMessageResponse.messageID} proccessed from backend.',
-    //             name: '$logClassName - $logFunctionName',
-    //           );
-    //         }
-    //         break whileLoop;
-    //       default:
-    //         return ErrorHandler(
-    //           errorCode: 400001,
-    //           errorDsc:
-    //               'Se produjo un error al leer el estado de respuesta del mensaje enviado al backend.',
-    //           messageID: rMessageResponse.messageID,
-    //           className: className,
-    //           functionName: functionName,
-    //           propertyName: 'Status',
-    //           propertyValue: rMessageResponse.status,
-    //           stacktrace: StackTrace.current,
-    //         );
-    //     } // switch (rMessageResponse.status)
-    //   } // if (rMessageResponse.recordOldHash != rMessageResponse.recordNew.hashCode)
-    //   /// Wait for [data] to be updated
-    //   ///
-    //   await Future.delayed(const Duration(milliseconds: 100));
-    //   rMessageResponse.timeElapsed += const Duration(milliseconds: 100);
-    //   Duration pRealTimeout = rMessageResponse.timeOut;
-    //   if (rMessageResponse.timeElapsed > pRealTimeout) {
-    //     if (debug) {
-    //       developer.log(
-    //         'Message ${rMessageResponse.messageID} timed out after ${pRealTimeout.inSeconds} seconds.',
-    //         name: '$logClassName - $logFunctionName',
-    //       );
-    //     }
-    //     switch (rMessageResponse.status) {
-    //       case "init":
-    //       case "sent":
-    //       case "queued":
-    //         if (debug) {
-    //           if (debug) {
-    //             developer.log(
-    //               'Message ${rMessageResponse.messageID} is [${rMessageResponse.status}] but a timeout occured',
-    //               name: '$logClassName - $logFunctionName',
-    //             );
-    //           }
-    //         }
-    //         rMessageResponse.localError = ErrorHandler(
-    //           errorCode: 4000029999,
-    //           errorDsc:
-    //               'Ocurrió un error de timeout del mensaje con estado [${rMessageResponse.status}]',
-    //           propertyName: 'Status => timeout',
-    //           propertyValue: rMessageResponse.status,
-    //           className: className,
-    //           functionName: functionName,
-    //           stacktrace: StackTrace.current,
-    //         );
-    //         break whileLoop;
-    //       case "processing":
-    //         if (debug) {
-    //           if (debug) {
-    //             developer.log(
-    //               'Message ${rMessageResponse.messageID} is [${rMessageResponse.status}] but a timeout occured',
-    //               name: '$logClassName - $logFunctionName',
-    //             );
-    //           }
-    //         }
-    //         rMessageResponse.localError = ErrorHandler(
-    //           errorCode: 400009,
-    //           errorDsc:
-    //               'Ocurrió un error de timeout del mensaje con estado [${rMessageResponse.status}]',
-    //           propertyName: 'Status => timeout',
-    //           propertyValue: rMessageResponse.status,
-    //           className: className,
-    //           functionName: functionName,
-    //           stacktrace: StackTrace.current,
-    //         );
-    //         break whileLoop;
-    //       case "ok":
-    //         if (debug) {
-    //           developer.log(
-    //             'Message ${rMessageResponse.messageID} proccessed from backend.',
-    //             name: '$logClassName - $logFunctionName',
-    //           );
-    //         }
-    //         break whileLoop;
-    //       default:
-    //         return ErrorHandler(
-    //           errorCode: 400010,
-    //           errorDsc:
-    //               'Se produjo un error al leer el estado de respuesta del mensaje enviado al backend.',
-    //           messageID: rMessageResponse.messageID,
-    //           propertyName: 'Status',
-    //           propertyValue: rMessageResponse.status,
-    //           className: className,
-    //           functionName: functionName,
-    //           stacktrace: StackTrace.current,
-    //         );
-    //     } // switch (rMessageResponse.status)
-    //   } // Wait for [data] to be updated
-    // } // while (true)
-    // ErrorHandler rFinalResponse = rMessageResponse.finalResponse;
-    // if (rMessageResponse.status == "ok") {
-    //   if (rMessageResponse.isWorkInProgress) {
-    //     while (true) {
-    //       if (!rMessageResponse.isWorkInProgress) {
-    //         break;
-    //       }
-    //       await Future.delayed(const Duration(milliseconds: 100));
-    //     }
-    //   }
-    //   await wssMessagesTrackingV2.remove(rSendMessage.messageID);
-    // }
-    // if (rFinalResponse.errorCode != 0) {
-    //   if (debug) {
-    //     developer.log(
-    //       'DoCheckLogin => Error received from backend: ${rFinalResponse.toString()}',
-    //       name: '$logClassName - $logFunctionName',
-    //     );
-    //   }
-    //   initStage = ServiceProviderInitStages.errorRequestingBackend;
-    //   initStageError = rFinalResponse;
-    //   updateListeners(calledFrom: functionName);
-    //   return rFinalResponse;
-    // } else {
-    //   if (debug) {
-    //     developer.log(
-    //       'DoCheckLogin => Backend status checked successfully: ${rFinalResponse.toString()}',
-    //       name: '$logClassName - $logFunctionName',
-    //     );
-    //   }
-    //   initStage = ServiceProviderInitStages.userIsloggedIn;
-    //   initStageAdditionalMsg = 'Backend status checked successfully.';
-    //   isReady = true;
-    //   isProgress = false;
-    //   updateListeners(calledFrom: functionName);
-    //   // Backend status is OK, we can proceed
-    //   // Check if we have a logged user
-    //   ErrorHandler rCheckLoggedUser = await doCheckLogin();
-
-    //   if (rCheckLoggedUser.errorCode == 0) {
-    //     isReady = true;
-    //     isProgress = false;
-    //     initStage = ServiceProviderInitStages.connected;
-    //     initStageAdditionalMsg = "";
-    //     return rCheckLoggedUser;
-    //   } else if (rCheckLoggedUser.errorCode == -1000) {
-    //     developer.log(
-    //       'DoCheckLogin => User is not logged in, showing login popup.',
-    //       name: '$logClassName - $logFunctionName',
-    //     );
-    //     if (navigatorKey.currentState != null) {
-    //       var rLogin = await navigatorKey.currentState!
-    //           .push(PopUpLoginWidget<ErrorHandler>());
-    //       if (rLogin != null) {
-    //         if (rLogin.errorCode != 0) {
-    //           /// If the login failed, we should set the error and update the listeners
-    //           if (debug) {
-    //             developer.log(
-    //               'DoCheckLogin => Login failed: ${rLogin.toString()}',
-    //               name: '$logClassName - $logFunctionName',
-    //             );
-    //           }
-    //           initStageError = rLogin;
-    //           initStage = ServiceProviderInitStages.errorRequestingBackend;
-    //           updateListeners(calledFrom: functionName);
-    //           return rLogin;
-    //         } else {
-    //           /// If the login was successful, we can proceed
-    //           initStage = ServiceProviderInitStages.userIsloggedIn;
-    //           initStageAdditionalMsg = rLogin.data?.toString() ?? '';
-    //           initStageError = rLogin;
-    //           isUserLoggedIn = true;
-
-    //           loggedUser =
-    //               rLogin.data as ServiceProviderLoginDataUserMessageModel?;
-    //           updateListeners(calledFrom: functionName);
-    //           return rLogin;
-    //         }
-    //       }
-    //     }
-    //   } else if (rCheckLoggedUser.errorCode == -10010) {
-    //     isReady = false;
-    //     isProgress = false;
-    //     initStage = ServiceProviderInitStages.userIsloggedIn;
-    //     initStageAdditionalMsg = "";
-    //     updateListeners(calledFrom: functionName);
-    //     return rCheckLoggedUser;
-    //   }
-
-    //   if (rCheckLoggedUser.errorCode != 0) {
-    //     if (debug) {
-    //       developer.log(
-    //         'DoCheckLogin => Error checking logged user: ${rCheckLoggedUser.toString()}',
-    //         name: '$logClassName - $logFunctionName',
-    //       );
-    //     }
-    //     initStage = ServiceProviderInitStages.errorRequestingBackend;
-    //     initStageError = rCheckLoggedUser;
-    //     updateListeners(calledFrom: functionName);
-    //     return rCheckLoggedUser;
-    //   }
-    //   if (debug) {
-    //     developer.log(
-    //       'DoCheckLogin => Logged user checked successfully: ${rCheckLoggedUser.toString()}',
-    //       name: '$logClassName - $logFunctionName',
-    //     );
-    //   }
-    //   isReady = true;
-    //   isProgress = false;
-    //   initStage = ServiceProviderInitStages.connected;
-    //   initStageAdditionalMsg = null;
-    //   updateListeners(calledFrom: functionName);
-    //   return ErrorHandler(
-    //     errorCode: 0,
-    //     errorDsc: 'Backend status checked successfully.',
-    //     className: className,
-    //     functionName: functionName,
-    //   );
-    // }
   }
 
   /// Callback function for doCheckLogin

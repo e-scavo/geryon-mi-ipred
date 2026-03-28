@@ -2,129 +2,99 @@
 
 ## Objective
 
-Consolidate the application layer of Mi IP·RED by progressively separating presentation from controller and runtime-source responsibilities, clarifying ownership boundaries, documenting real cross-feature flows, freezing shared-context semantics, anchoring only the narrowest safe coordination concerns, and continuing with a conservative hardening pass over the startup/auth continuation boundary without redesigning the current runtime.
+Consolidate the application layer of Mi IP·RED by progressively clarifying feature boundaries, runtime ownership, cross-feature contracts, minimal coordination points, and the startup/auth continuation bridge while preserving the current production runtime.
 
 ## Initial Context
 
-After Phase 6, Mi IP·RED already worked in production but still had application-layer ambiguity.
+Mi IP·RED already worked before Phase 7, but still contained application-layer ambiguity around controller ownership, state boundaries, feature interaction, and startup/runtime continuation.
 
-Phase 7 was opened to solve that safely and incrementally.
+The current ZIP confirms the following progression:
 
-The current ZIP confirms the following completed baseline:
+- Phase 7.1 completed
+- Phase 7.2 completed and formally closed
+- Phase 7.3 completed and formally closed
+- Phase 7.4 opened as a narrow startup/auth continuation hardening phase
 
-- Phase 7.1 — feature-local controller extraction
-- Phase 7.2 — state ownership and boundary clarification
-- Phase 7.3 — application flow inventory, session/app-context normalization, feature interaction contracts, minimal coordinator, and formal closure
+At the current baseline:
 
-That closure was correct.
+- `presentation → controller → ServiceProvider` remains the active architecture
+- `ServiceProvider` remains the runtime source for authenticated context
+- startup continuation still depends on popup-based readiness flow
+- the remaining narrow work focuses on auth requirement and continuation semantics
 
-However, the ZIP also confirms one intentionally untouched and still sensitive runtime block:
+## Problem Statement
 
-- startup boundary
-- backend readiness
+By the time Phase 7.3 closed, broad application coordination had already been clarified and bounded.
+
+What remained was not a generic architecture issue, but one sensitive runtime bridge:
+
+- startup
+- backend status
 - auth requirement
 - login popup entry
 - authenticated continuation
 
-That is now the correct focus of Phase 7.4.
-
-## Problem Statement
-
-Phase 7.1 removed business-adjacent orchestration from widgets.
-
-Phase 7.2 clarified ownership.
-
-Phase 7.3 made application coordination explicit and then closed it formally.
-
-What remains is not a broad architecture problem.
-
-What remains is one narrow runtime boundary problem:
-
-- startup/auth continuation still works through distributed implicit semantics
-- auth requirement is still represented through special provider-return codes
-- popup-driven continuation still depends on navigator result semantics
-- the runtime source layer still participates directly in login-popup orchestration
-
-That is why Phase 7.4 now exists.
+Phase 7.4 exists to harden that bridge incrementally.
 
 ## Scope
 
 Phase 7 includes:
 
-- feature-local controller extraction
-- state ownership clarification
-- runtime-preserving consolidation
-- application flow inventory
-- session and app-context normalization
+- controller extraction
+- feature/state boundary clarification
+- application-flow inventory
+- session/app-context normalization
 - feature interaction contracts
-- minimal application coordinator for narrow safe concerns
-- startup/auth continuation boundary hardening
+- minimal application coordinator
+- startup/auth continuation hardening
 
 Phase 7 does not include:
 
-- backend protocol redesign
+- backend redesign
 - ServiceProvider replacement
+- global application services
+- event bus
 - navigation redesign
 - UI redesign
-- broad coordinator infrastructure
-- event bus
 - state-management replacement
 
 ## Root Cause Analysis
 
-Mi IP·RED matured in the correct order:
+The project needed to mature in a safe order:
 
-1. protect runtime
-2. protect ServiceProvider/backend flow
-3. normalize structure
-4. extract feature-local logic
-5. clarify ownership
-6. inventory real flows
-7. normalize shared context semantics
-8. freeze contract meaning
-9. anchor only the narrowest safe coordinator concerns
-10. close the coordination block
-11. return to the remaining startup/auth continuation boundary with the rest of the architecture already clarified
+1. preserve runtime behavior
+2. clarify where application logic belongs
+3. inventory real flows instead of assuming them
+4. freeze interaction semantics
+5. anchor only the narrowest safe coordination concerns
+6. return to the remaining startup/auth continuation bridge
 
-That last step is what the current phase now addresses.
+That is exactly the order the current ZIP reflects.
 
 ## Files Affected
 
-Core runtime surfaces involved in Phase 7 include:
+Phase 7 work spans the following relevant areas:
 
 - `lib/main.dart`
 - `lib/features/auth/**`
 - `lib/features/dashboard/**`
 - `lib/features/billing/**`
 - `lib/features/contracts/**`
-- `lib/models/ServiceProvider/**`
 - `lib/models/GeneralLoadingProgress/**`
+- `lib/models/ServiceProvider/**`
 - `lib/core/session/**`
 
-Phase 7 documentation includes:
+Main documentation surfaces include:
 
 - `docs/index.md`
 - `docs/development.md`
 - `docs/decisions.md`
 - `docs/phase7_application_layer_consolidation.md`
-- `docs/phase7_application_layer_consolidation_7_1_1_auth_extraction.md`
-- `docs/phase7_application_layer_consolidation_7_1_2_dashboard_extraction.md`
-- `docs/phase7_application_layer_consolidation_7_1_3_billing_extraction.md`
-- `docs/phase7_application_layer_consolidation_7_2_1_feature_state_inventory.md`
-- `docs/phase7_application_layer_consolidation_7_2_2_billing_state_boundary_consolidation.md`
-- `docs/phase7_application_layer_consolidation_7_2_3_dashboard_state_derivation_normalization.md`
-- `docs/phase7_application_layer_consolidation_7_2_4_auth_startup_initial_state_boundary_cleanup.md`
-- `docs/phase7_application_layer_consolidation_7_2_5_formal_closure.md`
-- `docs/phase7_application_layer_consolidation_7_3_1_application_flow_inventory.md`
-- `docs/phase7_application_layer_consolidation_7_3_2_session_app_context_normalization.md`
-- `docs/phase7_application_layer_consolidation_7_3_3_feature_interaction_contracts.md`
-- `docs/phase7_application_layer_consolidation_7_3_4_application_coordinator_minimal.md`
-- `docs/phase7_application_layer_consolidation_7_3_5_formal_closure.md`
-- `docs/phase7_application_layer_consolidation_7_4_1_startup_auth_continuation_inventory.md`
+- all `docs/phase7_application_layer_consolidation_*.md`
 
 ## Implementation Characteristics
 
-### Phase 7.1 — Feature-Local Controller Extraction
+### Phase 7.1 — Feature Controller Extraction
 
 Completed:
 
@@ -132,13 +102,12 @@ Completed:
 - `7.1.2 — Dashboard extraction`
 - `7.1.3 — Billing extraction`
 
-Result:
+Main result:
 
-- widgets stopped owning inline request orchestration
-- controllers became the feature-local application boundary
-- runtime behavior was preserved
+- widgets stopped carrying feature-orchestration logic directly
+- feature-local controllers became the primary application boundary
 
-### Phase 7.2 — State Ownership and Boundary Clarification
+### Phase 7.2 — State Boundary Clarification
 
 Completed:
 
@@ -148,14 +117,11 @@ Completed:
 - `7.2.4 — Auth & Startup Initial State Boundary Cleanup`
 - `7.2.5 — Formal Closure of Phase 7.2`
 
-Result:
+Main result:
 
-- ownership is clearer and safer
-- billing owns feature-local lifecycle state
-- dashboard resolves derived state more explicitly
-- auth/startup initial boundary ambiguity was reduced
+- clearer ownership between UI state, feature state, derived state, and runtime state
 
-### Phase 7.3 — Application Flow & Coordination Closure
+### Phase 7.3 — Application Flow and Minimal Coordination Closure
 
 Completed:
 
@@ -165,86 +131,87 @@ Completed:
 - `7.3.4 — Application Coordinator (mínimo)`
 - `7.3.5 — Formal Closure of Phase 7.3`
 
-Result:
+Main result:
 
-- real flows are explicitly inventoried
-- shared runtime context meaning is normalized
-- interaction semantics are frozen
-- only narrow safe coordination concerns were anchored
-- the coordination block is formally closed
+- real flow semantics were documented
+- shared runtime context meaning was normalized
+- only the narrowest safe coordination concerns were retained
 
 ### Phase 7.4 — Startup/Auth Continuation Boundary Hardening
 
-Current validated opening:
+Current completed subphases:
 
 - `7.4.1 — Startup/Auth Continuation Inventory`
+- `7.4.2 — Auth Requirement Boundary Normalization`
 
-This subphase confirms that the remaining sensitive block is not broad coordination anymore.
+#### 7.4.1 Outcome
 
-It is the startup/auth continuation bridge itself.
+Confirmed that the remaining sensitive block was still the startup/auth continuation bridge itself.
 
-The ZIP shows that this flow currently spans:
+#### 7.4.2 Outcome
 
-- startup boundary in `main.dart`
-- popup-driven loading continuation
-- provider-stage listening
-- provider-driven auth requirement detection
-- provider-driven popup opening
-- feature-local login bootstrap and submit
-- navigator-result-based authenticated continuation
+Normalized auth requirement through an explicit local model:
 
-The flow works, but its meaning is still distributed.
+- `ServiceProviderAuthRequirementKind`
+- `ServiceProviderAuthRequirement`
 
-That is the real justification for Phase 7.4.
+Also introduced:
+
+- `ServiceProvider.evaluateAuthRequirement()` as the semantic source
+- transitional mapping back to legacy `ErrorHandler` behavior
+- removal of direct magic-code branching from `_handleBackendStatusSuccessFlow(...)`
+
+This phase did **not** redesign popup ownership, startup boundary ownership, or login widget behavior.
 
 ## Validation
 
-Phase 7 remains valid because the current ZIP still preserves:
+The Phase 7 baseline remains valid only if all of the following still hold:
 
-- startup bootstrap behavior
-- backend status initialization behavior
-- login popup behavior
-- controller boundaries
-- ServiceProvider as runtime source
-- billing active-client downstream refresh behavior
-- logout reset behavior
-
-Additionally, the ZIP now confirms that the next real safe target is the startup/auth continuation boundary rather than another generic cleanup pass.
+- startup still completes correctly
+- login popup still appears in the expected cases
+- authenticated runtime context still lives in `ServiceProvider`
+- billing refresh flow remains intact
+- logout reset flow remains intact
+- minimal coordinator remains narrow and unchanged
 
 ## Release Impact
 
-This documentation update does not change runtime behavior.
+Phase 7.4.2 has low intended release impact from the user perspective.
 
-Its impact is to align the current project baseline with the newly opened Phase 7.4 and prevent Phase 7.3 from being reopened indirectly.
+Its purpose is semantic hardening, not visible UX redesign.
 
 ## Risks
 
-If this document is not updated, future work may:
+The main risk in late Phase 7 work is overreaching.
 
-- misread 7.3 as still open
-- jump directly to a broad startup/auth coordinator
+Incorrect follow-up work could:
+
+- reopen Phase 7.3 implicitly
+- broaden coordinator scope without justification
 - redesign ServiceProvider too early
-- confuse auth requirement with session persistence
-- treat the login widget as the main structural problem instead of the continuation boundary
+- confuse login hint persistence with authenticated runtime persistence
 
 ## What it does NOT solve
 
-This document does not by itself:
+Phase 7, even after 7.4.2, does not yet solve:
 
-- normalize auth requirement semantics
-- introduce a continuation contract
-- change popup ownership
-- redesign logout reentry
-- redesign the runtime
-
-It only aligns the phase baseline with the current ZIP and Phase 7.4.1 findings.
+- explicit login continuation contracts
+- unified startup/logout auth continuation abstraction
+- popup ownership relocation
+- backend-persisted authenticated session validation
 
 ## Conclusion
 
-Phase 7.1, 7.2, and 7.3 remain completed and correctly closed.
+Phase 7 remains a conservative application-layer consolidation phase.
 
-The current ZIP justifies Phase 7.4 as a narrow continuation phase focused on startup/auth continuation boundary hardening.
+The current ZIP confirms:
 
-The first validated subphase is now complete as an inventory step, and the next correct target is:
+- Phase 7.1 closed
+- Phase 7.2 closed
+- Phase 7.3 closed
+- Phase 7.4 active
+- `7.4.2` completed as auth-requirement boundary normalization
 
-- `7.4.2 — Auth Requirement Boundary Normalization`
+The next safe target is:
+
+- `Phase 7.4.3 — Login Resolution Continuation Contract`

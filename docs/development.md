@@ -2,249 +2,191 @@
 
 ## Objective
 
-Define the active implementation rules for Mi IP·RED so that future work preserves runtime stability, respects the current architecture validated in code, and evolves the startup/auth continuation boundary incrementally without reopening already-closed earlier phases.
+Define the active development rules for Mi IP·RED so that future changes preserve the production runtime, respect the current architecture, and evolve the startup/auth continuation boundary incrementally.
 
 ## Initial Context
 
-Mi IP·RED is an already working production application.
+The current ZIP confirms a stable architecture with the following baseline:
 
-Its current codebase has already completed:
-
-- structural cleanup
-- ServiceProvider decomposition and protection
-- presentation-layer normalization
-- feature-local controller extraction
-- state ownership clarification
-- application-flow inventory
-- session and app-context normalization
-- feature interaction contract freezing
-- minimal coordination anchoring
-- formal closure of Phase 7.3
-
-The current ZIP now opens a narrower next concern:
-
-- startup/auth continuation boundary hardening
-
-The first step of that phase is documentary and inventory-based.
+- `presentation → controller → ServiceProvider`
+- Phase 7.3 already closed
+- Phase 7.4 active as a narrow continuation-hardening phase
+- `7.4.2` completed as auth-requirement boundary normalization
 
 ## Problem Statement
 
-Without updated development rules, future work could accidentally:
+Without updated rules, later work could easily overreach and turn a narrow hardening task into a redesign.
 
-- reopen Phase 7.3
-- treat startup/auth as a reason for broad coordinator expansion
-- push more runtime orchestration into ServiceProvider
-- redesign a working flow instead of hardening its boundary
-- confuse persisted login hint with authenticated session semantics
-- replace explicit controller boundaries with ad hoc widget logic
-
-These guidelines freeze the correct reading of the current ZIP.
+The biggest current risk is confusing boundary normalization with broader runtime restructuring.
 
 ## Scope
 
-These guidelines apply to:
+These rules apply to work touching:
 
 - `lib/main.dart`
 - `lib/features/auth/**`
-- `lib/features/dashboard/**`
-- `lib/features/billing/**`
-- `lib/features/contracts/**`
-- `lib/models/ServiceProvider/**`
 - `lib/models/GeneralLoadingProgress/**`
+- `lib/models/ServiceProvider/**`
 - `lib/core/session/**`
-- Phase 7 documentation
+- current Phase 7 documents
 
-These guidelines do not authorize by themselves:
+These rules do not authorize:
 
-- backend protocol changes
-- ServiceProvider redesign
+- backend protocol redesign
+- ServiceProvider replacement
 - navigation redesign
 - UI redesign
 - broad coordinator introduction
-- state-management replacement
 
 ## Root Cause Analysis
 
-The current codebase no longer has a generic coordination problem.
+By the end of Phase 7.3, the project no longer had a broad coordination problem.
 
-That was already handled and closed in 7.3.
+What remained was narrower:
 
-The remaining issue is narrower:
+- auth requirement was still implicit
+- startup/auth continuation still depended on distributed semantics
 
-- the startup/auth continuation bridge still depends on distributed implicit semantics
-
-That means the correct next implementation style is not broad redesign.
-
-It is conservative semantic hardening.
+Phase 7.4.2 addressed the first of those two concerns conservatively.
 
 ## Files Affected
 
-The rules in this document govern work touching:
+Main files governed by the current baseline include:
 
 - `lib/main.dart`
 - `lib/features/auth/controllers/login_controller.dart`
 - `lib/features/auth/presentation/login_widget.dart`
 - `lib/models/GeneralLoadingProgress/model.dart`
+- `lib/models/ServiceProvider/auth_requirement_model.dart`
 - `lib/models/ServiceProvider/data_model.dart`
 - `docs/phase7_application_layer_consolidation.md`
-- `docs/phase7_application_layer_consolidation_7_4_1_startup_auth_continuation_inventory.md`
+- `docs/phase7_application_layer_consolidation_7_4_2_auth_requirement_boundary_normalization.md`
 
 ## Implementation Characteristics
 
 ### Rule 1 — Preserve `presentation → controller → ServiceProvider`
 
-The active architecture remains:
-
-- presentation
-- controller
-- ServiceProvider
+Feature-local presentation must remain separate from controller logic and runtime-source logic.
 
 Do not move feature logic back into widgets.
 
-Do not use Phase 7.4 as an excuse to collapse layers.
+### Rule 2 — ServiceProvider remains the runtime source
 
-### Rule 2 — ServiceProvider remains the runtime source of authenticated context
+`ServiceProvider` still owns:
 
-`ServiceProvider` remains the owner of:
-
-- backend/runtime state
+- backend/runtime connectivity state
 - authenticated runtime context
 - active client/company context
 
-Future work may clarify how auth requirement is expressed.
+Phase 7.4.2 does not change that ownership.
 
-Future work must not transfer runtime-source ownership away from ServiceProvider unless a later explicit phase authorizes that.
+### Rule 3 — Auth requirement must now be expressed explicitly
 
-### Rule 3 — Startup boundary remains explicit and local
+New work must prefer the explicit auth-requirement model over direct raw magic-code branching.
 
-`main.dart` remains the owner of startup boundary completion state.
+Current explicit boundary model:
 
-Future work may normalize how startup learns that auth continuation resolved.
+- `ServiceProviderAuthRequirementKind`
+- `ServiceProviderAuthRequirement`
+- `evaluateAuthRequirement()`
 
-Future work must not hide startup completion behind broader implicit state.
+### Rule 4 — Legacy compatibility is transitional, not the semantic source
 
-### Rule 4 — Auth requirement must become explicit before any coordinator expansion is considered
+`doCheckLogin()` may still exist for compatibility.
 
-The current ZIP shows that auth requirement meaning is still represented implicitly through special provider return codes.
-
-Therefore, the next safe step is semantic normalization of auth requirement itself.
-
-Do not jump directly to a startup/auth coordinator unless the normalized boundary still proves that one is truly necessary.
+But new semantic decisions must not be anchored primarily in raw `ErrorHandler.errorCode` comparisons when explicit auth-requirement meaning is already available.
 
 ### Rule 5 — Login UI remains feature-local
 
-The auth feature continues owning:
+The auth feature still owns:
 
 - login bootstrap view state
-- remember-me UI state
-- login submit interaction
-- local failure presentation
+- input preparation
+- login submit UX
+- local failure rendering
 
-Do not push feature-local login UI logic back into `main.dart` or into loading popup code.
+Do not use Phase 7.4 as a reason to move UI logic into `ServiceProvider` or `main.dart`.
 
-### Rule 6 — Persisted DNI/CUIT remains a login hint, not a session
+### Rule 6 — Startup boundary remains local to `main.dart`
 
-Stored DNI/CUIT is still only:
+`main.dart` continues owning whether the initial startup boundary is completed.
 
-- a remembered input hint
-- a possible auto-submit bootstrap input
+Phase 7.4.2 did not change that.
 
-It is not a backend-authenticated persistent session.
+### Rule 7 — Persisted DNI/CUIT remains a login hint
 
-Do not model it as one.
+Remembered DNI/CUIT is still only a bootstrap/login hint.
 
-### Rule 7 — Runtime continuation must be clarified without changing behavior first
+It is not an authenticated persisted backend session.
 
-The current runtime already works.
+### Rule 8 — Reset behavior must stay conservative
 
-So Phase 7.4 work must follow this order:
+When the auth requirement indicates a remembered local user path, the runtime may still reset authenticated runtime state conservatively before reopening login continuation.
 
-1. inventory current flow
-2. normalize auth requirement meaning
-3. define continuation contract
-4. only then evaluate whether any minimal startup/auth coordinator is still justified
+Do not loosen that behavior without explicit validation.
 
-### Rule 8 — Logout reentry must be treated as part of the same boundary family
+### Rule 9 — Startup and logout reentry must both be respected
 
-Logout currently reenters backend/auth requirement flow through ServiceProvider.
+The auth-requirement boundary is reached from:
 
-Future work must account for both:
+- initial startup
+- logout reentry
 
-- initial startup entry
-- runtime reentry after logout
+Future hardening work must preserve both paths.
 
-Do not harden only one path while ignoring the other.
+### Rule 10 — No broad redesign under cleanup language
 
-### Rule 9 — Avoid magic semantics in new work
-
-The current ZIP already shows magic-code meaning around auth requirement.
-
-Do not add more hidden semantics of the same kind.
-
-Any new boundary normalization must prefer explicit models or explicit local meaning over additional special-case codes.
-
-### Rule 10 — No broad redesign under the label of cleanup
-
-Phase 7.4 is a hardening phase.
-
-It is not a redesign phase.
-
-Do not introduce:
+Do not introduce under the label of cleanup:
 
 - event bus
-- global application services
-- full startup/auth runtime engine
-- broad reactive coordinator
+- global runtime engine
+- broad startup/auth coordinator
+- provider replacement
 - navigation overhaul
 
-unless a later explicit phase and validated code evidence justify it.
+unless a later phase explicitly justifies it against the real code.
 
 ## Validation
 
-Any proposed change during Phase 7.4 must validate all of the following:
+Any change after 7.4.2 must preserve all of the following:
 
-- startup still reaches dashboard correctly
-- loading popup still behaves correctly
-- remembered DNI bootstrap still works
-- auto-submit still works when expected
+- startup with no remembered user still opens login correctly
+- startup with remembered local user still behaves conservatively
 - manual login still works
-- logout still returns to unauthenticated flow safely
-- ServiceProvider still owns runtime context
-- no regression is introduced in backend communication flow
+- login popup still returns correctly
+- authenticated runtime context still materializes correctly
+- logout still reenters unauthenticated flow safely
+- loading popup still closes under the same real runtime conditions
 
 ## Release Impact
 
-This document has no direct user-facing impact.
+These rules do not change runtime behavior directly.
 
-Its purpose is to preserve a safe implementation style for the newly opened Phase 7.4 work.
+They constrain how future work is allowed to evolve the code.
 
 ## Risks
 
 Without these rules, future work may:
 
-- overcorrect a working flow
-- redesign ServiceProvider too early
-- spread auth logic across even more surfaces
-- introduce unstable new coordination infrastructure
+- add new hidden semantics on top of old ones
+- redesign `ServiceProvider` too early
+- break the current startup/auth bridge while claiming to clean it up
 
 ## What it does NOT solve
 
 This document does not by itself:
 
-- normalize auth requirement semantics
-- introduce continuation contracts
-- change popup ownership
-- change runtime behavior
+- define a continuation contract
+- relocate popup ownership
+- redesign startup semantics
 
-It only defines the correct implementation discipline for the next steps.
+It only freezes the correct implementation discipline.
 
 ## Conclusion
 
-The active development baseline is now:
+The current development baseline is conservative:
 
-- Phases 6, 7.1, 7.2, and 7.3 completed and closed
-- Phase 7.4 opened narrowly around startup/auth continuation boundary hardening
-
-The next safe implementation target remains:
-
-- `7.4.2 — Auth Requirement Boundary Normalization`
+- keep runtime behavior stable
+- prefer explicit auth-requirement meaning
+- treat legacy compatibility as temporary scaffolding
+- move to `7.4.3` only if runtime validation remains clean

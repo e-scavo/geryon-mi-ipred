@@ -2,236 +2,172 @@
 
 ## Objective
 
-Record the active architectural decisions that define how Mi IP·RED must be interpreted and evolved after the formal closure of Phase 7.3 and the opening of Phase 7.4.
+Record the architectural decisions that remain active after the completion of Phase 7.4.2 so future work stays aligned with the real current runtime.
 
 ## Initial Context
 
-Phase 7 progressed in layers:
+The current ZIP confirms:
 
-- Phase 7.1 extracted feature-local controllers
-- Phase 7.2 clarified ownership and state boundaries
-- Phase 7.3 inventoried flows, normalized context meaning, froze interaction contracts, introduced a minimal coordinator, and closed formally
-- Phase 7.4 now begins with an inventory of the startup/auth continuation boundary
-
-These decisions capture the resulting stable baseline.
+- Phase 7.3 remains formally closed
+- Phase 7.4 is active
+- `7.4.2` normalized auth-requirement semantics without redesigning the runtime
 
 ## Problem Statement
 
-Without explicit decisions after opening 7.4, future work could incorrectly assume:
+Without explicit decisions, future work could incorrectly assume that auth-requirement normalization authorizes broader structural changes.
 
-- that 7.3 should be reopened
-- that startup/auth automatically belongs inside the existing coordinator
-- that ServiceProvider should be broadly redesigned now
-- that login popup UI is the main structural problem
-- that persisted DNI/CUIT acts as a persistent authenticated session
-
-Those assumptions would be incorrect according to the current ZIP.
+It does not.
 
 ## Scope
 
 These decisions govern:
 
-- interpretation of the current runtime
-- sequencing of future work after 7.3 closure
-- allowed moves during 7.4
-- prohibited shortcuts and over-reaches
+- interpretation of the current startup/auth runtime
+- what `7.4.2` actually changed
+- what remains prohibited until later phases
 
-They do not implement behavior on their own.
+They do not implement runtime behavior by themselves.
 
 ## Root Cause Analysis
 
-The codebase already has enough clarity in all surrounding areas to inspect the startup/auth continuation block safely.
+The current project no longer needs broad application-layer cleanup.
 
-That means the remaining need is no longer broad coordination work.
+It needs narrow, validated continuation hardening.
 
-The remaining need is to make the meaning of that boundary more explicit without breaking the runtime.
+That distinction must stay explicit.
 
 ## Files Affected
 
-These decisions apply to:
+These decisions apply primarily to:
 
 - `lib/main.dart`
 - `lib/features/auth/**`
 - `lib/models/GeneralLoadingProgress/**`
-- `lib/models/ServiceProvider/**`
-- `lib/core/session/**`
-
-They also govern:
-
-- `docs/development.md`
-- `docs/phase7_application_layer_consolidation.md`
-- `docs/phase7_application_layer_consolidation_7_4_1_startup_auth_continuation_inventory.md`
+- `lib/models/ServiceProvider/auth_requirement_model.dart`
+- `lib/models/ServiceProvider/data_model.dart`
+- current Phase 7 documentation
 
 ## Implementation Characteristics
 
-## Decision 1 — Preserve Backend Flow as Immutable Constraint
+## Decision 1 — Phase 7.3 remains closed
 
-The backend communication model remains the highest-priority invariant.
+The existence of Phase 7.4 does not reopen the previous coordination phase.
 
-This includes:
+## Decision 2 — ServiceProvider remains the authenticated runtime source
 
-- handshake lifecycle
-- token negotiation
-- tracked request flow
-- callback processing
-- backend status validation
-- login request semantics
+The authenticated runtime context is still owned by `ServiceProvider`.
 
-## Decision 2 — Phase 7.3 Remains Closed
+Phase 7.4.2 did not change that.
 
-The opening of Phase 7.4 does not reopen 7.3.
+## Decision 3 — Startup boundary remains local
 
-The minimal coordinator, contracts, and context-normalization work remain closed baseline work.
+`main.dart` still owns startup-boundary completion state.
 
-## Decision 3 — Controllers Remain Feature-Local Boundaries
+## Decision 4 — Auth requirement now has explicit local semantics
 
-Controllers remain the correct home for feature-local orchestration and feature-local state transitions.
+The preferred current semantic boundary is now:
 
-Phase 7.4 does not change that.
+- `ServiceProviderAuthRequirementKind`
+- `ServiceProviderAuthRequirement`
+- `evaluateAuthRequirement()`
 
-## Decision 4 — Persisted Login Hint Is Not an Authenticated Session
+## Decision 5 — Legacy `ErrorHandler` auth codes remain compatibility only
 
-Stored DNI/CUIT remains:
+Legacy auth-related error codes still exist for compatibility.
 
-- a remembered login hint
-- bootstrap input for possible auto-submit
+They are no longer the preferred semantic source of control-flow meaning.
 
-It is not a backend-authenticated persistent session.
+## Decision 6 — The previous `-1001` / `1001` inconsistency must not remain a control-flow dependency
 
-## Decision 5 — Authenticated Runtime Context Remains In-Memory and Owned by ServiceProvider
+The earlier sign inconsistency was a real fragility.
 
-The actual authenticated runtime context continues to live in `ServiceProvider`.
+After 7.4.2, control-flow decisions must rely on explicit auth-requirement meaning rather than that mismatch.
 
-This ownership does not move during 7.4.
+## Decision 7 — Popup ownership remains where it is for now
 
-## Decision 6 — Startup Boundary Remains Owned by `main.dart`
+`ServiceProvider` still triggers the login popup path.
 
-`main.dart` continues owning startup-boundary completion state.
+That is accepted current baseline behavior.
 
-That ownership remains distinct from auth feature state and from ServiceProvider runtime ownership.
+It was not moved in 7.4.2.
 
-## Decision 7 — The Current Auth Requirement Meaning Is Too Implicit to Remain the Long-Term Baseline
+## Decision 8 — Login UI is not the current architectural problem
 
-The current ZIP shows auth requirement being expressed through special return codes such as:
+The auth feature continues owning login bootstrap and submit behavior.
 
-- `-1000`
-- `-1001`
-- `-1002`
+The main current concern was the boundary meaning before popup entry, not the popup UI itself.
 
-That behavior is currently accepted as real baseline behavior.
+## Decision 9 — Persisted login hint is not a backend session
 
-But it is not the preferred long-term semantic boundary.
+Stored DNI/CUIT remains a remembered login hint only.
 
-Therefore, normalizing auth requirement meaning is a valid next step.
+It must not be treated as a persisted authenticated backend session.
 
-## Decision 8 — ServiceProvider Is Still the Runtime Source, Not the Final Home of All Auth-Orchestration Meaning
+## Decision 10 — Reset-before-login continuation remains conservative baseline behavior
 
-The current ZIP shows ServiceProvider both:
+When auth requirement is evaluated from remembered local user state, the runtime may still reset authenticated runtime state conservatively before reopening login.
 
-- owning authenticated runtime context
-- triggering login popup entry through navigator
+That behavior remains accepted current baseline.
 
-That is accepted as the current baseline.
+## Decision 11 — Startup entry and logout reentry belong to the same boundary family
 
-But it should not automatically be treated as the ideal permanent semantic distribution.
+Future hardening work must continue to respect both:
 
-## Decision 9 — Startup/Auth Must Be Hardened Before Any Broader Coordinator Move Is Considered
+- initial startup entry
+- logout-triggered reentry
 
-The next safe order is:
+## Decision 12 — No broad redesign under the banner of normalization
 
-1. inventory
-2. auth requirement normalization
-3. continuation contract
-4. only then re-evaluate whether minimal startup/auth coordination is still necessary
-
-No broader move is justified before that sequence.
-
-## Decision 10 — The Existing Minimal Coordinator Does Not Automatically Expand Into Startup/Auth
-
-The coordinator introduced in 7.3.4 remains a narrow solution for already-validated concerns.
-
-It does not automatically absorb startup/auth continuation.
-
-## Decision 11 — Navigator Result Semantics Are Current Behavior, Not Yet Explicit Contract
-
-The current runtime continuation depends partly on popup return semantics.
-
-That is valid current behavior.
-
-It is not yet an explicit continuation contract.
-
-This distinction must be preserved.
-
-## Decision 12 — Logout Reentry Belongs to the Same Boundary Family
-
-Logout currently resets authenticated runtime state and reenters backend/auth requirement flow.
-
-Therefore, startup/auth hardening work must treat both initial startup entry and logout reentry as related runtime cases.
-
-## Decision 13 — Avoid New Hidden Semantics
-
-The current ZIP already contains implicit auth requirement semantics.
-
-Future work must reduce that ambiguity, not add more of it.
-
-## Decision 14 — No Broad Redesign Under Cleanup Language
-
-Phase 7.4 must not be used to introduce:
+Phase 7.4.2 does not authorize:
 
 - event bus
 - global runtime engine
 - broad startup/auth coordinator
-- provider replacement
 - navigation redesign
-
-without a later explicit phase and direct justification from code.
+- ServiceProvider replacement
 
 ## Validation
 
-These decisions are validated against the current ZIP because the codebase currently shows all of the following:
+These decisions remain valid only if the current runtime still demonstrates:
 
-- local startup boundary in `main.dart`
-- popup-based bootstrap continuation
-- provider-driven backend readiness chain
-- implicit auth requirement semantics
-- feature-local login state handling
-- in-memory authenticated runtime context in ServiceProvider
-- logout-triggered reentry into auth requirement flow
+- popup-based startup continuation
+- explicit auth-requirement evaluation inside `ServiceProvider`
+- feature-local login handling
+- in-memory authenticated runtime context ownership
+- logout reentry behavior preserved
 
 ## Release Impact
 
-This decisions document has no direct release-facing runtime impact.
+These decisions have no direct user-facing release impact.
 
-Its role is to protect the correct interpretation of the newly opened 7.4 phase.
+They protect the correct interpretation of the current implementation.
 
 ## Risks
 
-If these decisions are not recorded, future work may:
+If these decisions are ignored, future work may:
 
-- reopen 7.3 accidentally
-- redesign ServiceProvider prematurely
-- confuse login hint persistence with authenticated session persistence
-- introduce broad coordination changes too early
+- drift back into implicit semantics
+- over-expand the coordination scope
+- destabilize the current runtime
 
 ## What it does NOT solve
 
-This document does not by itself:
+This decisions document does not itself:
 
-- normalize auth requirement semantics
-- define a continuation contract
+- define the next continuation contract
 - change popup ownership
-- change runtime behavior
+- redesign startup completion flow
 
-It only freezes the correct interpretation of the current phase baseline.
+It only freezes the correct interpretation of 7.4.2.
 
 ## Conclusion
 
-The current project baseline is now:
+The current project baseline is:
 
 - Phase 7.3 closed
-- Phase 7.4 opened
-- 7.4.1 completed as an inventory/documentation step
+- Phase 7.4 active
+- `7.4.2` completed as explicit auth-requirement boundary normalization
 
-The next correct safe target is:
+The next possible target, if validated, is:
 
-- `7.4.2 — Auth Requirement Boundary Normalization`
+- `Phase 7.4.3 — Login Resolution Continuation Contract`
