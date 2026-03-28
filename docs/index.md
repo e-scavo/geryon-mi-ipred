@@ -2,7 +2,7 @@
 
 ## Objective
 
-Provide the current entry point to the Mi IP·RED documentation so the repository reading order stays aligned with the real code, the closed Phase 7 baseline, and the active Phase 8 runtime-hardening effort.
+Provide the current entry point to the Mi IP·RED documentation so the repository reading order stays aligned with the real code, the closed Phase 7 baseline, and the now formally closed Phase 8 runtime-hardening baseline.
 
 ## Initial Context
 
@@ -18,15 +18,18 @@ The current ZIP confirms the following phase baseline:
 - Phase 8.1 completed as runtime failure surface inventory
 - Phase 8.2 completed as failure boundary normalization
 - Phase 8.3 completed as retry / reboot / reconnect policy hardening
+- Phase 8.4 completed as runtime diagnostic / observability signals
+- Phase 8.5 completed as formal closure of Phase 8
 
 ## Problem Statement
 
 The documentation index must clearly distinguish between:
 
 - closed structural work
-- active runtime semantic hardening work
+- closed runtime hardening work
+- whatever future phase comes next after those completed baselines
 
-If that distinction is lost, future work can incorrectly reopen Phase 7 concerns or misread Phase 8 as generic cleanup.
+If that distinction is lost, future work can incorrectly reopen Phase 7 or Phase 8 concerns implicitly.
 
 ## Scope
 
@@ -36,7 +39,7 @@ This index covers:
 - governance documents
 - historical phase documents
 - the closed Phase 7 consolidation baseline
-- the active Phase 8 runtime-hardening baseline
+- the now closed Phase 8 runtime-hardening baseline
 
 ## Root Cause Analysis
 
@@ -44,9 +47,9 @@ The project evolved phase by phase together with the implementation.
 
 That means the documentation index must mirror the real repository state.
 
-The current ZIP shows that the active concern is no longer application-layer extraction.
+The current ZIP shows that both the structural consolidation baseline and the runtime hardening baseline are already closed.
 
-The active concern is runtime reliability and failure semantics.
+The index must therefore stop presenting Phase 8 as an active working phase.
 
 ## Files Affected
 
@@ -65,6 +68,8 @@ Primary entry documents include:
 - `docs/phase8_runtime_reliability_failure_semantics_hardening_8_1_runtime_failure_surface_inventory.md`
 - `docs/phase8_runtime_reliability_failure_semantics_hardening_8_2_failure_boundary_normalization.md`
 - `docs/phase8_runtime_reliability_failure_semantics_hardening_8_3_retry_reboot_reconnect_policy_hardening.md`
+- `docs/phase8_runtime_reliability_failure_semantics_hardening_8_4_runtime_diagnostic_observability_signals.md`
+- `docs/phase8_runtime_reliability_failure_semantics_hardening_8_5_formal_closure.md`
 
 ## Implementation Characteristics
 
@@ -159,6 +164,12 @@ Primary entry documents include:
 ##### Phase 8.3
 - `docs/phase8_runtime_reliability_failure_semantics_hardening_8_3_retry_reboot_reconnect_policy_hardening.md`
 
+##### Phase 8.4
+- `docs/phase8_runtime_reliability_failure_semantics_hardening_8_4_runtime_diagnostic_observability_signals.md`
+
+##### Phase 8.5
+- `docs/phase8_runtime_reliability_failure_semantics_hardening_8_5_formal_closure.md`
+
 ## Validation
 
 Recommended current reading order:
@@ -173,28 +184,31 @@ Recommended current reading order:
 8. `docs/phase8_runtime_reliability_failure_semantics_hardening_8_1_runtime_failure_surface_inventory.md`
 9. `docs/phase8_runtime_reliability_failure_semantics_hardening_8_2_failure_boundary_normalization.md`
 10. `docs/phase8_runtime_reliability_failure_semantics_hardening_8_3_retry_reboot_reconnect_policy_hardening.md`
+11. `docs/phase8_runtime_reliability_failure_semantics_hardening_8_4_runtime_diagnostic_observability_signals.md`
+12. `docs/phase8_runtime_reliability_failure_semantics_hardening_8_5_formal_closure.md`
 
 ## Release Impact
 
 This index has no direct runtime impact.
 
-It keeps the documentation aligned with the current repository baseline and makes the transition from closed structural work to active runtime hardening explicit.
+It keeps the documentation aligned with the current repository baseline and makes explicit that both Phase 7 and Phase 8 are already closed baselines.
 
 ## Risks
 
 If the index is not aligned, future work may:
 
-- treat Phase 7 as still active
-- reopen application-layer concerns implicitly
-- misread runtime semantic hardening as generic refactor work
+- treat Phase 8 as still active
+- reopen application-layer or runtime-hardening concerns implicitly
+- blur the handoff between completed baseline work and future work
 
 ## What it does NOT solve
 
 This index does not itself:
 
 - change runtime behavior
-- harden retry / reboot / reconnect
-- classify failures in code
+- add new diagnostics
+- harden retry / reboot / reconnect further
+- define the next phase
 
 It only reflects the correct current documentary baseline.
 
@@ -203,9 +217,7 @@ It only reflects the correct current documentary baseline.
 The current project baseline is:
 
 - Phase 7 closed
-- Phase 8 active
-- Phase 8.1 completed
-- Phase 8.2 completed
-- Phase 8.3 completed
+- Phase 8 closed
+- runtime hardening baseline frozen through Phase 8.5
 
 That is now the correct documentation entry point for Mi IP·RED.

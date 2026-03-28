@@ -2,7 +2,7 @@
 
 ## Objective
 
-Define the active development rules for Mi IP·RED so that future changes preserve the working runtime, respect the current architecture, and continue Phase 8 under an explicit runtime-hardening scope.
+Define the active development rules for Mi IP·RED so that future changes preserve the working runtime, respect the current architecture, and treat both the structural baseline and the runtime hardening baseline as already closed.
 
 ## Initial Context
 
@@ -10,19 +10,26 @@ The current ZIP confirms this baseline:
 
 - active architecture: `presentation → controller → ServiceProvider`
 - Phase 7 closed
-- Phase 8 active
+- Phase 8 closed
 - Phase 8.1 completed as runtime failure surface inventory
 - Phase 8.2 completed as failure boundary normalization
 - Phase 8.3 completed as retry / reboot / reconnect policy hardening
+- Phase 8.4 completed as runtime diagnostic / observability signals
+- Phase 8.5 completed as formal closure of Phase 8
 
-That means the repository is no longer in a structural extraction phase.
+That means the repository is no longer in either:
+
+- a structural extraction phase, or
+- an active runtime hardening phase
 
 ## Problem Statement
 
-Without clear development rules, later work could either:
+Without clear development rules after formal closure, later work could still:
 
-- reopen closed structural work from Phase 7, or
-- start changing runtime recovery policy directly against raw flags and local conditions without respecting the normalized failure-boundary model introduced in 8.2
+- reopen closed structural work from Phase 7
+- reopen closed runtime-hardening work from Phase 8
+- continue changing runtime recovery policy or runtime semantics as if Phase 8 were still open
+- blur the difference between baseline-preserving maintenance and genuinely new phase-worthy work
 
 ## Scope
 
@@ -36,9 +43,9 @@ These rules apply to work touching:
 - `lib/features/dashboard/**`
 - `lib/features/billing/**`
 - `lib/features/contracts/**`
-- current Phase 8 documents
+- current Phase 7 and Phase 8 documents
 
-These rules do not authorize:
+These rules do not authorize by default:
 
 - backend protocol redesign
 - `ServiceProvider` replacement
@@ -46,20 +53,20 @@ These rules do not authorize:
 - UI redesign
 - broad coordinator expansion
 - state-management rearchitecture
+- informal reopening of Phase 8 runtime hardening scope
 
 ## Root Cause Analysis
 
 Phase 7 resolved the dominant structural ambiguity.
 
-Phase 8.1 proved the project still had distributed runtime failure surfaces.
+Phase 8 resolved the dominant runtime-hardening ambiguity by introducing:
 
-Phase 8.2 introduced a normalized semantic model for:
+- failure surface inventory
+- failure-boundary normalization
+- trigger-aware recovery policy execution
+- runtime diagnostic events and snapshot exposure
 
-- boundary scope
-- recovery expectation
-- runtime / feature failure interpretation
-
-That means future runtime-hardening work must now build on the normalized model instead of bypassing it.
+That means future development must now treat those outcomes as retained baseline, not as still-open design space.
 
 ## Files Affected
 
@@ -72,6 +79,9 @@ Main files governed by the current baseline include:
 - `lib/models/ServiceProvider/failure_boundary_state_model.dart`
 - `lib/models/ServiceProvider/runtime_recovery_trigger_model.dart`
 - `lib/models/ServiceProvider/runtime_recovery_policy_decision_model.dart`
+- `lib/models/ServiceProvider/runtime_diagnostic_event_type_model.dart`
+- `lib/models/ServiceProvider/runtime_diagnostic_event_model.dart`
+- `lib/models/ServiceProvider/runtime_diagnostic_snapshot_model.dart`
 - `lib/models/ServiceProvider/init_stages_enum_model.dart`
 - `lib/models/ServiceProvider/auth_requirement_model.dart`
 - `lib/models/ServiceProvider/login_continuation_result_model.dart`
@@ -89,91 +99,90 @@ All new work must preserve:
 
 - `presentation → controller → ServiceProvider`
 
-Phase 8 is not permission to reopen architecture.
+Neither Phase 7 nor Phase 8 remains open for reinterpretation as architectural redesign.
 
-### 2. Runtime hardening must stay runtime-focused
+### 2. Phase 8 runtime hardening is now retained baseline
 
-Phase 8 work may harden:
+The following are no longer experimental or provisional:
 
-- failure semantics
-- retry behavior
-- reconnect behavior
-- reboot behavior
-- runtime recovery boundaries
-- diagnostic signaling
+- failure-boundary semantics
+- recovery trigger semantics
+- recovery policy decision semantics
+- guarded runtime recovery entry points
+- bounded runtime diagnostic events
+- runtime diagnostic snapshot exposure
 
-It may not drift into:
+Any future work must treat these as part of the active repository baseline.
 
-- broad structural extraction
-- widget-owned recovery policy
-- speculative new global layers
+### 3. Runtime changes must not bypass retained semantic models
 
-### 3. The 8.2 boundary model is now mandatory context
-
-Any later work touching retry / reconnect / reboot / reset must first consider the explicit boundary model introduced in 8.2.
-
-That means runtime changes should be interpreted through:
+Any future work touching runtime continuation, recovery, or diagnostics must still respect:
 
 - `ServiceProviderFailureBoundaryScope`
 - `ServiceProviderFailureRecoveryExpectation`
 - `ServiceProviderFailureBoundaryState`
-
-This is now part of the repository baseline.
-
-### 4. Recovery execution must stay trigger-aware
-
-Any later work touching runtime recovery entry points must route through explicit trigger-aware policy decisions instead of introducing new direct reboot-style calls from UI or coordinator layers.
-
-This means the current baseline now also includes:
-
 - `ServiceProviderRuntimeRecoveryTrigger`
 - `ServiceProviderRuntimeRecoveryPolicyDecision`
+- runtime diagnostic event and snapshot models
 
-### 5. ServiceProvider may be hardened, not replaced
+These are now part of the closed baseline.
 
-`ServiceProvider` remains the runtime owner of:
+### 4. ServiceProvider remains the runtime owner
+
+`ServiceProvider` remains the owner of:
 
 - transport bootstrap
 - authenticated runtime lifecycle
 - active operational context
 - startup/runtime continuation
 - recovery policy execution
+- runtime diagnostic signal emission
 
-It may be clarified and hardened.
+It may be maintained and incrementally improved when justified.
 
-It must not be replaced or bypassed by a new runtime engine.
+It must not be replaced or bypassed casually.
 
-### 6. Widgets must not become recovery-policy owners
+### 5. Widgets must not become runtime-policy owners
 
 Widgets may:
 
-- display failure state
+- display current state
 - trigger explicit user actions
-- react to already-normalized state
+- react to already-normalized and already-owned runtime state
 
-Widgets must not become the place where recovery policy is invented.
+Widgets must not:
 
-### 7. Feature-local failure and runtime-global failure must stay distinct
+- redefine recovery policy
+- mutate runtime baseline flags ad hoc
+- become owners of diagnostic logic
+- reintroduce direct reboot-style runtime control
 
-This distinction is mandatory.
+### 6. Closed phases must not be reopened informally
 
-Examples:
+This is now a mandatory rule.
 
-- missing authenticated runtime context is not the same as a billing fetch failure
-- missing active client context is not the same as a transport disconnect
-- startup blocked state is not the same as a feature-local reload problem
+Future work must not continue as:
 
-### 8. Phase 8 must continue in explicit order
+- implicit `7.x`
+- implicit `8.x`
 
-The current recommended order remains:
+If future work truly requires a new scope, that scope must be opened explicitly as a new justified phase.
 
-- `8.1 — Runtime Failure Surface Inventory`
-- `8.2 — Failure Boundary Normalization`
-- `8.3 — Retry / Reboot / Reconnect Policy Hardening`
-- `8.4 — Runtime Diagnostic & Observability Signals`
-- `8.5 — Formal Closure of Phase 8`
+### 7. Narrow maintenance remains allowed
 
-### 9. No hidden redesign under the label of hardening
+Closing Phase 8 does not prohibit all changes.
+
+It does allow:
+
+- bug fixes
+- narrowly justified hardening
+- compatibility adjustments
+- documentation alignment
+- production maintenance
+
+However, such changes must not be misrepresented as continuation of still-open Phase 8 work.
+
+### 8. No hidden redesign under the label of maintenance
 
 The following remain explicitly disallowed unless the ZIP later proves a narrowly justified need:
 
@@ -183,54 +192,54 @@ The following remain explicitly disallowed unless the ZIP later proves a narrowl
 - navigation replacement
 - feature-state ownership redesign
 - backend contract redesign
+- new speculative runtime engine layers
 
 ## Validation
 
 Future work is aligned with the current baseline only if all of the following remain true:
 
 - architecture remains `presentation → controller → ServiceProvider`
-- runtime hardening stays narrower than redesign
-- the 8.2 boundary model is consulted before policy changes
-- policy is hardened only after semantics are already explicit
-- feature-local logic remains outside widgets where already extracted
-- runtime recovery execution continues to flow through explicit trigger-aware entry points
+- closed Phase 7 scope is not reopened informally
+- closed Phase 8 scope is not reopened informally
+- retained runtime semantic models remain respected
+- retained recovery-policy models remain respected
+- retained runtime observability models remain respected
+- maintenance remains narrower than redesign
 
 ## Release Impact
 
 These guidelines have no direct user-facing runtime impact.
 
-They protect the project from mixing runtime policy changes with architecture changes.
+They protect the project from reopening already closed baselines and preserve the discipline of explicit phase-based evolution.
 
 ## Risks
 
 If these rules are ignored, future work may:
 
-- reopen closed Phase 7 scope
-- bypass the normalized boundary model
-- implement retry or reconnect behavior ad hoc
-- move operational logic into the wrong layer
-- reintroduce direct reboot-style policy from UI code
+- reopen closed structural scope
+- reopen closed runtime-hardening scope
+- bypass the retained runtime semantic baseline
+- introduce ad hoc runtime changes that weaken the current architecture
+- blur the difference between maintenance and new-phase work
 
 ## What it does NOT solve
 
 This document does not itself:
 
-- change retry behavior
-- change reboot behavior
-- change reconnect behavior
-- fix runtime hotspots
-- add observability signals
+- change runtime behavior
+- add new diagnostics
+- fix historical hotspots
+- define the next phase roadmap
 
-It only defines how that work must proceed.
+It only defines how future work must behave after formal closure of Phase 8.
 
 ## Conclusion
 
 The active development baseline is now:
 
 - Phase 7 closed
-- Phase 8 active
-- failure surfaces inventoried
-- failure boundaries normalized
-- runtime recovery execution hardened through explicit trigger-aware policy
+- Phase 8 closed
+- structural and runtime-hardening baselines frozen
+- future work required to respect both retained baselines without reopening them informally
 
-Future work must now continue from that explicit semantic baseline, with runtime recovery execution routed through explicit recovery triggers and policy decisions instead of ad hoc direct reboot calls.
+Any future larger scope must now begin as a new explicitly justified phase.
