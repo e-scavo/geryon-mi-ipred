@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer' as developer;
 
+import 'package:geryon_web_app_ws_v2/models/ServiceProvider/startup_auth_continuation_coordinator_model.dart';
 import 'package:geryon_web_app_ws_v2/models/ServiceProvider/login_continuation_result_model.dart';
 import 'package:geryon_web_app_ws_v2/models/ServiceProvider/auth_requirement_model.dart';
 import 'package:flutter/material.dart';
@@ -179,6 +180,60 @@ class ServiceProvider extends ChangeNotifier {
     ServiceProviderAuthRequirement requirement,
   ) {
     return requirement.toLegacyErrorHandler();
+  }
+
+  ServiceProviderStartupAuthContinuationCoordinatorState
+      evaluateStartupAuthContinuationCoordinatorState({
+    ServiceProvider? previousState,
+  }) {
+    if (isReady && !isProgress && isUserLoggedIn) {
+      return ServiceProviderStartupAuthContinuationCoordinatorState
+          .authenticatedContinuationResolved(
+        initStage: initStage,
+      );
+    }
+
+    if (initStage == ServiceProviderInitStages.checkingLoginStatus ||
+        initStage == ServiceProviderInitStages.userIsNotloggedIn) {
+      return ServiceProviderStartupAuthContinuationCoordinatorState
+          .waitingForInteractiveLogin(
+        initStage: initStage,
+      );
+    }
+
+    if (initStage == ServiceProviderInitStages.errorConnecting ||
+        initStage == ServiceProviderInitStages.errorReConnecting ||
+        initStage == ServiceProviderInitStages.errorCheckingStatus ||
+        initStage == ServiceProviderInitStages.errorCheckingLoginStatus ||
+        initStage == ServiceProviderInitStages.errorRequestingBackend ||
+        initStage == ServiceProviderInitStages.errorOnHighSeverity ||
+        canRetry) {
+      return ServiceProviderStartupAuthContinuationCoordinatorState
+          .blockedByError(
+        initStage: initStage,
+        description:
+            'Startup/auth continuation is blocked by the current runtime error state.',
+      );
+    }
+
+    final bool websocketEndpointChanged =
+        previousState != null && wssURI != previousState.wssURI;
+    final bool connectionDroppedOutsideExplicitError = previousState != null &&
+        previousState.initStage != ServiceProviderInitStages.disconnected &&
+        initStage == ServiceProviderInitStages.disconnected;
+
+    if (!isReady &&
+        (websocketEndpointChanged || connectionDroppedOutsideExplicitError)) {
+      return ServiceProviderStartupAuthContinuationCoordinatorState
+          .retryRequired(
+        initStage: initStage,
+      );
+    }
+
+    return ServiceProviderStartupAuthContinuationCoordinatorState
+        .waitingForInitialization(
+      initStage: initStage,
+    );
   }
 
   int? get activeClientIndex {

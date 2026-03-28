@@ -13,6 +13,7 @@ The current ZIP confirms a stable architecture with the following baseline:
 - Phase 7.4 active as a narrow continuation-hardening phase
 - `7.4.2` completed as auth-requirement boundary normalization
 - `7.4.3` completed as login resolution continuation contract normalization
+- `7.4.4` completed as minimal startup/auth continuation coordination normalization
 
 ## Problem Statement
 
@@ -47,8 +48,9 @@ What remained was narrower:
 
 - auth requirement was still implicit
 - startup/auth continuation still depended on distributed semantics
+- loading-popup close / wait / reboot coordination still remained partially inline
 
-Phase 7.4.2 addressed the first of those two concerns conservatively.
+Phase 7.4 addressed those concerns incrementally and conservatively.
 
 ## Files Affected
 
@@ -60,9 +62,10 @@ Main files governed by the current baseline include:
 - `lib/models/GeneralLoadingProgress/model.dart`
 - `lib/models/ServiceProvider/auth_requirement_model.dart`
 - `lib/models/ServiceProvider/login_continuation_result_model.dart`
+- `lib/models/ServiceProvider/startup_auth_continuation_coordinator_model.dart`
 - `lib/models/ServiceProvider/data_model.dart`
 - `docs/phase7_application_layer_consolidation.md`
-- `docs/phase7_application_layer_consolidation_7_4_2_auth_requirement_boundary_normalization.md`
+- `docs/phase7_application_layer_consolidation_7_4_4_minimal_startup_auth_continuation_coordinator.md`
 
 ## Implementation Characteristics
 
@@ -80,9 +83,9 @@ Do not move feature logic back into widgets.
 - authenticated runtime context
 - active client/company context
 
-Phase 7.4.2 does not change that ownership.
+Phase 7.4.4 does not change that ownership.
 
-### Rule 3 — Auth requirement must now be expressed explicitly
+### Rule 3 — Auth requirement must remain explicit
 
 New work must prefer the explicit auth-requirement model over direct raw magic-code branching.
 
@@ -92,22 +95,26 @@ Current explicit boundary model:
 - `ServiceProviderAuthRequirement`
 - `evaluateAuthRequirement()`
 
-### Rule 4 — Legacy compatibility is transitional, not the semantic source
+### Rule 4 — Login continuation resolution must remain explicit
 
-`doCheckLogin()` may still exist for compatibility.
-
-But new semantic decisions must not be anchored primarily in raw `ErrorHandler.errorCode` comparisons when explicit auth-requirement meaning is already available.
-
-### Rule 5 — Login continuation resolution must now use the explicit continuation contract
-
-The preferred post-login continuation boundary is now:
+The preferred post-login continuation boundary remains:
 
 - `ServiceProviderLoginContinuationDisposition`
 - `ServiceProviderLoginContinuationResult`
 - `_resolveLoginContinuationResult(...)`
 - `_handleResolvedLoginContinuation(...)`
 
-Raw popup return values must not become the primary semantic source of continuation logic anymore.
+Raw popup return values must not become the primary semantic source of continuation logic.
+
+### Rule 5 — Startup/auth minimal coordination must now be consumed explicitly
+
+The preferred startup/auth boundary-coordination model is now:
+
+- `ServiceProviderStartupAuthContinuationDisposition`
+- `ServiceProviderStartupAuthContinuationCoordinatorState`
+- `evaluateStartupAuthContinuationCoordinatorState(...)`
+
+Loading-popup close / keep-waiting / reboot decisions must prefer this explicit coordinator state instead of widget-local condition combinations.
 
 ### Rule 6 — Login UI remains feature-local
 
@@ -124,7 +131,7 @@ Do not use Phase 7.4 as a reason to move UI logic into `ServiceProvider` or `mai
 
 `main.dart` continues owning whether the initial startup boundary is completed.
 
-Phase 7.4.2 did not change that.
+Phase 7.4.4 did not change that.
 
 ### Rule 8 — Persisted DNI/CUIT remains a login hint
 
@@ -161,16 +168,17 @@ unless a later phase explicitly justifies it against the real code.
 
 ## Validation
 
-Any change after 7.4.2 must preserve all of the following:
+Any change after 7.4.4 must preserve all of the following:
 
 - startup with no remembered user still opens login correctly
 - startup with remembered local user still behaves conservatively
 - manual login still works
 - login popup still returns correctly
-- invalid or null popup return values are handled explicitly
+- invalid or null popup return values remain handled explicitly
 - authenticated runtime context still materializes correctly
+- loading popup closes only when coordinator state resolves authenticated continuation
+- explicit blocked states do not silently close startup boundary
 - logout still reenters unauthenticated flow safely
-- loading popup still closes under the same real runtime conditions
 
 ## Release Impact
 
@@ -190,9 +198,9 @@ Without these rules, future work may:
 
 This document does not by itself:
 
-- define a continuation contract
 - relocate popup ownership
 - redesign startup semantics
+- introduce a global startup/auth coordinator
 
 It only freezes the correct implementation discipline.
 
@@ -202,5 +210,6 @@ The current development baseline is conservative:
 
 - keep runtime behavior stable
 - prefer explicit auth-requirement meaning
-- treat legacy compatibility as temporary scaffolding
-- move to `7.4.4` only if runtime validation remains clean and still justified by the real code
+- prefer explicit login continuation meaning
+- prefer explicit minimal startup/auth coordinator meaning
+- move to `7.4.5` as the formal closure step

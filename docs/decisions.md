@@ -2,7 +2,7 @@
 
 ## Objective
 
-Record the architectural decisions that remain active after the completion of Phase 7.4.2 so future work stays aligned with the real current runtime.
+Record the architectural decisions that remain active after the completion of Phase 7.4.4 so future work stays aligned with the real current runtime.
 
 ## Initial Context
 
@@ -12,19 +12,22 @@ The current ZIP confirms:
 - Phase 7.4 is active
 - `7.4.2` normalized auth-requirement semantics without redesigning the runtime
 - `7.4.3` normalized login continuation resolution without redesigning the runtime
+- `7.4.4` normalized minimal startup/auth continuation coordination without redesigning the runtime
 
 ## Problem Statement
 
-Without explicit decisions, future work could incorrectly assume that auth-requirement normalization authorizes broader structural changes.
+Without explicit decisions, future work could incorrectly assume that the startup/auth bridge still requires a broad coordinator.
 
 It does not.
+
+The current baseline only justifies a narrow, local coordinator state.
 
 ## Scope
 
 These decisions govern:
 
 - interpretation of the current startup/auth runtime
-- what `7.4.2` actually changed
+- what `7.4.4` actually changed
 - what remains prohibited until later phases
 
 They do not implement runtime behavior by themselves.
@@ -46,6 +49,7 @@ These decisions apply primarily to:
 - `lib/models/GeneralLoadingProgress/**`
 - `lib/models/ServiceProvider/auth_requirement_model.dart`
 - `lib/models/ServiceProvider/login_continuation_result_model.dart`
+- `lib/models/ServiceProvider/startup_auth_continuation_coordinator_model.dart`
 - `lib/models/ServiceProvider/data_model.dart`
 - current Phase 7 documentation
 
@@ -59,13 +63,13 @@ The existence of Phase 7.4 does not reopen the previous coordination phase.
 
 The authenticated runtime context is still owned by `ServiceProvider`.
 
-Phase 7.4.2 did not change that.
+Phase 7.4.4 did not change that.
 
 ## Decision 3 — Startup boundary remains local
 
 `main.dart` still owns startup-boundary completion state.
 
-## Decision 4 — Auth requirement now has explicit local semantics
+## Decision 4 — Auth requirement has explicit local semantics
 
 The preferred current semantic boundary is now:
 
@@ -73,19 +77,7 @@ The preferred current semantic boundary is now:
 - `ServiceProviderAuthRequirement`
 - `evaluateAuthRequirement()`
 
-## Decision 5 — Legacy `ErrorHandler` auth codes remain compatibility only
-
-Legacy auth-related error codes still exist for compatibility.
-
-They are no longer the preferred semantic source of control-flow meaning.
-
-## Decision 6 — The previous `-1001` / `1001` inconsistency must not remain a control-flow dependency
-
-The earlier sign inconsistency was a real fragility.
-
-After 7.4.2, control-flow decisions must rely on explicit auth-requirement meaning rather than that mismatch.
-
-## Decision 7 — Login continuation now has explicit local semantics
+## Decision 5 — Login continuation has explicit local semantics
 
 The preferred post-login continuation boundary is now:
 
@@ -94,21 +86,35 @@ The preferred post-login continuation boundary is now:
 - `_resolveLoginContinuationResult(...)`
 - `_handleResolvedLoginContinuation(...)`
 
-Raw popup return values are no longer the preferred semantic source of continuation meaning.
+## Decision 6 — Startup/auth minimal coordination now has explicit local semantics
 
-## Decision 8 — Popup ownership remains where it is for now
+The preferred startup/auth coordination boundary is now:
+
+- `ServiceProviderStartupAuthContinuationDisposition`
+- `ServiceProviderStartupAuthContinuationCoordinatorState`
+- `evaluateStartupAuthContinuationCoordinatorState(...)`
+
+Widget-local inline startup/auth coordination branching is no longer the preferred semantic source.
+
+## Decision 7 — Popup ownership remains where it is for now
 
 `ServiceProvider` still triggers the login popup path.
 
 That is accepted current baseline behavior.
 
-It was not moved in 7.4.2.
+It was not moved in 7.4.4.
+
+## Decision 8 — Loading popup remains a UI bridge, not the owner of startup/auth semantics
+
+`ModelGeneralLoadingProgress` still renders waiting state and responds to state changes.
+
+But it should now consume explicit coordinator decisions rather than inventing startup/auth coordination semantics inline.
 
 ## Decision 9 — Login UI is not the current architectural problem
 
 The auth feature continues owning login bootstrap and submit behavior.
 
-The main current concern was the boundary meaning before popup entry, not the popup UI itself.
+The main current concern was the boundary meaning before and after popup entry, not the popup UI itself.
 
 ## Decision 10 — Persisted login hint is not a backend session
 
@@ -131,7 +137,7 @@ Future hardening work must continue to respect both:
 
 ## Decision 13 — No broad redesign under the banner of normalization
 
-Phase 7.4.2 does not authorize:
+Phase 7.4.4 does not authorize:
 
 - event bus
 - global runtime engine
@@ -146,6 +152,7 @@ These decisions remain valid only if the current runtime still demonstrates:
 - popup-based startup continuation
 - explicit auth-requirement evaluation inside `ServiceProvider`
 - explicit login continuation resolution inside `ServiceProvider`
+- explicit minimal startup/auth coordination inside `ServiceProvider`
 - feature-local login handling
 - in-memory authenticated runtime context ownership
 - logout reentry behavior preserved
@@ -168,11 +175,11 @@ If these decisions are ignored, future work may:
 
 This decisions document does not itself:
 
-- define the next continuation contract
 - change popup ownership
 - redesign startup completion flow
+- introduce a global application coordinator
 
-It only freezes the correct interpretation of 7.4.2.
+It only freezes the correct interpretation of 7.4.4.
 
 ## Conclusion
 
@@ -180,8 +187,8 @@ The current project baseline is:
 
 - Phase 7.3 closed
 - Phase 7.4 active
-- `7.4.2` completed as explicit auth-requirement boundary normalization
+- `7.4.4` completed as explicit minimal startup/auth continuation coordination normalization
 
-The next possible target, if validated, is:
+The next correct target is:
 
-- `Phase 7.4.4 — Minimal Startup/Auth Continuation Coordinator` only if still justified by the real code
+- `Phase 7.4.5 — Formal Closure of Phase 7.4`

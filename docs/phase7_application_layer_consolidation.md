@@ -20,7 +20,7 @@ At the current baseline:
 - `presentation → controller → ServiceProvider` remains the active architecture
 - `ServiceProvider` remains the runtime source for authenticated context
 - startup continuation still depends on popup-based readiness flow
-- the remaining narrow work focuses on auth requirement and continuation semantics
+- the remaining narrow work focuses on auth requirement, continuation semantics, and minimal boundary coordination
 
 ## Problem Statement
 
@@ -33,6 +33,7 @@ What remained was not a generic architecture issue, but one sensitive runtime br
 - auth requirement
 - login popup entry
 - authenticated continuation
+- loading-popup completion and narrow reboot coordination
 
 Phase 7.4 exists to harden that bridge incrementally.
 
@@ -144,6 +145,7 @@ Current completed subphases:
 - `7.4.1 — Startup/Auth Continuation Inventory`
 - `7.4.2 — Auth Requirement Boundary Normalization`
 - `7.4.3 — Login Resolution Continuation Contract`
+- `7.4.4 — Minimal Startup/Auth Continuation Coordinator`
 
 #### 7.4.1 Outcome
 
@@ -179,6 +181,21 @@ Also introduced:
 
 This phase did **not** move popup ownership, change startup boundary ownership, or redesign the login widget.
 
+#### 7.4.4 Outcome
+
+Normalized the remaining startup/auth coordination seam through an explicit local coordinator model:
+
+- `ServiceProviderStartupAuthContinuationDisposition`
+- `ServiceProviderStartupAuthContinuationCoordinatorState`
+
+Also introduced:
+
+- explicit startup/auth boundary coordination evaluation inside `ServiceProvider`
+- popup-close / keep-waiting / reboot decisions consumed from explicit coordinator state
+- removal of inline widget-local startup/auth coordination branching in the loading popup
+
+This phase did **not** introduce a broad coordinator, move popup ownership, or redesign the rest of the runtime.
+
 ## Validation
 
 The Phase 7 baseline remains valid only if all of the following still hold:
@@ -188,11 +205,11 @@ The Phase 7 baseline remains valid only if all of the following still hold:
 - authenticated runtime context still lives in `ServiceProvider`
 - billing refresh flow remains intact
 - logout reset flow remains intact
-- minimal coordinator remains narrow and unchanged
+- minimal coordinator remains narrow and unchanged outside the startup/auth bridge
 
 ## Release Impact
 
-Phase 7.4.2 has low intended release impact from the user perspective.
+Phase 7.4.4 has low intended release impact from the user perspective.
 
 Its purpose is semantic hardening, not visible UX redesign.
 
@@ -209,11 +226,10 @@ Incorrect follow-up work could:
 
 ## What it does NOT solve
 
-Phase 7, even after 7.4.2, does not yet solve:
+Phase 7, even after 7.4.4, does not yet solve:
 
-- explicit login continuation contracts
-- unified startup/logout auth continuation abstraction
 - popup ownership relocation
+- unified startup/logout orchestration abstraction beyond the narrow local coordinator
 - backend-persisted authenticated session validation
 
 ## Conclusion
@@ -226,8 +242,8 @@ The current ZIP confirms:
 - Phase 7.2 closed
 - Phase 7.3 closed
 - Phase 7.4 active
-- `7.4.2` completed as auth-requirement boundary normalization
+- `7.4.4` completed as minimal startup/auth continuation coordination hardening
 
 The next safe target is:
 
-- `Phase 7.4.4 — Minimal Startup/Auth Continuation Coordinator` only if still justified by the real code
+- `Phase 7.4.5 — Formal Closure of Phase 7.4`

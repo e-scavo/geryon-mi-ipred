@@ -19,6 +19,7 @@ Current active completed subphases inside 7.4:
 - `7.4.1 — Startup/Auth Continuation Inventory`
 - `7.4.2 — Auth Requirement Boundary Normalization`
 - `7.4.3 — Login Resolution Continuation Contract`
+- `7.4.4 — Minimal Startup/Auth Continuation Coordinator`
 
 ## Problem Statement
 
@@ -63,6 +64,7 @@ Primary entry documents include:
 - `docs/phase7_application_layer_consolidation_7_4_1_startup_auth_continuation_inventory.md`
 - `docs/phase7_application_layer_consolidation_7_4_2_auth_requirement_boundary_normalization.md`
 - `docs/phase7_application_layer_consolidation_7_4_3_login_resolution_continuation_contract.md`
+- `docs/phase7_application_layer_consolidation_7_4_4_minimal_startup_auth_continuation_coordinator.md`
 
 ## Implementation Characteristics
 
@@ -139,6 +141,7 @@ Primary entry documents include:
 - `docs/phase7_application_layer_consolidation_7_4_1_startup_auth_continuation_inventory.md`
 - `docs/phase7_application_layer_consolidation_7_4_2_auth_requirement_boundary_normalization.md`
 - `docs/phase7_application_layer_consolidation_7_4_3_login_resolution_continuation_contract.md`
+- `docs/phase7_application_layer_consolidation_7_4_4_minimal_startup_auth_continuation_coordinator.md`
 
 ## Validation
 
@@ -154,6 +157,7 @@ Recommended current reading order:
 8. `docs/phase7_application_layer_consolidation_7_4_1_startup_auth_continuation_inventory.md`
 9. `docs/phase7_application_layer_consolidation_7_4_2_auth_requirement_boundary_normalization.md`
 10. `docs/phase7_application_layer_consolidation_7_4_3_login_resolution_continuation_contract.md`
+11. `docs/phase7_application_layer_consolidation_7_4_4_minimal_startup_auth_continuation_coordinator.md`
 
 ## Release Impact
 
@@ -187,4 +191,4 @@ The current documentation baseline is:
 - Phase 7.1 completed
 - Phase 7.2 completed and closed
 - Phase 7.3 completed and closed
-- Phase 7.4 active with `7.4.2` now documented
+- Phase 7.4 active with `7.4.4` now documented
