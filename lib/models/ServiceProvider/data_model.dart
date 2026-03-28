@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer' as developer;
 
+import 'package:geryon_web_app_ws_v2/models/ServiceProvider/login_continuation_result_model.dart';
 import 'package:geryon_web_app_ws_v2/models/ServiceProvider/auth_requirement_model.dart';
 import 'package:flutter/material.dart';
 import 'package:geryon_web_app_ws_v2/common_vars.dart';
@@ -1140,43 +1141,100 @@ class ServiceProvider extends ChangeNotifier {
     return error;
   }
 
-  Future<ErrorHandler> _handleBackendStatusLoginFailure({
-    required ErrorHandler loginResult,
+  ServiceProviderLoginContinuationResult _resolveLoginContinuationResult({
+    required dynamic rawResult,
+    required ServiceProviderAuthRequirement authRequirement,
+  }) {
+    if (rawResult == null) {
+      return ServiceProviderLoginContinuationResult.cancelled(
+        authRequirement: authRequirement,
+        rawResult: rawResult,
+        description: 'Login popup closed without a continuation result.',
+        className: className,
+        functionName: '_resolveLoginContinuationResult',
+      );
+    }
+
+    if (rawResult is! ErrorHandler) {
+      return ServiceProviderLoginContinuationResult.invalidResult(
+        authRequirement: authRequirement,
+        rawResult: rawResult,
+        description:
+            'Login popup returned an unexpected continuation result type.',
+        className: className,
+        functionName: '_resolveLoginContinuationResult',
+      );
+    }
+
+    final ErrorHandler loginResult = rawResult;
+
+    if (loginResult.errorCode != 0) {
+      return ServiceProviderLoginContinuationResult.failed(
+        authRequirement: authRequirement,
+        error: loginResult,
+        rawResult: rawResult,
+      );
+    }
+
+    if (loginResult.data is! ServiceProviderLoginDataUserMessageModel) {
+      return ServiceProviderLoginContinuationResult.invalidResult(
+        authRequirement: authRequirement,
+        rawResult: rawResult,
+        description:
+            'Login continuation succeeded but returned no valid authenticated user payload.',
+        className: className,
+        functionName: '_resolveLoginContinuationResult',
+      );
+    }
+
+    return ServiceProviderLoginContinuationResult.success(
+      authRequirement: authRequirement,
+      user: loginResult.data as ServiceProviderLoginDataUserMessageModel,
+      error: loginResult,
+      rawResult: rawResult,
+    );
+  }
+
+  Future<ErrorHandler> _handleResolvedLoginContinuation({
+    required ServiceProviderLoginContinuationResult continuationResult,
     required String functionName,
     required String logFunctionName,
   }) async {
-    if (loginResult.errorCode != 0) {
+    if (continuationResult.isSuccess) {
       if (debug) {
         developer.log(
-          'GetBackendStatus => Login failed: ${loginResult.toString()}',
-          name: '$logClassName - $logFunctionName',
-        );
-      }
-
-      initStageError = loginResult;
-      initStage = ServiceProviderInitStages.errorRequestingBackend;
-      updateListeners(calledFrom: functionName);
-      return loginResult;
-    } else {
-      if (debug) {
-        developer.log(
-          'GetBackendStatus => User logged in successfully: ${loginResult.toString()}',
+          'GetBackendStatus => Login continuation resolved successfully: ${continuationResult.toString()}',
           name: '$logClassName - $logFunctionName',
         );
       }
 
       _applyAuthenticatedUserContext(
-        user: loginResult.data as ServiceProviderLoginDataUserMessageModel,
+        user: continuationResult.user!,
       );
 
       initStage = ServiceProviderInitStages.connected;
       initStageAdditionalMsg = 'User logged in successfully.';
-      initStageError = loginResult;
+      initStageError = continuationResult.error;
       isReady = true;
       isProgress = false;
       updateListeners(calledFrom: functionName);
-      return loginResult;
+      return continuationResult.toErrorHandler();
     }
+
+    if (debug) {
+      developer.log(
+        'GetBackendStatus => Login continuation did not resolve authenticated runtime: ${continuationResult.toString()}',
+        name: '$logClassName - $logFunctionName',
+      );
+    }
+
+    final ErrorHandler error = continuationResult.toErrorHandler();
+    initStageError = error;
+    initStage = ServiceProviderInitStages.errorRequestingBackend;
+    isReady = false;
+    isProgress = false;
+    updateListeners(calledFrom: functionName);
+    return error;
   }
 
   Future<ErrorHandler> _handleBackendStatusSuccessFlow({
@@ -1217,28 +1275,47 @@ class ServiceProvider extends ChangeNotifier {
           _resetAuthenticatedRuntimeState(clearLoggedUser: false);
         }
 
-        if (navigatorKey.currentState != null) {
-          developer.log(
-            'Auth requirement 2 => ${authRequirement.kind.name} / $navigatorKey ${navigatorKey.currentState}',
-            name: '$logClassName - $logFunctionName',
+        if (navigatorKey.currentState == null) {
+          final continuationResult =
+              ServiceProviderLoginContinuationResult.invalidResult(
+            authRequirement: authRequirement,
+            rawResult: null,
+            description:
+                'Login continuation could not start because no navigator state was available.',
+            className: className,
+            functionName: '_handleBackendStatusSuccessFlow',
           );
 
-          var rLogin = await navigatorKey.currentState
-              ?.push(PopUpLoginWidget<ErrorHandler>());
-
-          developer.log(
-            'Auth requirement 3 => ${authRequirement.kind.name} / $navigatorKey ${navigatorKey.currentState} $rLogin',
-            name: '$logClassName - $logFunctionName',
+          return await _handleResolvedLoginContinuation(
+            continuationResult: continuationResult,
+            functionName: functionName,
+            logFunctionName: logFunctionName,
           );
-
-          if (rLogin != null) {
-            return await _handleBackendStatusLoginFailure(
-              loginResult: rLogin,
-              functionName: functionName,
-              logFunctionName: logFunctionName,
-            );
-          }
         }
+
+        developer.log(
+          'Auth requirement 2 => ${authRequirement.kind.name} / $navigatorKey ${navigatorKey.currentState}',
+          name: '$logClassName - $logFunctionName',
+        );
+
+        final dynamic rawLoginResult = await navigatorKey.currentState
+            ?.push(PopUpLoginWidget<ErrorHandler>());
+
+        developer.log(
+          'Auth requirement 3 => ${authRequirement.kind.name} / $navigatorKey ${navigatorKey.currentState} $rawLoginResult',
+          name: '$logClassName - $logFunctionName',
+        );
+
+        final continuationResult = _resolveLoginContinuationResult(
+          rawResult: rawLoginResult,
+          authRequirement: authRequirement,
+        );
+
+        return await _handleResolvedLoginContinuation(
+          continuationResult: continuationResult,
+          functionName: functionName,
+          logFunctionName: logFunctionName,
+        );
       } else {
         _resetAuthenticatedRuntimeState();
         initStage = ServiceProviderInitStages.errorRequestingBackend;

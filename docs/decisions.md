@@ -11,6 +11,7 @@ The current ZIP confirms:
 - Phase 7.3 remains formally closed
 - Phase 7.4 is active
 - `7.4.2` normalized auth-requirement semantics without redesigning the runtime
+- `7.4.3` normalized login continuation resolution without redesigning the runtime
 
 ## Problem Statement
 
@@ -44,6 +45,7 @@ These decisions apply primarily to:
 - `lib/features/auth/**`
 - `lib/models/GeneralLoadingProgress/**`
 - `lib/models/ServiceProvider/auth_requirement_model.dart`
+- `lib/models/ServiceProvider/login_continuation_result_model.dart`
 - `lib/models/ServiceProvider/data_model.dart`
 - current Phase 7 documentation
 
@@ -83,7 +85,18 @@ The earlier sign inconsistency was a real fragility.
 
 After 7.4.2, control-flow decisions must rely on explicit auth-requirement meaning rather than that mismatch.
 
-## Decision 7 — Popup ownership remains where it is for now
+## Decision 7 — Login continuation now has explicit local semantics
+
+The preferred post-login continuation boundary is now:
+
+- `ServiceProviderLoginContinuationDisposition`
+- `ServiceProviderLoginContinuationResult`
+- `_resolveLoginContinuationResult(...)`
+- `_handleResolvedLoginContinuation(...)`
+
+Raw popup return values are no longer the preferred semantic source of continuation meaning.
+
+## Decision 8 — Popup ownership remains where it is for now
 
 `ServiceProvider` still triggers the login popup path.
 
@@ -91,32 +104,32 @@ That is accepted current baseline behavior.
 
 It was not moved in 7.4.2.
 
-## Decision 8 — Login UI is not the current architectural problem
+## Decision 9 — Login UI is not the current architectural problem
 
 The auth feature continues owning login bootstrap and submit behavior.
 
 The main current concern was the boundary meaning before popup entry, not the popup UI itself.
 
-## Decision 9 — Persisted login hint is not a backend session
+## Decision 10 — Persisted login hint is not a backend session
 
 Stored DNI/CUIT remains a remembered login hint only.
 
 It must not be treated as a persisted authenticated backend session.
 
-## Decision 10 — Reset-before-login continuation remains conservative baseline behavior
+## Decision 11 — Reset-before-login continuation remains conservative baseline behavior
 
 When auth requirement is evaluated from remembered local user state, the runtime may still reset authenticated runtime state conservatively before reopening login.
 
 That behavior remains accepted current baseline.
 
-## Decision 11 — Startup entry and logout reentry belong to the same boundary family
+## Decision 12 — Startup entry and logout reentry belong to the same boundary family
 
 Future hardening work must continue to respect both:
 
 - initial startup entry
 - logout-triggered reentry
 
-## Decision 12 — No broad redesign under the banner of normalization
+## Decision 13 — No broad redesign under the banner of normalization
 
 Phase 7.4.2 does not authorize:
 
@@ -132,6 +145,7 @@ These decisions remain valid only if the current runtime still demonstrates:
 
 - popup-based startup continuation
 - explicit auth-requirement evaluation inside `ServiceProvider`
+- explicit login continuation resolution inside `ServiceProvider`
 - feature-local login handling
 - in-memory authenticated runtime context ownership
 - logout reentry behavior preserved
@@ -170,4 +184,4 @@ The current project baseline is:
 
 The next possible target, if validated, is:
 
-- `Phase 7.4.3 — Login Resolution Continuation Contract`
+- `Phase 7.4.4 — Minimal Startup/Auth Continuation Coordinator` only if still justified by the real code

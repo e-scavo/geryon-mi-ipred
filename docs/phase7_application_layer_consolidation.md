@@ -143,6 +143,7 @@ Current completed subphases:
 
 - `7.4.1 — Startup/Auth Continuation Inventory`
 - `7.4.2 — Auth Requirement Boundary Normalization`
+- `7.4.3 — Login Resolution Continuation Contract`
 
 #### 7.4.1 Outcome
 
@@ -162,6 +163,21 @@ Also introduced:
 - removal of direct magic-code branching from `_handleBackendStatusSuccessFlow(...)`
 
 This phase did **not** redesign popup ownership, startup boundary ownership, or login widget behavior.
+
+#### 7.4.3 Outcome
+
+Normalized login resolution continuation through an explicit local model:
+
+- `ServiceProviderLoginContinuationDisposition`
+- `ServiceProviderLoginContinuationResult`
+
+Also introduced:
+
+- explicit normalization of raw popup return values
+- explicit resolution of success vs failure vs cancellation vs invalid result
+- replacement of the old hybrid post-login handler with an explicit continuation consumer
+
+This phase did **not** move popup ownership, change startup boundary ownership, or redesign the login widget.
 
 ## Validation
 
@@ -214,4 +230,4 @@ The current ZIP confirms:
 
 The next safe target is:
 
-- `Phase 7.4.3 — Login Resolution Continuation Contract`
+- `Phase 7.4.4 — Minimal Startup/Auth Continuation Coordinator` only if still justified by the real code

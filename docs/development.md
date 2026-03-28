@@ -12,6 +12,7 @@ The current ZIP confirms a stable architecture with the following baseline:
 - Phase 7.3 already closed
 - Phase 7.4 active as a narrow continuation-hardening phase
 - `7.4.2` completed as auth-requirement boundary normalization
+- `7.4.3` completed as login resolution continuation contract normalization
 
 ## Problem Statement
 
@@ -58,6 +59,7 @@ Main files governed by the current baseline include:
 - `lib/features/auth/presentation/login_widget.dart`
 - `lib/models/GeneralLoadingProgress/model.dart`
 - `lib/models/ServiceProvider/auth_requirement_model.dart`
+- `lib/models/ServiceProvider/login_continuation_result_model.dart`
 - `lib/models/ServiceProvider/data_model.dart`
 - `docs/phase7_application_layer_consolidation.md`
 - `docs/phase7_application_layer_consolidation_7_4_2_auth_requirement_boundary_normalization.md`
@@ -96,7 +98,18 @@ Current explicit boundary model:
 
 But new semantic decisions must not be anchored primarily in raw `ErrorHandler.errorCode` comparisons when explicit auth-requirement meaning is already available.
 
-### Rule 5 — Login UI remains feature-local
+### Rule 5 — Login continuation resolution must now use the explicit continuation contract
+
+The preferred post-login continuation boundary is now:
+
+- `ServiceProviderLoginContinuationDisposition`
+- `ServiceProviderLoginContinuationResult`
+- `_resolveLoginContinuationResult(...)`
+- `_handleResolvedLoginContinuation(...)`
+
+Raw popup return values must not become the primary semantic source of continuation logic anymore.
+
+### Rule 6 — Login UI remains feature-local
 
 The auth feature still owns:
 
@@ -107,25 +120,25 @@ The auth feature still owns:
 
 Do not use Phase 7.4 as a reason to move UI logic into `ServiceProvider` or `main.dart`.
 
-### Rule 6 — Startup boundary remains local to `main.dart`
+### Rule 7 — Startup boundary remains local to `main.dart`
 
 `main.dart` continues owning whether the initial startup boundary is completed.
 
 Phase 7.4.2 did not change that.
 
-### Rule 7 — Persisted DNI/CUIT remains a login hint
+### Rule 8 — Persisted DNI/CUIT remains a login hint
 
 Remembered DNI/CUIT is still only a bootstrap/login hint.
 
 It is not an authenticated persisted backend session.
 
-### Rule 8 — Reset behavior must stay conservative
+### Rule 9 — Reset behavior must stay conservative
 
 When the auth requirement indicates a remembered local user path, the runtime may still reset authenticated runtime state conservatively before reopening login continuation.
 
 Do not loosen that behavior without explicit validation.
 
-### Rule 9 — Startup and logout reentry must both be respected
+### Rule 10 — Startup and logout reentry must both be respected
 
 The auth-requirement boundary is reached from:
 
@@ -134,7 +147,7 @@ The auth-requirement boundary is reached from:
 
 Future hardening work must preserve both paths.
 
-### Rule 10 — No broad redesign under cleanup language
+### Rule 11 — No broad redesign under cleanup language
 
 Do not introduce under the label of cleanup:
 
@@ -154,6 +167,7 @@ Any change after 7.4.2 must preserve all of the following:
 - startup with remembered local user still behaves conservatively
 - manual login still works
 - login popup still returns correctly
+- invalid or null popup return values are handled explicitly
 - authenticated runtime context still materializes correctly
 - logout still reenters unauthenticated flow safely
 - loading popup still closes under the same real runtime conditions
@@ -189,4 +203,4 @@ The current development baseline is conservative:
 - keep runtime behavior stable
 - prefer explicit auth-requirement meaning
 - treat legacy compatibility as temporary scaffolding
-- move to `7.4.3` only if runtime validation remains clean
+- move to `7.4.4` only if runtime validation remains clean and still justified by the real code
