@@ -18,37 +18,34 @@ Its current codebase has already gone through:
 - application-flow inventory
 - session and app-context normalization
 - feature interaction contract freezing
+- minimal coordination anchoring
 
-The project is now in Phase 7.3.4.
+The project has now formally closed Phase 7.3.
 
-That means the most visible architectural risk is no longer only implicit flows, vague context semantics, or undeclared interaction meaning.
+That means the coordination concerns that justified opening Phase 7.3 are no longer open phase-level debt.
 
-The next visible risk is leaving selected application transitions distributed across runtime surfaces that are broader than the ideal semantic owner for app-level coordination.
+The new baseline is explicit and stable.
 
 ## Problem Statement
 
-After Phase 7.3.3, the real ZIP shows that the app already has:
+Without updated development rules after formal closure, future work could accidentally:
 
-- explicit feature-local boundaries
-- explicit state ownership
-- explicit shared-context semantics
-- explicit declarative interaction contracts
+- reopen already-resolved coordination concerns
+- expand the minimal coordinator beyond its intended scope
+- regress to raw runtime coupling
+- push app-level semantics back into widgets
+- blur the difference between preserved ownership and coordination anchoring
 
-However, selected coordination concerns still remain too distributed in execution terms.
-
-The two safest currently validated examples are:
-
-- billing downstream refresh coordination
-- logout reset coordination
-
-Without a minimal coordination anchor, those transitions remain semantically broader than the surfaces currently expressing them.
+The purpose of this document is to freeze the correct post-7.3 interpretation.
 
 ## Scope
 
 These guidelines apply to:
 
-- `lib/features/billing/**`
+- `lib/main.dart`
+- `lib/features/auth/**`
 - `lib/features/dashboard/**`
+- `lib/features/billing/**`
 - `lib/features/contracts/**`
 - `lib/models/ServiceProvider/**`
 - `lib/core/session/**`
@@ -60,6 +57,7 @@ These guidelines do not authorize by themselves:
 - ServiceProvider redesign
 - navigation redesign
 - UI redesign
+- broad coordinator expansion
 - startup/auth coordinator redesign
 - full state-management replacement
 - broad new application-layer infrastructure without explicit phase justification
@@ -76,21 +74,26 @@ Mi IP·RED evolved correctly in practical order:
 6. inventory coordination between already-separated features
 7. normalize shared context semantics
 8. freeze interaction meaning as contracts
-9. only then introduce a minimal execution anchor for the safest coordination concerns
+9. introduce a minimal coordination anchor only for the safest justified transitions
+10. formally close the full coordination phase
 
 This order matters.
 
-If a coordinator had been introduced earlier, it would likely have coordinated unstable or still-implicit boundaries.
+The project is now past the phase where coordination meaning was the active unresolved concern.
 
-If a broad coordinator were introduced now, it would exceed the real problem shown by the ZIP.
+The project now has a documented coordination baseline that must be preserved.
 
 ## Files Affected
 
 Runtime areas governed by these rules:
 
+- `lib/main.dart`
+- `lib/features/auth/controllers/login_controller.dart`
+- `lib/features/auth/presentation/login_widget.dart`
+- `lib/features/dashboard/controllers/dashboard_controller.dart`
+- `lib/features/dashboard/presentation/dashboard_page.dart`
 - `lib/features/billing/controllers/billing_controller.dart`
 - `lib/features/billing/presentation/billing_widget.dart`
-- `lib/features/dashboard/controllers/dashboard_controller.dart`
 - `lib/features/contracts/feature_interaction_contracts.dart`
 - `lib/features/contracts/application_coordinator.dart`
 - `lib/models/ServiceProvider/data_model.dart`
@@ -103,8 +106,7 @@ Documentation governed by these rules:
 - `docs/development.md`
 - `docs/decisions.md`
 - `docs/phase7_application_layer_consolidation.md`
-- `docs/phase7_application_layer_consolidation_7_3_3_feature_interaction_contracts.md`
-- `docs/phase7_application_layer_consolidation_7_3_4_application_coordinator_minimal.md`
+- `docs/phase7_application_layer_consolidation_7_3_5_formal_closure.md`
 
 ## Implementation Characteristics
 
@@ -123,7 +125,7 @@ This includes preserving:
 - billing reload behavior
 - logout fallback to backend-status flow
 
-No coordination work may silently change those semantics.
+No future coordination or cleanup work may silently change those semantics.
 
 ### 2. Active Architectural Shape
 
@@ -146,7 +148,7 @@ Controllers may:
 - normalize inputs
 - derive feature-local render-ready state
 - dispatch to ServiceProvider where required by the existing runtime
-- delegate narrow application-level coordination only when the coordinator now owns that semantic transition
+- delegate only the narrow coordination concerns already anchored in the minimal coordinator
 
 ServiceProvider may:
 
@@ -156,7 +158,7 @@ ServiceProvider may:
 - own active operational context
 - notify downstream listeners
 
-The coordinator introduced in 7.3.4 does not alter this shape.
+The coordinator does not alter this shape.
 
 ### 3. Feature-Local Logic Must Stay Feature-Local
 
@@ -168,7 +170,7 @@ Examples:
 - dashboard source-to-derived resolution belongs in `DashboardController`
 - billing feature-state transitions belong in `BillingController`
 
-This remains true during and after Phase 7.3.4.
+This remains true after formal closure of Phase 7.3.
 
 ### 4. Shared Context Concepts Must Remain Explicitly Separate
 
@@ -228,14 +230,14 @@ The contract layer introduced in 7.3.3 remains:
 - non-reactive
 - non-executing
 
-It still must not become:
+It must not become:
 
 - a contract runtime engine
 - a new event bus
 - a hidden coordinator
 - a new state-management layer
 
-### 8. The 7.3.4 Coordinator Must Remain Narrow
+### 8. The Minimal Coordinator Remains Narrow
 
 The application coordinator introduced in 7.3.4 must remain:
 
@@ -245,12 +247,12 @@ The application coordinator introduced in 7.3.4 must remain:
 - narrowly scoped
 - easy to audit
 
-It must coordinate only the currently justified safe transitions:
+It remains justified only for:
 
 - billing downstream refresh coordination
 - logout reset coordination
 
-It must not expand into:
+It must not be expanded casually into:
 
 - startup/auth continuation coordination
 - navigation coordination
@@ -267,23 +269,16 @@ The coordinator does not own:
 - widget lifecycle
 - backend flow
 
-Its role is limited to anchoring selected application-level coordination semantics.
+Its role remains limited to anchoring the narrowest already-validated application-level coordination semantics.
 
-Examples:
-
-- billing widget still owns lifecycle and rendering
-- billing controller still owns billing feature-state transitions
-- dashboard controller still owns dashboard-local intent production
-- ServiceProvider still owns runtime reset and runtime context lifecycle
-
-### 10. Billing Rule After 7.3.4
+### 10. Post-7.3 Billing Rule
 
 Billing remains a feature with:
 
 - explicit feature-local state
 - a runtime-triggered dependency on active client context
 
-After 7.3.4:
+After Phase 7.3 closure:
 
 #### Billing presentation
 - still attaches the listener
@@ -297,26 +292,26 @@ After 7.3.4:
 - still owns render-data helpers
 
 #### Application coordinator
-- now owns the narrow app-level decision surface for:
+- remains the narrow app-level decision surface for:
   - billing bootstrap coordination
   - billing active-client-change coordination
 
-### 11. Dashboard Rule After 7.3.4
+### 11. Post-7.3 Dashboard Rule
 
 Dashboard remains the feature that produces:
 
 - active client change intent
 - logout intent
 
-After 7.3.4:
+After Phase 7.3 closure:
 
-- dashboard controller may delegate logout reset coordination to the coordinator
+- dashboard controller may continue delegating logout reset coordination to the coordinator
 - dashboard still does not own global runtime reset
 - dashboard still does not own downstream billing state
 
-### 12. Startup/Auth Must Stay Out of 7.3.4 Scope
+### 12. Startup/Auth Must Remain Out of the Minimal Coordinator Scope
 
-The current startup/auth/runtime continuation path remains out of scope for 7.3.4.
+The current startup/auth/runtime continuation path remains intentionally outside the minimal coordinator scope.
 
 It spans:
 
@@ -325,7 +320,7 @@ It spans:
 - popup login route
 - authenticated continuation
 
-That surface remains intentionally untouched in this subphase.
+That surface remains intentionally untouched by the minimal coordinator and should not be pulled into it without a separate justified phase.
 
 ### 13. Validation Rule
 
@@ -335,12 +330,13 @@ Any future implementation after this point should validate at minimum:
 - login popup path
 - auto-submit path with saved DNI
 - manual login path
+- login with remember-me disabled after a previously remembered login
 - dashboard render after authenticated context exists
 - client switch from dashboard
 - billing reload after client switch
 - logout and return to unauthenticated path
 
-It should also preserve the narrow scope of the coordinator.
+It should also preserve the narrow scope of the coordinator and the declarative nature of the contracts.
 
 ## Validation
 
@@ -348,19 +344,19 @@ These rules are valid only if they remain aligned with the current ZIP.
 
 At the current baseline, the code confirms:
 
-- startup/auth remains untouched
+- startup/auth remains untouched by the minimal coordinator
 - persisted login hint remains explicit and narrow
 - authenticated runtime context remains owned by `ServiceProvider`
 - active company/client context remains owned by `ServiceProvider`
-- billing downstream coordination now reads through a coordinator decision surface
-- logout reset now delegates the app-level transition to the coordinator
+- billing downstream coordination reads through a narrow coordinator surface
+- logout reset delegates through a narrow coordinator surface
 - no broad coordination infrastructure was introduced
 
 ## Release Impact
 
 These guidelines do not redesign runtime behavior.
 
-They reduce the risk of semantic drift while the project approaches formal closure of Phase 7.3.
+They freeze the coordination baseline that resulted from Phase 7.3 and reduce the risk of semantic drift in later work.
 
 ## Risks
 
@@ -369,8 +365,9 @@ The main risks from this point forward are:
 - over-expanding the coordinator scope
 - moving ownership accidentally
 - confusing the coordinator with a global orchestration engine
-- reintroducing coordination semantics into widgets after extracting them
-- letting startup/auth slip into this narrow coordinator scope without separate justification
+- reintroducing coordination semantics into widgets
+- pulling startup/auth into the coordinator prematurely
+- reopening already-closed 7.3 concerns without justification
 
 ## What it does NOT solve
 
@@ -381,7 +378,7 @@ This document does not by itself solve:
 - event-driven runtime architecture
 - flow-level automated tests
 
-Those remain outside the safe scope of this subphase.
+Those remain outside the closed scope of Phase 7.3.
 
 ## Conclusion
 
@@ -392,4 +389,4 @@ The active development rule is now:
 - keep context concepts explicit and separate
 - keep contracts declarative
 - keep the coordinator minimal, explicit, and non-owning
-- use it only where the ZIP already justifies a narrow application-level transition anchor
+- treat Phase 7.3 as formally closed and preserve its resulting baseline

@@ -2,7 +2,7 @@
 
 ## Objective
 
-Provide a coherent and accurate entry point to the technical documentation of Mi IP·RED so that the current repository structure, runtime boundaries, application-layer rules, and historical phase outcomes remain aligned with the real codebase.
+Provide a coherent and accurate entry point to the technical documentation of Mi IP·RED so that the current repository structure, runtime boundaries, application-layer rules, historical phase outcomes, and active coordination baseline remain aligned with the real codebase.
 
 ## Initial Context
 
@@ -16,30 +16,32 @@ At the current project baseline, the repository has already completed:
 - Phase 7.3.1 — Application Flow Inventory
 - Phase 7.3.2 — Session & App Context Normalization
 - Phase 7.3.3 — Feature Interaction Contracts
+- Phase 7.3.4 — Application Coordinator (mínimo)
 
-The project is now advancing through Phase 7.3.4.
+The project now enters:
 
-This subphase does not introduce a broad coordinator.
+- Phase 7.3.5 — Formal Closure of Phase 7.3
 
-Instead, it introduces a minimal coordination surface only for the safest already-validated application transitions.
+This closure does not introduce new runtime behavior.
+
+It freezes the resulting post-7.3 coordination baseline.
 
 ## Problem Statement
 
-After Phase 7.3.3, the codebase already has:
+After Phase 7.3.4, the codebase already has:
 
-- documented flows
-- normalized context semantics
-- explicit shared runtime-context access paths
+- explicit flow inventory
+- explicit shared-context semantics
 - explicit declarative interaction contracts
+- a minimal coordinator for the narrowest safe execution-level coordination concerns
 
-However, some execution-level coordination still remains more distributed than ideal in runtime surfaces.
+The remaining need is no longer implementation.
 
-The most visible safe targets in the current ZIP are:
+The remaining need is to formally close the phase so that:
 
-- billing downstream refresh coordination
-- logout reset coordination
-
-Without a minimal coordination anchor, those transitions remain semantically broader than their current execution location suggests.
+- Phase 7.3 is not extended artificially
+- the minimal coordinator is not misread as an unfinished broad coordinator initiative
+- future work starts from a stable and explicit post-7.3 architecture baseline
 
 ## Scope
 
@@ -49,9 +51,9 @@ This index covers:
 - development governance documents
 - historical phase documents
 - the current Phase 7 baseline
-- the newly opened and implemented Phase 7.3.4 application coordinator document
+- the formal closure document for Phase 7.3
 
-It does not redefine the architecture beyond the current real codebase.
+It does not redefine architecture beyond the real codebase.
 
 ## Root Cause Analysis
 
@@ -63,9 +65,10 @@ The documentation needed to evolve in the same order as the implementation:
 4. flow inventory
 5. context normalization
 6. contract freezing
-7. only then minimal coordination anchoring for the safest application transitions
+7. minimal coordination anchoring
+8. formal closure of the full coordination phase
 
-That sequencing remains important because coordinator work only became safe after the previous layers were already explicit.
+That sequencing remains important because the phase can only be closed safely after all of its intended layers are both implemented and validated.
 
 ## Files Affected
 
@@ -86,6 +89,7 @@ Primary documents indexed here include:
 - `docs/phase7_application_layer_consolidation_7_3_2_session_app_context_normalization.md`
 - `docs/phase7_application_layer_consolidation_7_3_3_feature_interaction_contracts.md`
 - `docs/phase7_application_layer_consolidation_7_3_4_application_coordinator_minimal.md`
+- `docs/phase7_application_layer_consolidation_7_3_5_formal_closure.md`
 
 ## Implementation Characteristics
 
@@ -164,15 +168,15 @@ These preserve historical rationale and structural evolution context.
 - `docs/phase7_application_layer_consolidation_7_3_2_session_app_context_normalization.md`
 - `docs/phase7_application_layer_consolidation_7_3_3_feature_interaction_contracts.md`
 - `docs/phase7_application_layer_consolidation_7_3_4_application_coordinator_minimal.md`
+- `docs/phase7_application_layer_consolidation_7_3_5_formal_closure.md`
 
-Phase 7.3 is now split into four already-defined layers:
+Phase 7.3 is now fully understood as a closed coordination block composed of five layers:
 
 - flow inventory
 - context normalization
 - feature interaction contracts
 - minimal coordination anchoring
-
-The current active concern remains coordination-focused, but 7.3.4 keeps the coordinator intentionally narrow and auditable.
+- formal closure
 
 ## Validation
 
@@ -192,6 +196,7 @@ At this point, the correct reading order for a technical review is:
 10. `docs/phase7_application_layer_consolidation_7_3_2_session_app_context_normalization.md`
 11. `docs/phase7_application_layer_consolidation_7_3_3_feature_interaction_contracts.md`
 12. `docs/phase7_application_layer_consolidation_7_3_4_application_coordinator_minimal.md`
+13. `docs/phase7_application_layer_consolidation_7_3_5_formal_closure.md`
 
 ## Release Impact
 
@@ -199,26 +204,26 @@ This update does not change user-facing architecture by itself.
 
 Its impact is documentary and architectural:
 
-- it exposes 7.3.4 as a distinct implemented subphase
-- it documents the first minimal execution anchor for app-level coordination
-- it improves future onboarding for the closure of Phase 7.3
+- it freezes the resulting post-7.3 coordination baseline
+- it prevents further accidental extension of Phase 7.3
+- it provides a clean handoff point for the next phase
 
 ## Risks
 
 If this index is not updated, future work may:
 
-- assume 7.3.4 introduced a broad coordinator when it did not
-- miss that only two safe transitions were intentionally coordinated
-- over-extend later work beyond the current coordinator scope
+- continue extending 7.3 beyond its real scope
+- misread the minimal coordinator as unfinished broad infrastructure
+- blur the distinction between what 7.3 solved and what later phases should solve
 
 ## What it does NOT solve
 
 This document does not by itself:
 
-- introduce a broad app coordinator
-- redesign startup/auth continuation
-- introduce an event bus
-- redesign runtime execution
+- introduce new runtime behavior
+- redesign startup/auth coordination
+- expand the coordinator
+- redesign backend/session architecture
 
 It only reflects the real documentation baseline.
 
@@ -229,7 +234,6 @@ The documentation index now reflects the real project state:
 - Phase 6 completed
 - Phase 7.1 completed
 - Phase 7.2 completed and closed
-- Phase 7.3.1 completed as flow inventory
-- Phase 7.3.2 completed as session and app-context normalization
-- Phase 7.3.3 completed as feature interaction contract baseline
-- Phase 7.3.4 completed as a minimal application coordinator for billing downstream refresh and logout reset
+- Phase 7.3 completed and formally closed through 7.3.5
+
+The project now has an explicit and stable post-7.3 coordination baseline.
