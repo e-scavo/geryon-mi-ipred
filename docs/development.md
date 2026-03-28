@@ -2,87 +2,78 @@
 
 ## Objective
 
-Define the active development rules for Mi IP·RED so that future changes preserve the production runtime, respect the current architecture, and evolve the application in explicitly scoped phases.
+Define the active development rules for Mi IP·RED so that future changes preserve the working runtime, respect the current architecture, and continue Phase 8 under an explicit runtime-hardening scope.
 
 ## Initial Context
 
-The current ZIP confirms a stable architecture with the following baseline:
+The current ZIP confirms this baseline:
 
-- `presentation → controller → ServiceProvider`
-- Phase 7.3 already closed
-- Phase 7.4 completed and formally closed
-- Phase 7.5 completed and formally closed
-- Phase 8 opened as a new runtime-hardening phase
-- Phase 8.1 documented as runtime failure surface inventory
+- active architecture: `presentation → controller → ServiceProvider`
+- Phase 7 closed
+- Phase 8 active
+- Phase 8.1 completed as runtime failure surface inventory
+- Phase 8.2 completed as failure boundary normalization
 
-That means the closed structural baseline of Phase 7 remains valid and must not be reopened implicitly.
+That means the repository is no longer in a structural extraction phase.
 
 ## Problem Statement
 
-Without updated rules, later work could easily overreach in one of two directions:
+Without clear development rules, later work could either:
 
-- continue reopening closed application-layer concerns under the old Phase 7 scope
-- mix runtime reliability work with stealth rearchitecture
-
-The current dominant risk is no longer application-layer ambiguity.
-
-The current dominant risk is runtime hardening being performed without explicit operational scope.
+- reopen closed structural work from Phase 7, or
+- start changing runtime recovery policy directly against raw flags and local conditions without respecting the normalized failure-boundary model introduced in 8.2
 
 ## Scope
 
 These rules apply to work touching:
 
 - `lib/main.dart`
+- `lib/models/ServiceProvider/**`
+- `lib/models/GeneralLoadingProgress/**`
+- `lib/core/transport/**`
 - `lib/features/auth/**`
 - `lib/features/dashboard/**`
 - `lib/features/billing/**`
 - `lib/features/contracts/**`
-- `lib/models/GeneralLoadingProgress/**`
-- `lib/models/ServiceProvider/**`
-- `lib/core/transport/**`
-- `lib/core/session/**`
 - current Phase 8 documents
 
 These rules do not authorize:
 
 - backend protocol redesign
-- ServiceProvider replacement
+- `ServiceProvider` replacement
 - navigation redesign
 - UI redesign
-- broad coordinator introduction
+- broad coordinator expansion
 - state-management rearchitecture
 
 ## Root Cause Analysis
 
-Phase 7 solved the structural consolidation problem.
+Phase 7 resolved the dominant structural ambiguity.
 
-The current ZIP now shows a different kind of remaining concern:
+Phase 8.1 proved the project still had distributed runtime failure surfaces.
 
-- runtime-global failure boundaries
-- reconnect / reboot / retry behavior
-- heterogeneous failure presentation surfaces
-- feature-local errors dependent on runtime-global validity
-- operational sequencing hotspots
+Phase 8.2 introduced a normalized semantic model for:
 
-That means the repository has entered a runtime hardening stage, not a structural cleanup stage.
+- boundary scope
+- recovery expectation
+- runtime / feature failure interpretation
+
+That means future runtime-hardening work must now build on the normalized model instead of bypassing it.
 
 ## Files Affected
 
 Main files governed by the current baseline include:
 
 - `lib/main.dart`
-- `lib/features/auth/controllers/login_controller.dart`
-- `lib/features/auth/presentation/login_widget.dart`
-- `lib/features/dashboard/controllers/dashboard_controller.dart`
-- `lib/features/billing/controllers/billing_controller.dart`
-- `lib/features/billing/presentation/billing_widget.dart`
-- `lib/features/contracts/application_coordinator.dart`
-- `lib/models/GeneralLoadingProgress/model.dart`
 - `lib/models/ServiceProvider/data_model.dart`
+- `lib/models/ServiceProvider/failure_boundary_scope_model.dart`
+- `lib/models/ServiceProvider/failure_recovery_expectation_model.dart`
+- `lib/models/ServiceProvider/failure_boundary_state_model.dart`
 - `lib/models/ServiceProvider/init_stages_enum_model.dart`
-- `lib/models/ServiceProvider/startup_auth_continuation_coordinator_model.dart`
-- `lib/models/ServiceProvider/login_continuation_result_model.dart`
 - `lib/models/ServiceProvider/auth_requirement_model.dart`
+- `lib/models/ServiceProvider/login_continuation_result_model.dart`
+- `lib/models/ServiceProvider/startup_auth_continuation_coordinator_model.dart`
+- `lib/features/billing/controllers/billing_controller.dart`
 - `lib/core/transport/geryonsocket_model.dart`
 - `lib/core/transport/geryonsocket_model_io.dart`
 - `lib/core/transport/geryonsocket_model_web.dart`
@@ -95,65 +86,73 @@ All new work must preserve:
 
 - `presentation → controller → ServiceProvider`
 
-That remains the active baseline.
-
-No Phase 8 change may be justified by pretending the current architecture is still unresolved.
+Phase 8 is not permission to reopen architecture.
 
 ### 2. Runtime hardening must stay runtime-focused
 
-Phase 8 work is allowed to harden:
+Phase 8 work may harden:
 
 - failure semantics
 - retry behavior
 - reconnect behavior
 - reboot behavior
-- operational recovery boundaries
+- runtime recovery boundaries
 - diagnostic signaling
 
-Phase 8 work is not allowed to drift into:
+It may not drift into:
 
 - broad structural extraction
-- new global service layers
-- widget/controller responsibility inversion
-- navigation flow redesign
+- widget-owned recovery policy
+- speculative new global layers
 
-### 3. ServiceProvider may be hardened, not replaced
+### 3. The 8.2 boundary model is now mandatory context
 
-ServiceProvider remains the runtime source and owner of authenticated runtime lifecycle.
+Any later work touching retry / reconnect / reboot / reset must first consider the explicit boundary model introduced in 8.2.
 
-It may be:
+That means runtime changes should be interpreted through:
 
-- clarified
-- normalized
-- hardened
-- made more explicit operationally
+- `ServiceProviderFailureBoundaryScope`
+- `ServiceProviderFailureRecoveryExpectation`
+- `ServiceProviderFailureBoundaryState`
 
-It must not be:
+This is now part of the repository baseline.
 
-- replaced
-- bypassed by a new global engine
-- fragmented into speculative new runtime layers
+### 4. ServiceProvider may be hardened, not replaced
 
-### 4. Widgets must not become recovery owners
+`ServiceProvider` remains the runtime owner of:
 
-Widgets may display failure state and trigger explicit user actions.
+- transport bootstrap
+- authenticated runtime lifecycle
+- active operational context
+- startup/runtime continuation
 
-They must not become the place where runtime policy is invented ad hoc.
+It may be clarified and hardened.
 
-Operational policy must remain anchored in explicit runtime boundaries.
+It must not be replaced or bypassed by a new runtime engine.
 
-### 5. Feature-local failure versus runtime-global failure must stay explicit
+### 5. Widgets must not become recovery-policy owners
 
-All future changes must distinguish between:
+Widgets may:
 
-- failures that only affect one feature
-- failures that invalidate the current runtime continuation
+- display failure state
+- trigger explicit user actions
+- react to already-normalized state
 
-This distinction is mandatory for Phase 8.
+Widgets must not become the place where recovery policy is invented.
 
-### 6. Phase 8 must proceed in explicit subphases
+### 6. Feature-local failure and runtime-global failure must stay distinct
 
-Recommended order:
+This distinction is mandatory.
+
+Examples:
+
+- missing authenticated runtime context is not the same as a billing fetch failure
+- missing active client context is not the same as a transport disconnect
+- startup blocked state is not the same as a feature-local reload problem
+
+### 7. Phase 8 must continue in explicit order
+
+The current recommended order remains:
 
 - `8.1 — Runtime Failure Surface Inventory`
 - `8.2 — Failure Boundary Normalization`
@@ -161,9 +160,7 @@ Recommended order:
 - `8.4 — Runtime Diagnostic & Observability Signals`
 - `8.5 — Formal Closure of Phase 8`
 
-No implementation should skip the documentary justification of the current subphase.
-
-### 7. No hidden redesign under the label of hardening
+### 8. No hidden redesign under the label of hardening
 
 The following remain explicitly disallowed unless the ZIP later proves a narrowly justified need:
 
@@ -178,49 +175,46 @@ The following remain explicitly disallowed unless the ZIP later proves a narrowl
 
 Future work is aligned with the current baseline only if all of the following remain true:
 
-- the architecture remains `presentation → controller → ServiceProvider`
+- architecture remains `presentation → controller → ServiceProvider`
 - runtime hardening stays narrower than redesign
+- the 8.2 boundary model is consulted before policy changes
+- policy is hardened only after semantics are already explicit
 - feature-local logic remains outside widgets where already extracted
-- ServiceProvider remains the runtime owner
-- failures are analyzed before semantics are normalized
-- semantics are normalized before policy is hardened
-- policy is hardened before documentary closure
 
 ## Release Impact
 
-These guidelines have no direct user-facing release impact.
+These guidelines have no direct user-facing runtime impact.
 
-They protect the repository from mixing runtime hardening with structural redesign and keep Phase 8 scoped correctly.
+They protect the project from mixing runtime policy changes with architecture changes.
 
 ## Risks
 
 If these rules are ignored, future work may:
 
-- reopen closed Phase 7 concerns
-- disguise rearchitecture as reliability work
-- normalize failure behavior inconsistently
-- introduce recovery logic in the wrong layer
-- destabilize the current production runtime
+- reopen closed Phase 7 scope
+- bypass the normalized boundary model
+- implement retry or reconnect behavior ad hoc
+- move operational logic into the wrong layer
 
 ## What it does NOT solve
 
 This document does not itself:
 
-- classify failures
-- harden reconnect behavior
+- change retry behavior
+- change reboot behavior
+- change reconnect behavior
 - fix runtime hotspots
-- unify failure presentation
-- implement observability
+- add observability signals
 
-It only defines the rules under which that work must occur.
+It only defines how that work must proceed.
 
 ## Conclusion
 
-The current development baseline is now:
+The active development baseline is now:
 
 - Phase 7 closed
-- structural consolidation frozen
 - Phase 8 active
-- runtime reliability and failure semantics as the correct current scope
+- failure surfaces inventoried
+- failure boundaries normalized
 
-All future implementation must respect that boundary.
+Future work must now continue from that explicit semantic baseline.

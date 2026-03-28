@@ -2,11 +2,11 @@
 
 ## Objective
 
-Provide a coherent entry point to the Mi IP·RED documentation so the current repository structure, phase baseline, and runtime architecture remain aligned with the real code.
+Provide the current entry point to the Mi IP·RED documentation so the repository reading order stays aligned with the real code, the closed Phase 7 baseline, and the active Phase 8 runtime-hardening effort.
 
 ## Initial Context
 
-The current ZIP confirms the following phase status:
+The current ZIP confirms the following phase baseline:
 
 - Phase 6 completed
 - Phase 7.1 completed
@@ -15,68 +15,37 @@ The current ZIP confirms the following phase status:
 - Phase 7.4 completed and formally closed
 - Phase 7.5 completed and formally closed
 - Phase 8 opened
-- Phase 8.1 documented as the active first subphase
-
-Current completed subphases inside the Phase 7 consolidation effort are:
-
-- `7.1.1 — Auth extraction`
-- `7.1.2 — Dashboard extraction`
-- `7.1.3 — Billing extraction`
-- `7.2.1 — Feature State Inventory & Ownership Definition`
-- `7.2.2 — Billing State Boundary Consolidation`
-- `7.2.3 — Dashboard State Derivation Normalization`
-- `7.2.4 — Auth & Startup Initial State Boundary Cleanup`
-- `7.2.5 — Formal Closure of Phase 7.2`
-- `7.3.1 — Application Flow Inventory`
-- `7.3.2 — Session & App Context Normalization`
-- `7.3.3 — Feature Interaction Contracts`
-- `7.3.4 — Application Coordinator (mínimo)`
-- `7.3.5 — Formal Closure of Phase 7.3`
-- `7.4.1 — Startup/Auth Continuation Inventory`
-- `7.4.2 — Auth Requirement Boundary Normalization`
-- `7.4.3 — Login Resolution Continuation Contract`
-- `7.4.4 — Minimal Startup/Auth Continuation Coordinator`
-- `7.4.5 — Formal Closure of Phase 7.4`
-- `7.5 — Formal Closure of Phase 7`
-
-Current active Phase 8 documentary baseline is:
-
-- `8.1 — Runtime Failure Surface Inventory`
+- Phase 8.1 completed as runtime failure surface inventory
+- Phase 8.2 completed as failure boundary normalization
 
 ## Problem Statement
 
-The documentation index must reflect the real current state of the project.
+The documentation index must clearly distinguish between:
 
-At this point:
+- closed structural work
+- active runtime semantic hardening work
 
-- Phase 7 is closed and frozen
-- Phase 8 is now the active phase
-- the current active scope is runtime reliability and failure semantics hardening rather than application-layer restructuring
-
-If the index does not make this explicit, future work could incorrectly continue reopening Phase 7 concerns.
+If that distinction is lost, future work can incorrectly reopen Phase 7 concerns or misread Phase 8 as generic cleanup.
 
 ## Scope
 
 This index covers:
 
-- core architecture documents
+- current architecture documents
 - governance documents
 - historical phase documents
-- the completed Phase 7 baseline
-- the newly opened Phase 8 runtime-hardening effort
-
-It does not define runtime behavior by itself.
+- the closed Phase 7 consolidation baseline
+- the active Phase 8 runtime-hardening baseline
 
 ## Root Cause Analysis
 
-The documentation has been built phase by phase together with the implementation.
+The project evolved phase by phase together with the implementation.
 
-That means the index must preserve the real reading order of the project and clearly distinguish:
+That means the documentation index must mirror the real repository state.
 
-- closed structural work
-- active runtime hardening work
+The current ZIP shows that the active concern is no longer application-layer extraction.
 
-The current ZIP justifies that distinction.
+The active concern is runtime reliability and failure semantics.
 
 ## Files Affected
 
@@ -90,11 +59,10 @@ Primary entry documents include:
 - `docs/decisions.md`
 - `docs/flows.md`
 - `docs/features.md`
-- `docs/phase6_presentation_structure_cleanup.md`
-- `docs/phase7_application_layer_consolidation.md`
 - `docs/phase7_application_layer_consolidation_7_5_formal_closure.md`
 - `docs/phase8_runtime_reliability_failure_semantics_hardening.md`
 - `docs/phase8_runtime_reliability_failure_semantics_hardening_8_1_runtime_failure_surface_inventory.md`
+- `docs/phase8_runtime_reliability_failure_semantics_hardening_8_2_failure_boundary_normalization.md`
 
 ## Implementation Characteristics
 
@@ -183,6 +151,9 @@ Primary entry documents include:
 ##### Phase 8.1
 - `docs/phase8_runtime_reliability_failure_semantics_hardening_8_1_runtime_failure_surface_inventory.md`
 
+##### Phase 8.2
+- `docs/phase8_runtime_reliability_failure_semantics_hardening_8_2_failure_boundary_normalization.md`
+
 ## Validation
 
 Recommended current reading order:
@@ -195,41 +166,39 @@ Recommended current reading order:
 6. `docs/phase7_application_layer_consolidation_7_5_formal_closure.md`
 7. `docs/phase8_runtime_reliability_failure_semantics_hardening.md`
 8. `docs/phase8_runtime_reliability_failure_semantics_hardening_8_1_runtime_failure_surface_inventory.md`
+9. `docs/phase8_runtime_reliability_failure_semantics_hardening_8_2_failure_boundary_normalization.md`
 
 ## Release Impact
 
-This document has no direct runtime impact.
+This index has no direct runtime impact.
 
-It keeps the documentation aligned with the real current phase baseline and makes the transition from closed Phase 7 to active Phase 8 explicit.
+It keeps the documentation aligned with the current repository baseline and makes the transition from closed structural work to active runtime hardening explicit.
 
 ## Risks
 
-If this index is not aligned, future work may:
+If the index is not aligned, future work may:
 
 - treat Phase 7 as still active
-- reopen closed application-layer concerns implicitly
-- misread runtime hardening as structural redesign
-- lose the correct documentary handoff into Phase 8
+- reopen application-layer concerns implicitly
+- misread runtime semantic hardening as generic refactor work
 
 ## What it does NOT solve
 
-This index does not by itself:
+This index does not itself:
 
 - change runtime behavior
-- define retry policy
-- normalize failure taxonomy
-- harden reconnect behavior
-- fix runtime hotspots
+- harden retry / reboot / reconnect
+- classify failures in code
 
-It only reflects the real current baseline.
+It only reflects the correct current documentary baseline.
 
 ## Conclusion
 
-The current documentation baseline is:
+The current project baseline is:
 
-- Phase 6 completed
-- Phase 7 completed and formally closed
-- Phase 8 opened
-- Phase 8.1 documented as runtime failure surface inventory
+- Phase 7 closed
+- Phase 8 active
+- Phase 8.1 completed
+- Phase 8.2 completed
 
-That is the correct current entry point for the project.
+That is now the correct documentation entry point for Mi IP·RED.

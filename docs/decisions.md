@@ -2,91 +2,78 @@
 
 ## Objective
 
-Record the active architectural and implementation decisions that govern Mi IP·RED after the formal closure of Phase 7 and the opening of Phase 8 as a runtime reliability and failure semantics hardening effort.
+Record the active architectural and implementation decisions that govern Mi IP·RED after the closure of Phase 7 and after the introduction of normalized runtime failure-boundary semantics in Phase 8.2.
 
 ## Initial Context
 
-The current ZIP confirms the following baseline:
+The current ZIP confirms:
 
-- Phase 7 is formally closed
-- the active architecture remains `presentation → controller → ServiceProvider`
-- startup/auth continuation was already normalized during Phase 7.4
-- the project is no longer in an application-layer consolidation phase
-- Phase 8 is now opened for runtime reliability and failure semantics hardening
-- Phase 8.1 documents the real runtime failure surfaces
+- Phase 7 is closed
+- the architecture remains `presentation → controller → ServiceProvider`
+- Phase 8 is active
+- Phase 8.1 documented runtime failure surfaces
+- Phase 8.2 introduced explicit failure-boundary normalization
 
 ## Problem Statement
 
-The repository now needs a clear decision record so that future runtime hardening does not accidentally:
+The repository now needs a clear decision baseline so that future runtime hardening does not:
 
-- reopen closed structural scope
-- create new hidden architecture
-- normalize error behavior inconsistently
-- treat local feature failures and runtime-global failures as the same thing
-
-The decisions below freeze the correct interpretation of the current baseline.
+- reopen structural scope
+- bypass the normalized semantic model
+- treat runtime-global and feature-local failures as interchangeable
+- introduce policy changes without semantic justification
 
 ## Scope
 
 These decisions govern:
 
-- active architecture interpretation
+- current architecture interpretation
 - ownership of runtime lifecycle
-- interpretation of Phase 8
-- how runtime hardening may proceed
+- interpretation of the new boundary model
+- sequencing of later Phase 8 work
 - what remains explicitly out of scope
-
-These decisions do not themselves implement runtime changes.
 
 ## Root Cause Analysis
 
-After Phase 7, the main structural problem was already solved.
+After Phase 7, the dominant unresolved concern was no longer structure.
 
-The current ZIP shows that the remaining risk now lives in operational behavior:
+After Phase 8.1, the dominant unresolved concern was no longer discovery of failure surfaces.
 
-- startup recovery
-- websocket disconnect handling
-- reconnect / reboot semantics
-- login continuation failure handling
-- feature fetch failure behavior
-- heterogeneous error presentation
+After Phase 8.2, the project now has an explicit semantic vocabulary for runtime and feature failure boundaries.
 
-That means the decision model must shift from structural consolidation decisions toward runtime-hardening decisions.
+That changes the decision baseline:
+
+future runtime hardening must now use the normalized model rather than work directly from raw flag combinations alone.
 
 ## Files Affected
 
 These decisions directly govern interpretation of:
 
-- `lib/main.dart`
-- `lib/models/GeneralLoadingProgress/model.dart`
 - `lib/models/ServiceProvider/data_model.dart`
-- `lib/models/ServiceProvider/init_stages_enum_model.dart`
-- `lib/models/ServiceProvider/startup_auth_continuation_coordinator_model.dart`
+- `lib/models/ServiceProvider/failure_boundary_scope_model.dart`
+- `lib/models/ServiceProvider/failure_recovery_expectation_model.dart`
+- `lib/models/ServiceProvider/failure_boundary_state_model.dart`
+- `lib/features/billing/controllers/billing_controller.dart`
 - `lib/core/transport/geryonsocket_model.dart`
 - `lib/core/transport/geryonsocket_model_io.dart`
 - `lib/core/transport/geryonsocket_model_web.dart`
-- `lib/features/auth/**`
-- `lib/features/dashboard/**`
-- `lib/features/billing/**`
-- `lib/features/contracts/application_coordinator.dart`
 - `docs/phase8_runtime_reliability_failure_semantics_hardening.md`
 - `docs/phase8_runtime_reliability_failure_semantics_hardening_8_1_runtime_failure_surface_inventory.md`
+- `docs/phase8_runtime_reliability_failure_semantics_hardening_8_2_failure_boundary_normalization.md`
 
 ## Implementation Characteristics
 
 ### Decision 1 — Phase 7 remains closed
 
-Phase 7 is frozen.
+No further `7.x` continuation is active.
 
-No future work may continue under new `7.x` subphases unless the project explicitly reopens that phase with a separate justified decision.
+Structural consolidation remains frozen.
 
-That is not the current state.
+### Decision 2 — Phase 8 remains a runtime-hardening phase
 
-### Decision 2 — Phase 8 is a runtime-hardening phase, not a structural phase
+Phase 8 exists to harden runtime semantics and later runtime policy.
 
-Phase 8 exists because the ZIP shows real runtime failure and recovery surfaces that are not yet fully normalized.
-
-Phase 8 does not exist to continue structural cleanup.
+It does not exist to reopen architecture cleanup.
 
 ### Decision 3 — The active architecture remains unchanged
 
@@ -94,67 +81,72 @@ The active architecture remains:
 
 - `presentation → controller → ServiceProvider`
 
-This is a stable baseline, not an open question.
+This is a fixed baseline, not an open design question.
 
 ### Decision 4 — ServiceProvider remains the runtime owner
 
-ServiceProvider remains the owner of:
+`ServiceProvider` remains the owner of:
 
+- connection bootstrap
 - authenticated runtime lifecycle
-- backend connectivity baseline
-- startup/runtime continuation state
-- active operational context
+- startup/runtime continuation
+- active operational client context
 
-Phase 8 may clarify or harden that ownership.
+Phase 8 may clarify and harden this ownership.
 
 It may not replace it.
 
-### Decision 5 — Runtime failures must be classified before policy is changed
+### Decision 5 — The 8.2 boundary model is now the shared semantic baseline
 
-Before retry, reconnect, reboot, or reset behavior is changed, the project must first identify:
+The project now explicitly recognizes:
 
-- where failures occur
-- whether they are runtime-global or feature-local
-- whether they are recoverable, retryable, blocking, or invalidating
+- `ServiceProviderFailureBoundaryScope`
+- `ServiceProviderFailureRecoveryExpectation`
+- `ServiceProviderFailureBoundaryState`
 
-This is why 8.1 comes before any implementation subphase.
+These models are now the shared language for interpreting runtime and feature failure boundaries.
 
-### Decision 6 — Runtime policy must stay explicit and narrow
+### Decision 6 — Policy changes must follow semantics, not precede them
 
-Any later hardening of:
+Retry / reboot / reconnect / reset behavior must not be changed first and explained later.
 
-- retry
-- reboot
-- reconnect
-- reload
-- reset
+The semantic classification must come first.
 
-must remain narrowly tied to a real identified failure boundary.
+That is why 8.2 precedes 8.3.
 
-No broad “reliability framework” may be introduced without explicit evidence from the ZIP.
+### Decision 7 — Billing is now an explicit example of boundary distinction
 
-### Decision 7 — Error presentation heterogeneity is evidence, not yet a bug by itself
+Billing now formally distinguishes between:
 
-The current codebase presents errors through multiple surfaces, including:
+- authenticated-runtime invalidity
+- active operational context invalidity
+- feature-local load failure
 
-- loading popup retry path
-- `SnackBar`
-- `CatchMainScreen`
-- popup dialogs
+This distinction is part of the current repository baseline.
 
-This heterogeneity is not, by itself, justification for redesign.
+### Decision 8 — Error-presentation heterogeneity is still evidence, not redesign permission
 
-It is evidence that failure semantics are distributed and must be normalized before any unification work is proposed.
+The current code still presents errors through different UI surfaces.
 
-### Decision 8 — Feature-local failures and runtime-global failures must not be merged implicitly
+That remains evidence that semantics were historically distributed.
 
-Billing failure, login failure, startup failure, and websocket disconnect are not automatically the same class of problem.
+It is not, by itself, justification for a new global error framework.
 
-Future work must keep that distinction explicit.
+### Decision 9 — Runtime-global and feature-local failures must not be merged implicitly
 
-### Decision 9 — Phase 8 implementation must proceed in order
+The following remain distinct categories:
 
-The active recommended order is:
+- startup blocked state
+- auth continuation required state
+- transport disconnect state
+- active client context invalidity
+- feature-local request failure
+
+Later work must preserve that distinction.
+
+### Decision 10 — The active Phase 8 order remains explicit
+
+The recommended order remains:
 
 - `8.1 — Runtime Failure Surface Inventory`
 - `8.2 — Failure Boundary Normalization`
@@ -162,56 +154,54 @@ The active recommended order is:
 - `8.4 — Runtime Diagnostic & Observability Signals`
 - `8.5 — Formal Closure of Phase 8`
 
-This order is now part of the documentary baseline.
-
 ## Validation
 
 These decisions are valid only if the current ZIP still confirms all of the following:
 
-- Phase 7 is fully closed
-- the active architecture is stable
-- runtime recovery behavior already exists in code
-- operational semantics remain partially distributed
-- runtime hardening is the next justified step
+- Phase 7 is closed
+- the architecture is stable
+- the new failure-boundary model exists in code
+- runtime policy has not yet been broadly redesigned
+- Phase 8 remains focused on runtime hardening
 
 The current ZIP confirms those conditions.
 
 ## Release Impact
 
-These decisions have no direct user-facing release impact.
+These decisions have no direct user-facing impact.
 
-They protect the correct interpretation of the codebase and prevent the next phase from drifting into hidden redesign.
+They protect the interpretation of the repository and constrain later runtime-policy work so it remains narrow and justified.
 
 ## Risks
 
 If these decisions are ignored, future work may:
 
-- reopen structural scope unnecessarily
-- normalize the wrong failure boundaries
-- patch runtime issues inconsistently
-- move recovery policy into widgets
-- destabilize the current baseline
+- bypass the normalized semantic model
+- overreact to local errors with global policy changes
+- conflate active-client issues with transport issues
+- reintroduce architecture drift under the label of reliability work
 
 ## What it does NOT solve
 
-This decisions document does not itself:
+This decision record does not itself:
 
-- fix runtime hotspots
-- classify all failures formally
 - change reconnect behavior
-- define the final retry policy
+- change retry behavior
+- change reboot behavior
+- fix current hotspots such as `setCurrentCliente()`
 - add observability signals
 
-It only freezes the correct decision baseline for Phase 8.
+It only freezes the correct interpretation of the current baseline.
 
 ## Conclusion
 
-The current project baseline is:
+The current project baseline is now:
 
 - Phase 7 closed
 - architecture frozen
 - ServiceProvider retained as runtime owner
-- Phase 8 opened as runtime reliability and failure semantics hardening
-- Phase 8.1 established as the correct first step
+- Phase 8 active
+- failure surfaces inventoried in 8.1
+- failure boundaries normalized in 8.2
 
-Future work must now proceed under that interpretation.
+Future work must now continue under that explicit semantic baseline.

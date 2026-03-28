@@ -11,6 +11,8 @@ import 'package:geryon_web_app_ws_v2/models/CommonParamRequest/header_request.da
 import 'package:geryon_web_app_ws_v2/models/CommonUtils/common_utils.dart';
 import 'package:geryon_web_app_ws_v2/models/GenericDataModel/data_model.dart';
 import 'package:geryon_web_app_ws_v2/models/GenericDataModel/model.dart';
+import 'package:geryon_web_app_ws_v2/models/ServiceProvider/failure_boundary_state_model.dart';
+import 'package:geryon_web_app_ws_v2/models/ServiceProvider/failure_recovery_expectation_model.dart';
 import 'package:geryon_web_app_ws_v2/models/error_handler.dart';
 import 'package:geryon_web_app_ws_v2/models/tbl_ComprobantesVT/model.dart';
 
@@ -19,6 +21,7 @@ class BillingFeatureState {
   final bool isLoading;
   final GenericDataModel<TableComprobantesVTModel>? dataModel;
   final ErrorHandler? error;
+  final ServiceProviderFailureBoundaryState? failureBoundaryState;
   final int? trackedClientIndex;
 
   const BillingFeatureState({
@@ -26,6 +29,7 @@ class BillingFeatureState {
     required this.isLoading,
     this.dataModel,
     this.error,
+    this.failureBoundaryState,
     this.trackedClientIndex,
   });
 
@@ -34,6 +38,7 @@ class BillingFeatureState {
         isLoading = true,
         dataModel = null,
         error = null,
+        failureBoundaryState = null,
         trackedClientIndex = null;
 
   bool get hasError => error != null;
@@ -47,6 +52,8 @@ class BillingFeatureState {
     bool clearDataModel = false,
     ErrorHandler? error,
     bool clearError = false,
+    ServiceProviderFailureBoundaryState? failureBoundaryState,
+    bool clearFailureBoundaryState = false,
     int? trackedClientIndex,
     bool clearTrackedClientIndex = false,
   }) {
@@ -55,6 +62,9 @@ class BillingFeatureState {
       isLoading: isLoading ?? this.isLoading,
       dataModel: clearDataModel ? null : (dataModel ?? this.dataModel),
       error: clearError ? null : (error ?? this.error),
+      failureBoundaryState: clearFailureBoundaryState
+          ? null
+          : (failureBoundaryState ?? this.failureBoundaryState),
       trackedClientIndex: clearTrackedClientIndex
           ? null
           : (trackedClientIndex ?? this.trackedClientIndex),
@@ -67,12 +77,14 @@ class BillingLoadResult {
   final String threadHashID;
   final GenericDataModel<TableComprobantesVTModel>? dataModel;
   final ErrorHandler? error;
+  final ServiceProviderFailureBoundaryState? failureBoundaryState;
 
   const BillingLoadResult({
     required this.success,
     required this.threadHashID,
     this.dataModel,
     this.error,
+    this.failureBoundaryState,
   });
 }
 
@@ -112,6 +124,7 @@ class BillingController {
     return currentState.copyWith(
       isLoading: true,
       clearError: true,
+      clearFailureBoundaryState: true,
       trackedClientIndex: trackedClientIndex,
     );
   }
@@ -127,6 +140,7 @@ class BillingController {
       isLoading: false,
       dataModel: dataModel,
       clearError: true,
+      clearFailureBoundaryState: true,
       trackedClientIndex: trackedClientIndex,
     );
   }
@@ -135,14 +149,71 @@ class BillingController {
     required BillingFeatureState currentState,
     required String threadHashID,
     required ErrorHandler? error,
+    required ServiceProviderFailureBoundaryState? failureBoundaryState,
     required int? trackedClientIndex,
   }) {
     return currentState.copyWith(
       threadHashID: threadHashID,
       isLoading: false,
       error: error,
+      failureBoundaryState: failureBoundaryState,
       clearDataModel: true,
       trackedClientIndex: trackedClientIndex,
+    );
+  }
+
+  ServiceProviderFailureBoundaryState evaluateBillingFailureBoundaryState({
+    required dynamic serviceProvider,
+    ErrorHandler? error,
+  }) {
+    const String functionName = 'evaluateBillingFailureBoundaryState';
+
+    if (!serviceProvider.hasAuthenticatedRuntimeContext ||
+        serviceProvider.availableClients.isEmpty) {
+      return ServiceProviderFailureBoundaryState.authContinuation(
+        initStage: serviceProvider.initStage,
+        reasonCode: 'billing_missing_authenticated_runtime_context',
+        description:
+            'Billing cannot continue because authenticated runtime context is not currently valid.',
+        className: _className,
+        functionName: functionName,
+      );
+    }
+
+    if (!serviceProvider.hasActiveClientContext ||
+        serviceProvider.activeClient == null) {
+      return ServiceProviderFailureBoundaryState.activeOperationalContext(
+        initStage: serviceProvider.initStage,
+        reasonCode: 'billing_missing_active_client_context',
+        description:
+            'Billing cannot continue because active client context is missing or invalid.',
+        recoveryExpectation:
+            ServiceProviderFailureRecoveryExpectation.featureReloadAllowed,
+        className: _className,
+        functionName: functionName,
+      );
+    }
+
+    if (error != null) {
+      return ServiceProviderFailureBoundaryState.featureLocal(
+        initStage: serviceProvider.initStage,
+        reasonCode: 'billing_feature_load_failed',
+        description:
+            'Billing request failed after runtime and active client context were already available.',
+        recoveryExpectation:
+            ServiceProviderFailureRecoveryExpectation.featureReloadAllowed,
+        className: _className,
+        functionName: functionName,
+      );
+    }
+
+    return ServiceProviderFailureBoundaryState.none(
+      initStage: serviceProvider.initStage,
+      reasonCode: 'billing_boundary_clear',
+      description:
+          'Billing boundary is clear because runtime and active client context are available.',
+      className: _className,
+      functionName: functionName,
     );
   }
 
@@ -170,6 +241,7 @@ class BillingController {
         currentState: currentState,
         threadHashID: result.threadHashID,
         error: result.error,
+        failureBoundaryState: result.failureBoundaryState,
         trackedClientIndex: currentClientIndex,
       );
     }
@@ -200,16 +272,22 @@ class BillingController {
 
       if (!serviceProvider.hasAuthenticatedRuntimeContext ||
           serviceProvider.availableClients.isEmpty) {
+        final error = ErrorHandler(
+          errorCode: 99999,
+          errorDsc:
+              'No se encontró un usuario logueado válido para cargar comprobantes.',
+          className: _className,
+          functionName: functionName,
+          stacktrace: StackTrace.current,
+        );
+
         return BillingLoadResult(
           success: false,
           threadHashID: resolvedThreadHashID,
-          error: ErrorHandler(
-            errorCode: 99999,
-            errorDsc:
-                'No se encontró un usuario logueado válido para cargar comprobantes.',
-            className: _className,
-            functionName: functionName,
-            stacktrace: StackTrace.current,
+          error: error,
+          failureBoundaryState: evaluateBillingFailureBoundaryState(
+            serviceProvider: serviceProvider,
+            error: error,
           ),
         );
       }
@@ -253,16 +331,22 @@ class BillingController {
       final currentClient = serviceProvider.activeClient;
 
       if (currentClient == null) {
+        final error = ErrorHandler(
+          errorCode: 99999,
+          errorDsc:
+              'No se encontró un cliente activo válido para cargar comprobantes.',
+          className: _className,
+          functionName: functionName,
+          stacktrace: StackTrace.current,
+        );
+
         return BillingLoadResult(
           success: false,
           threadHashID: resolvedThreadHashID,
-          error: ErrorHandler(
-            errorCode: 99999,
-            errorDsc:
-                'No se encontró un cliente activo válido para cargar comprobantes.',
-            className: _className,
-            functionName: functionName,
-            stacktrace: StackTrace.current,
+          error: error,
+          failureBoundaryState: evaluateBillingFailureBoundaryState(
+            serviceProvider: serviceProvider,
+            error: error,
           ),
         );
       }
@@ -309,23 +393,32 @@ class BillingController {
           success: false,
           threadHashID: resolvedThreadHashID,
           error: rFilteredRecords,
+          failureBoundaryState: evaluateBillingFailureBoundaryState(
+            serviceProvider: serviceProvider,
+            error: rFilteredRecords,
+          ),
         );
       }
 
       if (rFilteredRecords.rawData
           is! CommonDataModelWholeMessage<TableComprobantesVTModel>) {
-        return BillingLoadResult(
-          success: false,
-          threadHashID: resolvedThreadHashID,
-          error: ErrorHandler(
-            errorCode: 99999,
-            errorDsc: '''Error al obtener los datos de los comprobantes
+        final error = ErrorHandler(
+          errorCode: 99999,
+          errorDsc: '''Error al obtener los datos de los comprobantes
 Esperado un CommonDataModelWholeMessage<TableComprobantesVTModel>
 pero se obtuvo: ${rFilteredRecords.rawData.runtimeType}
 ''',
-            className: _className,
-            functionName: functionName,
-            stacktrace: StackTrace.current,
+          className: _className,
+          functionName: functionName,
+          stacktrace: StackTrace.current,
+        );
+        return BillingLoadResult(
+          success: false,
+          threadHashID: resolvedThreadHashID,
+          error: error,
+          failureBoundaryState: evaluateBillingFailureBoundaryState(
+            serviceProvider: serviceProvider,
+            error: error,
           ),
         );
       }
@@ -335,18 +428,23 @@ pero se obtuvo: ${rFilteredRecords.rawData.runtimeType}
 
       if (rReturnedRawData.data
           is! CommonDataModelWholeDataMessage<TableComprobantesVTModel>) {
-        return BillingLoadResult(
-          success: false,
-          threadHashID: resolvedThreadHashID,
-          error: ErrorHandler(
-            errorCode: 99999,
-            errorDsc: '''Error al obtener los datos de los comprobantes
+        final error = ErrorHandler(
+          errorCode: 99999,
+          errorDsc: '''Error al obtener los datos de los comprobantes
 Esperado un CommonDataModelWholeDataMessage<TableComprobantesVTModel>
 pero se obtuvo: ${rReturnedRawData.data.runtimeType}
 ''',
-            className: _className,
-            functionName: functionName,
-            stacktrace: StackTrace.current,
+          className: _className,
+          functionName: functionName,
+          stacktrace: StackTrace.current,
+        );
+        return BillingLoadResult(
+          success: false,
+          threadHashID: resolvedThreadHashID,
+          error: error,
+          failureBoundaryState: evaluateBillingFailureBoundaryState(
+            serviceProvider: serviceProvider,
+            error: error,
           ),
         );
       }
@@ -374,21 +472,26 @@ pero se obtuvo: ${rReturnedRawData.data.runtimeType}
         'CATCHED: $e',
         name: logFunctionName,
       );
+      final normalizedError = e is ErrorHandler
+          ? e
+          : ErrorHandler(
+              errorCode: 99999,
+              errorDsc: '''Se produjo un error al cargar comprobantes.
+Error: ${e.toString()}
+''',
+              className: _className,
+              functionName: functionName,
+              stacktrace: stacktrace,
+            );
       return BillingLoadResult(
         success: false,
         threadHashID:
             threadHashID.isEmpty ? generateRandomUniqueHash() : threadHashID,
-        error: e is ErrorHandler
-            ? e
-            : ErrorHandler(
-                errorCode: 99999,
-                errorDsc: '''Se produjo un error al cargar comprobantes.
-Error: ${e.toString()}
-''',
-                className: _className,
-                functionName: functionName,
-                stacktrace: stacktrace,
-              ),
+        error: normalizedError,
+        failureBoundaryState: evaluateBillingFailureBoundaryState(
+          serviceProvider: ref.read(notifierServiceProvider),
+          error: normalizedError,
+        ),
       );
     }
   }

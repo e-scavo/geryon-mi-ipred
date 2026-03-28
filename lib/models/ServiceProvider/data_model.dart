@@ -4,6 +4,9 @@ import 'dart:developer' as developer;
 import 'package:geryon_web_app_ws_v2/models/ServiceProvider/startup_auth_continuation_coordinator_model.dart';
 import 'package:geryon_web_app_ws_v2/models/ServiceProvider/login_continuation_result_model.dart';
 import 'package:geryon_web_app_ws_v2/models/ServiceProvider/auth_requirement_model.dart';
+import 'package:geryon_web_app_ws_v2/models/ServiceProvider/failure_boundary_scope_model.dart';
+import 'package:geryon_web_app_ws_v2/models/ServiceProvider/failure_boundary_state_model.dart';
+import 'package:geryon_web_app_ws_v2/models/ServiceProvider/failure_recovery_expectation_model.dart';
 import 'package:flutter/material.dart';
 import 'package:geryon_web_app_ws_v2/common_vars.dart';
 import 'package:geryon_web_app_ws_v2/features/auth/presentation/login_widget.dart';
@@ -281,6 +284,156 @@ class ServiceProvider extends ChangeNotifier {
 
     return cEmpresa;
   }
+
+  ServiceProviderFailureBoundaryState evaluateFailureBoundaryState() {
+    const String functionName = 'evaluateFailureBoundaryState';
+
+    if (isReady &&
+        !isProgress &&
+        hasAuthenticatedRuntimeContext &&
+        hasActiveClientContext) {
+      return ServiceProviderFailureBoundaryState.none(
+        initStage: initStage,
+        reasonCode: 'runtime_ready',
+        description:
+            'Runtime is ready and authenticated operational context is available.',
+        className: className,
+        functionName: functionName,
+      );
+    }
+
+    if (initStage == ServiceProviderInitStages.init ||
+        initStage == ServiceProviderInitStages.connecting ||
+        initStage == ServiceProviderInitStages.connected ||
+        initStage == ServiceProviderInitStages.listening ||
+        initStage == ServiceProviderInitStages.subscribing ||
+        initStage == ServiceProviderInitStages.subscribed ||
+        initStage == ServiceProviderInitStages.checkingStatus ||
+        (isProgress && !canRetry && !isReady)) {
+      return ServiceProviderFailureBoundaryState.waiting(
+        initStage: initStage,
+        reasonCode: 'runtime_initialization_in_progress',
+        description:
+            'Runtime is still progressing through connection or backend bootstrap stages.',
+        className: className,
+        functionName: functionName,
+      );
+    }
+
+    if (initStage == ServiceProviderInitStages.checkingLoginStatus ||
+        initStage == ServiceProviderInitStages.userIsNotloggedIn) {
+      return ServiceProviderFailureBoundaryState.authContinuation(
+        initStage: initStage,
+        reasonCode: 'interactive_login_required',
+        description:
+            'Runtime continuation is waiting for interactive login resolution.',
+        className: className,
+        functionName: functionName,
+      );
+    }
+
+    if (initStage == ServiceProviderInitStages.disconnected) {
+      return ServiceProviderFailureBoundaryState.transport(
+        initStage: initStage,
+        reasonCode: 'transport_disconnected',
+        description:
+            'Transport connectivity is currently disconnected and runtime continuation may need a controlled reboot path.',
+        recoveryExpectation:
+            ServiceProviderFailureRecoveryExpectation.automaticRebootCandidate,
+        className: className,
+        functionName: functionName,
+      );
+    }
+
+    if (initStage == ServiceProviderInitStages.errorConnecting ||
+        initStage == ServiceProviderInitStages.errorReConnecting ||
+        initStage == ServiceProviderInitStages.errorSubscribingChannels ||
+        initStage == ServiceProviderInitStages.errorCheckingStatus ||
+        initStage == ServiceProviderInitStages.errorCheckingLoginStatus ||
+        initStage == ServiceProviderInitStages.errorRequestingBackend) {
+      return ServiceProviderFailureBoundaryState.startupBlocked(
+        initStage: initStage,
+        reasonCode: 'startup_boundary_blocked',
+        description:
+            'Startup or backend bootstrap is blocked by an explicit recoverable runtime error state.',
+        recoveryExpectation:
+            ServiceProviderFailureRecoveryExpectation.manualRetryAllowed,
+        className: className,
+        functionName: functionName,
+      );
+    }
+
+    if (initStage == ServiceProviderInitStages.errorOnHighSeverity) {
+      return ServiceProviderFailureBoundaryState.startupBlocked(
+        initStage: initStage,
+        reasonCode: 'startup_boundary_high_severity',
+        description:
+            'Runtime is blocked by a high-severity backend state and should remain blocked until explicitly recovered.',
+        recoveryExpectation:
+            ServiceProviderFailureRecoveryExpectation.fatalBlocked,
+        className: className,
+        functionName: functionName,
+      );
+    }
+
+    if (!hasAuthenticatedRuntimeContext) {
+      return ServiceProviderFailureBoundaryState.authContinuation(
+        initStage: initStage,
+        reasonCode: 'authenticated_runtime_context_missing',
+        description:
+            'Authenticated runtime context is missing and interactive login is required.',
+        className: className,
+        functionName: functionName,
+      );
+    }
+
+    if (!hasActiveClientContext) {
+      return ServiceProviderFailureBoundaryState.activeOperationalContext(
+        initStage: initStage,
+        reasonCode: 'active_client_context_missing',
+        description:
+            'Authenticated runtime exists but active operational client context is missing or invalid.',
+        recoveryExpectation:
+            ServiceProviderFailureRecoveryExpectation.featureReloadAllowed,
+        className: className,
+        functionName: functionName,
+      );
+    }
+
+    if (canRetry) {
+      return ServiceProviderFailureBoundaryState.runtimeGlobal(
+        initStage: initStage,
+        reasonCode: 'runtime_retry_available',
+        description:
+            'Runtime is exposing an explicit retry surface even though no narrower boundary matched first.',
+        recoveryExpectation:
+            ServiceProviderFailureRecoveryExpectation.manualRetryAllowed,
+        blocksStartupBoundary: !isReady,
+        canFeatureContinue: isReady,
+        className: className,
+        functionName: functionName,
+      );
+    }
+
+    return ServiceProviderFailureBoundaryState.runtimeGlobal(
+      initStage: initStage,
+      reasonCode: 'runtime_boundary_unclassified',
+      description:
+          'Runtime is in a non-ready or partially classified operational state that still requires explicit handling.',
+      recoveryExpectation:
+          ServiceProviderFailureRecoveryExpectation.manualRetryAllowed,
+      blocksStartupBoundary: !isReady,
+      canFeatureContinue: isReady,
+      className: className,
+      functionName: functionName,
+    );
+  }
+
+  ServiceProviderFailureBoundaryScope get failureBoundaryScope =>
+      evaluateFailureBoundaryState().scope;
+
+  ServiceProviderFailureRecoveryExpectation get failureRecoveryExpectation =>
+      evaluateFailureBoundaryState().recoveryExpectation;
 
   bool _isHandshakeMessage(ServiceProviderWholeMessageModel message) {
     return message.data.isNew;
