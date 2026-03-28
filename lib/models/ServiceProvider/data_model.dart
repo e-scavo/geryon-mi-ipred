@@ -9,6 +9,9 @@ import 'package:geryon_web_app_ws_v2/models/ServiceProvider/failure_boundary_sta
 import 'package:geryon_web_app_ws_v2/models/ServiceProvider/failure_recovery_expectation_model.dart';
 import 'package:geryon_web_app_ws_v2/models/ServiceProvider/runtime_recovery_policy_decision_model.dart';
 import 'package:geryon_web_app_ws_v2/models/ServiceProvider/runtime_recovery_trigger_model.dart';
+import 'package:geryon_web_app_ws_v2/models/ServiceProvider/runtime_diagnostic_event_model.dart';
+import 'package:geryon_web_app_ws_v2/models/ServiceProvider/runtime_diagnostic_event_type_model.dart';
+import 'package:geryon_web_app_ws_v2/models/ServiceProvider/runtime_diagnostic_snapshot_model.dart';
 import 'package:flutter/material.dart';
 import 'package:geryon_web_app_ws_v2/common_vars.dart';
 import 'package:geryon_web_app_ws_v2/features/auth/presentation/login_widget.dart';
@@ -93,6 +96,12 @@ class ServiceProvider extends ChangeNotifier {
   late List<ServiceProviderChannel> channels;
   late bool isRecoveryInProgress;
   late ServiceProviderRuntimeRecoveryTrigger? activeRecoveryTrigger;
+  late List<ServiceProviderRuntimeDiagnosticEvent> _runtimeDiagnosticEvents;
+  late ServiceProviderFailureBoundaryState? _lastFailureBoundaryState;
+  late ServiceProviderRuntimeRecoveryPolicyDecision?
+      _lastRecoveryPolicyDecision;
+  late ServiceProviderRuntimeRecoveryTrigger? _lastRecoveryTrigger;
+  late ServiceProviderRuntimeDiagnosticEvent? _lastDiagnosticEvent;
 
   late ServiceProviderLoginDataUserMessageModel? loggedUser;
 
@@ -123,6 +132,11 @@ class ServiceProvider extends ChangeNotifier {
     ];
     isRecoveryInProgress = false;
     activeRecoveryTrigger = null;
+    _runtimeDiagnosticEvents = <ServiceProviderRuntimeDiagnosticEvent>[];
+    _lastFailureBoundaryState = null;
+    _lastRecoveryPolicyDecision = null;
+    _lastRecoveryTrigger = null;
+    _lastDiagnosticEvent = null;
     loggedUser = null;
     cEmpresa = TableEmpresaModel.fromDefault();
     developer.log(
@@ -291,6 +305,95 @@ class ServiceProvider extends ChangeNotifier {
     }
 
     return cEmpresa;
+  }
+
+  static const int _maxRuntimeDiagnosticEvents = 30;
+
+  List<ServiceProviderRuntimeDiagnosticEvent> get runtimeDiagnosticEvents =>
+      List<ServiceProviderRuntimeDiagnosticEvent>.unmodifiable(
+        _runtimeDiagnosticEvents,
+      );
+
+  ServiceProviderRuntimeDiagnosticSnapshot get runtimeDiagnosticSnapshot =>
+      ServiceProviderRuntimeDiagnosticSnapshot(
+        currentFailureBoundaryState: evaluateFailureBoundaryState(),
+        lastFailureBoundaryState: _lastFailureBoundaryState,
+        lastRecoveryPolicyDecision: _lastRecoveryPolicyDecision,
+        lastRecoveryTrigger: _lastRecoveryTrigger,
+        lastDiagnosticEvent: _lastDiagnosticEvent,
+        isRecoveryInProgress: isRecoveryInProgress,
+        activeRecoveryTrigger: activeRecoveryTrigger,
+        initStage: initStage,
+        diagnosticEventCount: _runtimeDiagnosticEvents.length,
+      );
+
+  void _registerDiagnosticEvent({
+    required ServiceProviderRuntimeDiagnosticEventType type,
+    required String reasonCode,
+    required String description,
+    ServiceProviderRuntimeRecoveryTrigger? trigger,
+    ServiceProviderFailureBoundaryState? failureBoundaryState,
+    ServiceProviderRuntimeRecoveryPolicyDecision? recoveryPolicyDecision,
+    String? functionName,
+  }) {
+    final ServiceProviderRuntimeDiagnosticEvent event =
+        ServiceProviderRuntimeDiagnosticEvent.now(
+      type: type,
+      reasonCode: reasonCode,
+      description: description,
+      initStage: initStage,
+      trigger: trigger,
+      failureBoundaryState: failureBoundaryState,
+      recoveryPolicyDecision: recoveryPolicyDecision,
+      className: className,
+      functionName: functionName,
+    );
+
+    _runtimeDiagnosticEvents.add(event);
+    while (_runtimeDiagnosticEvents.length > _maxRuntimeDiagnosticEvents) {
+      _runtimeDiagnosticEvents.removeAt(0);
+    }
+
+    _lastDiagnosticEvent = event;
+
+    if (failureBoundaryState != null) {
+      _lastFailureBoundaryState = failureBoundaryState;
+    }
+
+    if (recoveryPolicyDecision != null) {
+      _lastRecoveryPolicyDecision = recoveryPolicyDecision;
+      _lastRecoveryTrigger = recoveryPolicyDecision.trigger;
+    } else if (trigger != null) {
+      _lastRecoveryTrigger = trigger;
+    }
+
+    if (debug) {
+      developer.log(
+        'Runtime diagnostic event => $event',
+        name:
+            "$logClassName - .::${functionName ?? '_registerDiagnosticEvent'}::.",
+      );
+    }
+  }
+
+  ServiceProviderFailureBoundaryState captureFailureBoundaryDiagnosticState({
+    String functionName = 'captureFailureBoundaryDiagnosticState',
+    String reasonCode = 'failure_boundary_evaluated',
+    String description =
+        'Runtime failure boundary was evaluated and emitted as a diagnostic signal.',
+  }) {
+    final ServiceProviderFailureBoundaryState boundaryState =
+        evaluateFailureBoundaryState();
+
+    _registerDiagnosticEvent(
+      type: ServiceProviderRuntimeDiagnosticEventType.failureBoundaryEvaluated,
+      reasonCode: reasonCode,
+      description: description,
+      failureBoundaryState: boundaryState,
+      functionName: functionName,
+    );
+
+    return boundaryState;
   }
 
   ServiceProviderFailureBoundaryState evaluateFailureBoundaryState() {
@@ -535,6 +638,24 @@ class ServiceProvider extends ChangeNotifier {
   void _completeRuntimeRecovery({
     required String calledFrom,
   }) {
+    final ServiceProviderFailureBoundaryState boundaryState =
+        captureFailureBoundaryDiagnosticState(
+      functionName: calledFrom,
+      reasonCode: 'recovery_completed_boundary_snapshot',
+      description:
+          'Runtime failure boundary was captured after recovery execution completed.',
+    );
+
+    _registerDiagnosticEvent(
+      type: ServiceProviderRuntimeDiagnosticEventType.recoveryCompleted,
+      reasonCode: 'runtime_recovery_completed',
+      description:
+          'Runtime recovery execution completed and in-progress state was cleared.',
+      trigger: activeRecoveryTrigger,
+      failureBoundaryState: boundaryState,
+      functionName: calledFrom,
+    );
+
     isRecoveryInProgress = false;
     activeRecoveryTrigger = null;
     updateListeners(calledFrom: calledFrom);
@@ -547,6 +668,17 @@ class ServiceProvider extends ChangeNotifier {
     final ServiceProviderRuntimeRecoveryPolicyDecision policyDecision =
         evaluateRuntimeRecoveryPolicy(trigger: trigger);
 
+    _registerDiagnosticEvent(
+      type: ServiceProviderRuntimeDiagnosticEventType.recoveryRequested,
+      reasonCode: 'runtime_recovery_requested',
+      description:
+          'A runtime recovery request was received and evaluated against the current policy.',
+      trigger: trigger,
+      failureBoundaryState: policyDecision.failureBoundaryState,
+      recoveryPolicyDecision: policyDecision,
+      functionName: calledFrom,
+    );
+
     if (debug) {
       developer.log(
         'Runtime recovery requested => $policyDecision',
@@ -555,9 +687,28 @@ class ServiceProvider extends ChangeNotifier {
     }
 
     if (!policyDecision.shouldAttemptRecovery) {
+      _registerDiagnosticEvent(
+        type: ServiceProviderRuntimeDiagnosticEventType.recoveryDecisionBlocked,
+        reasonCode: policyDecision.reasonCode,
+        description: policyDecision.description,
+        trigger: trigger,
+        failureBoundaryState: policyDecision.failureBoundaryState,
+        recoveryPolicyDecision: policyDecision,
+        functionName: calledFrom,
+      );
       updateListeners(calledFrom: calledFrom);
       return;
     }
+
+    _registerDiagnosticEvent(
+      type: ServiceProviderRuntimeDiagnosticEventType.recoveryDecisionApplied,
+      reasonCode: policyDecision.reasonCode,
+      description: policyDecision.description,
+      trigger: trigger,
+      failureBoundaryState: policyDecision.failureBoundaryState,
+      recoveryPolicyDecision: policyDecision,
+      functionName: calledFrom,
+    );
 
     isRecoveryInProgress = true;
     activeRecoveryTrigger = trigger;
@@ -1348,7 +1499,7 @@ class ServiceProvider extends ChangeNotifier {
 
   dynamic _onDone() {
     const String functionName = '_onDone';
-    const logFunctionName = '.::$functionName::.';
+    const String logFunctionName = '.::$functionName::.';
 
     if (debug) {
       developer.log(
@@ -1365,6 +1516,25 @@ class ServiceProvider extends ChangeNotifier {
     initStage = ServiceProviderInitStages.disconnected;
     isReady = false;
     isProgress = false;
+
+    final ServiceProviderFailureBoundaryState boundaryState =
+        captureFailureBoundaryDiagnosticState(
+      functionName: functionName,
+      reasonCode: 'transport_disconnected',
+      description:
+          'Transport disconnected and runtime boundary was captured before requesting recovery.',
+    );
+
+    _registerDiagnosticEvent(
+      type: ServiceProviderRuntimeDiagnosticEventType.transportDisconnected,
+      reasonCode: 'transport_disconnected',
+      description:
+          'WebSocket transport disconnected and runtime recovery may be requested.',
+      trigger: ServiceProviderRuntimeRecoveryTrigger.transportDone,
+      failureBoundaryState: boundaryState,
+      functionName: functionName,
+    );
+
     updateListeners(calledFrom: functionName);
     requestTransportRecovery();
   }
@@ -2825,7 +2995,28 @@ class ServiceProvider extends ChangeNotifier {
   }
 
   void logout() {
+    const String functionName = 'logout';
+
     _resetAuthenticatedRuntimeState();
+
+    final ServiceProviderFailureBoundaryState boundaryState =
+        captureFailureBoundaryDiagnosticState(
+      functionName: functionName,
+      reasonCode: 'runtime_reset_boundary_snapshot',
+      description:
+          'Runtime boundary was captured after authenticated runtime state reset.',
+    );
+
+    _registerDiagnosticEvent(
+      type: ServiceProviderRuntimeDiagnosticEventType.runtimeReset,
+      reasonCode: 'runtime_reset_requested',
+      description:
+          'Runtime reset recovery was requested after logout cleared authenticated runtime state.',
+      trigger: ServiceProviderRuntimeRecoveryTrigger.runtimeReset,
+      failureBoundaryState: boundaryState,
+      functionName: functionName,
+    );
+
     requestRuntimeResetRecovery();
   }
 
