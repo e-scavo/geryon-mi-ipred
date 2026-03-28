@@ -15,26 +15,31 @@ At the current project baseline, the repository has already completed:
 - Phase 7.2 — State ownership and boundary clarification
 - Phase 7.3.1 — Application Flow Inventory
 - Phase 7.3.2 — Session & App Context Normalization
+- Phase 7.3.3 — Feature Interaction Contracts
 
-The project is now advancing through Phase 7.3.3.
+The project is now advancing through Phase 7.3.4.
 
-This subphase does not introduce a coordinator yet.
+This subphase does not introduce a broad coordinator.
 
-Instead, it freezes the already-existing cross-feature interactions of the current codebase as explicit feature interaction contracts.
+Instead, it introduces a minimal coordination surface only for the safest already-validated application transitions.
 
 ## Problem Statement
 
-After Phase 7.3.2, the codebase already has:
+After Phase 7.3.3, the codebase already has:
 
 - documented flows
 - normalized context semantics
-- explicit read-only shared runtime-context access paths
+- explicit shared runtime-context access paths
+- explicit declarative interaction contracts
 
-However, the meaning of several cross-feature interactions is still distributed across runtime mutations, listeners, and local feature decisions.
+However, some execution-level coordination still remains more distributed than ideal in runtime surfaces.
 
-That means the interactions already exist, but they are still not declared as explicit contracts.
+The most visible safe targets in the current ZIP are:
 
-Without making those contracts explicit now, future work could preserve mechanics while accidentally changing intended meaning.
+- billing downstream refresh coordination
+- logout reset coordination
+
+Without a minimal coordination anchor, those transitions remain semantically broader than their current execution location suggests.
 
 ## Scope
 
@@ -44,22 +49,23 @@ This index covers:
 - development governance documents
 - historical phase documents
 - the current Phase 7 baseline
-- the newly opened and implemented Phase 7.3.3 feature interaction contract document
+- the newly opened and implemented Phase 7.3.4 application coordinator document
 
-It does not attempt to redefine architecture beyond the real codebase.
+It does not redefine the architecture beyond the current real codebase.
 
 ## Root Cause Analysis
 
 The documentation needed to evolve in the same order as the implementation:
 
-1. first reflect structural cleanup
-2. then feature extraction
-3. then state-boundary clarification
-4. then flow inventory
-5. then context normalization
-6. and only after that freeze real interactions as explicit contracts
+1. structural cleanup
+2. feature extraction
+3. state-boundary clarification
+4. flow inventory
+5. context normalization
+6. contract freezing
+7. only then minimal coordination anchoring for the safest application transitions
 
-That sequencing remains important because feature interaction contracts only became safe after the earlier layers were made explicit.
+That sequencing remains important because coordinator work only became safe after the previous layers were already explicit.
 
 ## Files Affected
 
@@ -79,6 +85,7 @@ Primary documents indexed here include:
 - `docs/phase7_application_layer_consolidation_7_3_1_application_flow_inventory.md`
 - `docs/phase7_application_layer_consolidation_7_3_2_session_app_context_normalization.md`
 - `docs/phase7_application_layer_consolidation_7_3_3_feature_interaction_contracts.md`
+- `docs/phase7_application_layer_consolidation_7_3_4_application_coordinator_minimal.md`
 
 ## Implementation Characteristics
 
@@ -156,14 +163,16 @@ These preserve historical rationale and structural evolution context.
 - `docs/phase7_application_layer_consolidation_7_3_1_application_flow_inventory.md`
 - `docs/phase7_application_layer_consolidation_7_3_2_session_app_context_normalization.md`
 - `docs/phase7_application_layer_consolidation_7_3_3_feature_interaction_contracts.md`
+- `docs/phase7_application_layer_consolidation_7_3_4_application_coordinator_minimal.md`
 
-Phase 7.3 is now split into three already-defined layers:
+Phase 7.3 is now split into four already-defined layers:
 
 - flow inventory
 - context normalization
 - feature interaction contracts
+- minimal coordination anchoring
 
-The current active concern remains coordination-focused, but 7.3.3 freezes the current interactions as explicit contracts before any minimal coordinator is considered.
+The current active concern remains coordination-focused, but 7.3.4 keeps the coordinator intentionally narrow and auditable.
 
 ## Validation
 
@@ -182,6 +191,7 @@ At this point, the correct reading order for a technical review is:
 9. `docs/phase7_application_layer_consolidation_7_3_1_application_flow_inventory.md`
 10. `docs/phase7_application_layer_consolidation_7_3_2_session_app_context_normalization.md`
 11. `docs/phase7_application_layer_consolidation_7_3_3_feature_interaction_contracts.md`
+12. `docs/phase7_application_layer_consolidation_7_3_4_application_coordinator_minimal.md`
 
 ## Release Impact
 
@@ -189,26 +199,26 @@ This update does not change user-facing architecture by itself.
 
 Its impact is documentary and architectural:
 
-- it exposes 7.3.3 as a distinct implemented subphase
-- it freezes the current interaction meaning before any coordinator work
-- it improves future onboarding for cross-feature coordination work
+- it exposes 7.3.4 as a distinct implemented subphase
+- it documents the first minimal execution anchor for app-level coordination
+- it improves future onboarding for the closure of Phase 7.3
 
 ## Risks
 
 If this index is not updated, future work may:
 
-- treat 7.3.3 as undefined or optional
-- assume current interactions are only incidental mechanics
-- introduce a coordinator without first freezing the meaning of the interactions it would coordinate
+- assume 7.3.4 introduced a broad coordinator when it did not
+- miss that only two safe transitions were intentionally coordinated
+- over-extend later work beyond the current coordinator scope
 
 ## What it does NOT solve
 
 This document does not by itself:
 
-- introduce a coordinator
+- introduce a broad app coordinator
+- redesign startup/auth continuation
 - introduce an event bus
 - redesign runtime execution
-- change implementation behavior
 
 It only reflects the real documentation baseline.
 
@@ -222,3 +232,4 @@ The documentation index now reflects the real project state:
 - Phase 7.3.1 completed as flow inventory
 - Phase 7.3.2 completed as session and app-context normalization
 - Phase 7.3.3 completed as feature interaction contract baseline
+- Phase 7.3.4 completed as a minimal application coordinator for billing downstream refresh and logout reset

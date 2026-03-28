@@ -2,7 +2,7 @@
 
 ## Objective
 
-Consolidate the application layer of Mi IP·RED by progressively separating presentation from business-adjacent logic, introducing explicit feature-local controller boundaries, clarifying state ownership, documenting the real coordination flows that connect already-separated features, normalizing the meaning and access patterns of shared runtime context, and now freezing the current cross-feature meaning as explicit interaction contracts without changing the validated runtime contract of the application.
+Consolidate the application layer of Mi IP·RED by progressively separating presentation from business-adjacent logic, introducing explicit feature-local controller boundaries, clarifying state ownership, documenting the real coordination flows that connect already-separated features, normalizing the meaning and access patterns of shared runtime context, freezing the current cross-feature meaning as explicit interaction contracts, and now anchoring the narrowest safe execution-level coordination concerns through a minimal application coordinator without changing the validated runtime contract of the application.
 
 ## Initial Context
 
@@ -34,11 +34,13 @@ Phase 7.3.1 then documented the real flows already connecting the separated runt
 
 Phase 7.3.2 then normalized the semantics and read paths of the shared contexts used by those flows.
 
-With that baseline complete, the next visible concern in the current ZIP was no longer undocumented flow or ambiguous shared-context meaning.
+Phase 7.3.3 then froze the meaning of the real interactions already present in the runtime through explicit declarative contracts.
 
-The next visible concern was that real interactions already existed, but their meaning was still only partially implicit.
+With that baseline complete, the next visible concern in the current ZIP was no longer undocumented flow, ambiguous context meaning, or undeclared interaction meaning.
 
-That is why Phase 7.3.3 now exists.
+The next visible concern was that a small number of execution-level coordination concerns were still more distributed than their ideal semantic owner.
+
+That is why Phase 7.3.4 now exists.
 
 ## Problem Statement
 
@@ -50,13 +52,15 @@ Phase 7.3.1 solved the problem of undocumented application-flow sequencing.
 
 Phase 7.3.2 solved the problem of vague shared-context semantics.
 
-But even after those steps, the codebase still showed one remaining kind of ambiguity:
+Phase 7.3.3 solved the problem of undeclared cross-feature interaction meaning.
 
-- active interactions already existed
-- the mechanics already worked
-- but the meaning of those interactions was still distributed across mutations, listeners, and local consumer logic
+But even after those steps, the codebase still showed one remaining kind of distributed concern:
 
-Without freezing those interactions as explicit contracts first, any later coordinator or coordination abstraction would risk being built on top of implicit semantics.
+- selected application transitions already had clear meaning
+- their current mechanics already worked
+- but their execution-level coordination was still more distributed than ideal
+
+Without a narrow execution anchor first, future closure of the phase would still leave those selected transitions more semantically diffuse than necessary.
 
 ## Scope
 
@@ -69,7 +73,8 @@ Phase 7 includes:
 - explicit inventory of real application flows
 - session and app-context normalization
 - explicit declarative feature interaction contracts
-- preparation for future coordination mechanisms
+- minimal application coordination anchoring
+- preparation for formal closure of Phase 7.3
 
 Phase 7 does not include:
 
@@ -78,8 +83,9 @@ Phase 7 does not include:
 - navigation redesign
 - UI redesign
 - full state-management replacement
-- broad new application service infrastructure during 7.3.3
-- coordinator execution logic during 7.3.3
+- broad new application service infrastructure during 7.3.4
+- startup/auth coordinator redesign during 7.3.4
+- coordinator sprawl during 7.3.4
 
 ## Root Cause Analysis
 
@@ -92,20 +98,20 @@ Mi IP·RED matured in the correct practical order:
 5. clarify state ownership
 6. inventory cross-feature coordination
 7. normalize shared runtime-context semantics
-8. freeze real cross-feature meaning as explicit contracts only after the previous layers were already explicit
+8. freeze real cross-feature meaning as explicit contracts
+9. anchor the narrowest safe execution-level coordination concerns only after the previous layers were already explicit
 
-This means Phase 7.3.3 is not a redesign.
+This means Phase 7.3.4 is not a redesign.
 
-It is a conservative semantic freeze over interactions that already exist and already work in the current runtime.
+It is a conservative execution-level anchoring step over a very small subset of already-known interactions.
 
 ## Files Affected
 
 Core runtime surfaces involved in Phase 7 include:
 
-- `lib/main.dart`
 - `lib/features/auth/**`
-- `lib/features/dashboard/**`
 - `lib/features/billing/**`
+- `lib/features/dashboard/**`
 - `lib/features/contracts/**`
 - `lib/models/ServiceProvider/**`
 - `lib/core/session/**`
@@ -127,6 +133,7 @@ Phase 7 documentation includes:
 - `docs/phase7_application_layer_consolidation_7_3_1_application_flow_inventory.md`
 - `docs/phase7_application_layer_consolidation_7_3_2_session_app_context_normalization.md`
 - `docs/phase7_application_layer_consolidation_7_3_3_feature_interaction_contracts.md`
+- `docs/phase7_application_layer_consolidation_7_3_4_application_coordinator_minimal.md`
 
 ## Implementation Characteristics
 
@@ -186,7 +193,8 @@ Its focus is:
 - application-flow sequencing
 - explicit documentation of dependencies that today remain distributed
 - normalization of shared context semantics before contract/coordinator work
-- explicit freezing of interaction meaning before any minimal coordinator is considered
+- explicit freezing of interaction meaning
+- minimal execution-level anchoring for the safest coordination concerns
 
 Validated structure for Phase 7.3:
 
@@ -196,7 +204,7 @@ Validated structure for Phase 7.3:
 - `7.3.4 — Application Coordinator (mínimo)`
 - `7.3.5 — Formal Closure of Phase 7.3`
 
-At the current project state, `7.3.1`, `7.3.2`, and `7.3.3` are already active and completed in sequence.
+At the current project state, `7.3.1`, `7.3.2`, `7.3.3`, and `7.3.4` are already active and completed in sequence.
 
 ### Phase 7.3.1 — Application Flow Inventory
 
@@ -220,32 +228,46 @@ Its output was a safer semantic baseline for later contracts without changing ba
 
 ### Phase 7.3.3 — Feature Interaction Contracts
 
-This subphase is also intentionally conservative.
+This subphase was also intentionally conservative.
 
-Its goal is not to redesign execution.
+Its goal was not to redesign execution.
 
-Its goal is to freeze the meaning of the interactions that the current runtime already implements.
+Its goal was to freeze the meaning of the interactions that the current runtime already implements.
 
-The implemented baseline includes explicit declarative contracts for:
+Its output was:
 
-- active client change
-- logout reset
-- auth resolution
-- shared runtime context read
+- a lightweight declarative code anchor for the contracts
+- documentation that defined what each contract means
+- documentation that defined what each contract does not mean
+- a safer gate before 7.3.4 coordinator work
+
+### Phase 7.3.4 — Application Coordinator (mínimo)
+
+This subphase remains intentionally narrow.
+
+Its goal is not to introduce a broad coordinator.
+
+Its goal is to anchor only the narrowest safe execution-level coordination concerns in one small coordination surface.
+
+The implemented baseline includes:
+
+- billing downstream refresh coordination decisions
+- logout reset coordination execution
 
 Its output is:
 
-- a lightweight declarative code anchor for the contracts
-- documentation that defines what each contract means
-- documentation that defines what each contract does not mean
-- a safer gate before 7.3.4 coordinator work
+- a minimal application coordinator file
+- billing downstream decision extraction out of inline widget semantics
+- logout reset coordination delegation out of direct dashboard execution
+- unchanged ownership of runtime state, feature state, and widget lifecycle
 
 This subphase does not introduce:
 
-- a coordinator
-- an event bus
-- a runtime contract engine
-- a new state-management layer
+- startup/auth coordinator redesign
+- event bus
+- runtime engine
+- provider replacement
+- new state-management architecture
 
 ## Validation
 
@@ -258,50 +280,53 @@ Phase 7 as a whole remains valid because the current ZIP still preserves:
 - billing reload behavior driven by active client changes
 - logout reset behavior
 
-Phase 7.3.3 specifically is valid because the current code now also preserves:
+Phase 7.3.4 specifically is valid because the current code now also preserves:
 
-- the existing runtime mechanics unchanged
-- the existing ownership boundaries unchanged
-- the current cross-feature meaning explicitly frozen as declarative contracts
+- unchanged runtime order
+- unchanged ownership
+- unchanged startup/auth flow
+- narrower execution-level anchoring for the safest app coordination concerns
 
 ## Release Impact
 
-Phase 7.3.3 has no intended feature-level redesign.
+Phase 7.3.4 has no intended feature-level redesign.
 
 Its impact is architectural and semantic:
 
-- it reduces ambiguity
-- it freezes cross-feature meaning
-- it protects future coordinator work from inventing semantics that the current code never had
+- billing downstream coordination becomes less widget-distributed
+- logout reset gains a minimal app-level execution anchor
+- coordinator scope remains narrow and explicit
+- the phase is now positioned much more cleanly for formal closure
 
 ## Risks
 
 The main current risks are:
 
-- over-extending declarative contracts into a runtime execution layer
-- treating contracts as ownership transfer
-- introducing coordinator behavior before the current contracts are frozen
-- using 7.3.3 as a disguised refactor of runtime mechanics
+- over-extending the coordinator into a broader orchestration layer
+- pulling startup/auth into this narrow scope prematurely
+- treating the coordinator as a new owner of state
+- using 7.3.4 as a disguised architecture redesign
 
 ## What it does NOT solve
 
 At the current stage, Phase 7 does not yet solve:
 
-- minimal coordinator implementation
+- startup/auth global coordination redesign
 - backend-persisted authenticated sessions
-- event-driven architecture
+- event-driven runtime architecture
 - flow-level automated tests
 
-Those belong to later validated Phase 7.3 subphases.
+Those remain outside the safe scope of this subphase.
 
 ## Conclusion
 
-Phase 7 is now best understood in five progressive layers:
+Phase 7 is now best understood in six progressive layers:
 
 1. extract feature-local logic
 2. clarify state ownership boundaries
 3. inventory cross-feature coordination flows
 4. normalize shared runtime-context semantics
-5. freeze real cross-feature meaning as explicit contracts before introducing later coordination mechanisms
+5. freeze real cross-feature meaning as explicit contracts
+6. anchor only the narrowest safe execution-level coordination concerns through a minimal coordinator
 
-The current ZIP confirms that Mi IP·RED has now completed that fifth preparatory layer through `7.3.3 — Feature Interaction Contracts`.
+The current ZIP confirms that Mi IP·RED has now completed that sixth preparatory layer through `7.3.4 — Application Coordinator (mínimo)`.

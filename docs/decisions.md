@@ -2,7 +2,7 @@
 
 ## Objective
 
-Record the active architectural decisions that define how Mi IP·RED must be interpreted and evolved after the closure of Phase 7.2, the completion of Phase 7.3.1, the implementation of Phase 7.3.2, and the implementation of Phase 7.3.3.
+Record the active architectural decisions that define how Mi IP·RED must be interpreted and evolved after the closure of Phase 7.2, the completion of Phase 7.3.1, the implementation of Phase 7.3.2, the implementation of Phase 7.3.3, and the implementation of Phase 7.3.4.
 
 ## Initial Context
 
@@ -13,6 +13,7 @@ Phase 7 of Mi IP·RED has progressed in layers:
 - Phase 7.3.1 inventoried real application flows
 - Phase 7.3.2 normalized session and app-context semantics
 - Phase 7.3.3 froze current cross-feature meaning as explicit interaction contracts
+- Phase 7.3.4 introduced a minimal application coordinator for the safest execution-level coordination concerns
 
 These decisions capture the baseline that must remain stable while the next subphases continue.
 
@@ -20,10 +21,11 @@ These decisions capture the baseline that must remain stable while the next subp
 
 Without an explicit decisions document, future work could misread the current repository and incorrectly assume one of the following:
 
-- that real feature interactions do not yet exist because there is no coordinator
-- that current interactions are only incidental implementation details
-- that introducing a coordinator can happen before freezing the current interaction meaning
-- that declarative contracts should already execute runtime behavior
+- that 7.3.4 introduced a broad coordinator
+- that 7.3.4 moved state ownership
+- that the coordinator now owns startup/auth continuation
+- that the coordinator replaced feature controllers
+- that the coordinator replaced `ServiceProvider`
 
 Those assumptions would be incorrect according to the current ZIP and the current phase baseline.
 
@@ -40,22 +42,19 @@ They do not implement behavior on their own.
 
 ## Root Cause Analysis
 
-The current codebase reached a point where feature-local cleanup, ownership clarification, flow inventory, and context normalization already produced enough clarity to expose the next class of debt:
+The current codebase reached a point where feature-local cleanup, ownership clarification, flow inventory, context normalization, and contract freezing already produced enough clarity to expose the next class of debt:
 
-- shared interaction meaning was real
-- but it was still partially implicit
-- and later phases would risk coordinating behavior whose meaning had not yet been frozen explicitly
+- interaction meaning was explicit
+- but selected execution-level coordination concerns were still more distributed than ideal
 
-This required a new decision set rather than stretching the previous 7.3.2 framing beyond its scope.
+This required a new decision set rather than stretching the previous 7.3.3 framing beyond its scope.
 
 ## Files Affected
 
 These decisions apply to:
 
-- `lib/main.dart`
-- `lib/features/auth/**`
-- `lib/features/dashboard/**`
 - `lib/features/billing/**`
+- `lib/features/dashboard/**`
 - `lib/features/contracts/**`
 - `lib/models/ServiceProvider/**`
 - `lib/core/session/**`
@@ -64,9 +63,8 @@ They also govern:
 
 - `docs/development.md`
 - `docs/phase7_application_layer_consolidation.md`
-- `docs/phase7_application_layer_consolidation_7_3_1_application_flow_inventory.md`
-- `docs/phase7_application_layer_consolidation_7_3_2_session_app_context_normalization.md`
 - `docs/phase7_application_layer_consolidation_7_3_3_feature_interaction_contracts.md`
+- `docs/phase7_application_layer_consolidation_7_3_4_application_coordinator_minimal.md`
 
 ## Implementation Characteristics
 
@@ -89,7 +87,7 @@ All Phase 7.3 work must preserve these behaviors.
 
 Phase 7 is a consolidation phase, not a runtime redesign phase.
 
-That means documentation, refactors, and later coordination work must not silently alter actual runtime semantics.
+That means documentation, refactors, and coordination work must not silently alter actual runtime semantics.
 
 ## Decision 3 — Controllers Remain Feature-Local Boundaries
 
@@ -120,8 +118,6 @@ Phase 7.3.1 came before 7.3.2 on purpose.
 
 The project first needed to map real flow ownership before normalizing the meaning of the contexts used by those flows.
 
-That sequencing remains the correct interpretation of the current baseline.
-
 ## Decision 6 — Context Normalization Had to Precede Contract Freezing
 
 Phase 7.3.2 came before 7.3.3 on purpose.
@@ -135,7 +131,15 @@ The project first needed to separate:
 
 Only after those meanings were explicit did it become safe to freeze interaction contracts built on top of them.
 
-## Decision 7 — Persisted Login Hint Is Not an Authenticated Session
+## Decision 7 — Contract Freezing Had to Precede Minimal Coordination
+
+Phase 7.3.3 came before 7.3.4 on purpose.
+
+The project first needed to freeze interaction meaning before introducing any execution-level coordination anchor.
+
+Without that sequencing, the coordinator would have risked coordinating still-implicit semantics.
+
+## Decision 8 — Persisted Login Hint Is Not an Authenticated Session
 
 The current storage abstraction only persists remembered DNI/CUIT information.
 
@@ -143,7 +147,7 @@ It must be interpreted as a persisted login hint.
 
 It must not be documented or consumed as if it were a backend-validated authenticated session.
 
-## Decision 8 — Authenticated Runtime Context Remains In-Memory and Owned by ServiceProvider
+## Decision 9 — Authenticated Runtime Context Remains In-Memory and Owned by ServiceProvider
 
 The actual authenticated runtime context continues to live in `ServiceProvider` through the in-memory authenticated user state.
 
@@ -155,15 +159,13 @@ That context remains owned by:
 
 Later phases do not move that ownership elsewhere unless explicitly redesigned.
 
-## Decision 9 — Active Operational Context Is Distinct From “Logged In”
+## Decision 10 — Active Operational Context Is Distinct From “Logged In”
 
 The active client/company context is a separate runtime concern from merely being authenticated.
 
 It remains owned by `ServiceProvider` and is consumed downstream by features such as dashboard and billing.
 
-That distinction must remain explicit.
-
-## Decision 10 — Persisted Login Hint Lifecycle Must Stay Symmetric
+## Decision 11 — Persisted Login Hint Lifecycle Must Stay Symmetric
 
 Remember-me behavior remains explicitly symmetric.
 
@@ -173,17 +175,13 @@ That means:
 - remove remembered DNI on successful login when remember-me is disabled
 - remove remembered DNI during logout cleanup
 
-Leaving stale persisted login hints is no longer considered acceptable behavior.
+## Decision 12 — Logout Cleanup Must Stay Specific to Its Actual Responsibility
 
-## Decision 11 — Logout Cleanup Must Stay Specific to Its Actual Responsibility
-
-The dashboard logout path no longer clears all session storage blindly.
-
-Its storage responsibility is limited to the persisted login hint it actually owns in the current architecture.
+The logout path continues removing only the persisted login hint it actually owns.
 
 Broader storage cleanup would exceed the current semantic responsibility of logout.
 
-## Decision 12 — ServiceProvider Remains the Runtime Source, Not the Automatic Future Coordinator
+## Decision 13 — ServiceProvider Remains the Runtime Source, Not the Coordinator
 
 `ServiceProvider` remains:
 
@@ -192,37 +190,17 @@ Broader storage cleanup would exceed the current semantic responsibility of logo
 - the holder of active operational context
 - the protected communication boundary
 
-That still does not automatically make it the place for future application coordination logic.
+The coordinator introduced in 7.3.4 does not replace it and does not absorb its ownership.
 
-## Decision 13 — Shared Runtime Context May Be Read Through Explicit Accessors
+## Decision 14 — Shared Runtime Context May Continue to Be Read Through Explicit Accessors
 
-The normalized read-only accessors on `ServiceProvider` remain the preferred way for cross-feature consumers to read:
-
-- authenticated user context
-- active client index
-- active client
-- active company
-- available clients
+The normalized read-only accessors on `ServiceProvider` remain the preferred way for cross-feature consumers to read shared runtime context.
 
 This reduces coupling without moving ownership.
 
-## Decision 14 — Real Feature Interactions Now Exist as Explicit Declarative Contracts
+## Decision 15 — Declarative Contracts Remain Declarative
 
-Phase 7.3.3 now freezes the current interaction meaning through explicit declarative contracts.
-
-At minimum, the active contract baseline includes:
-
-- active client change
-- logout reset
-- auth resolution
-- shared runtime context read
-
-These contracts document real current architecture.
-They are not theoretical placeholders.
-
-## Decision 15 — Declarative Contracts Are Not a Runtime Engine
-
-The current contract layer is intentionally:
+The contract layer introduced in 7.3.3 remains:
 
 - declarative
 - lightweight
@@ -230,77 +208,94 @@ The current contract layer is intentionally:
 - non-owning
 - non-reactive
 
-It must not be reinterpreted as:
+It still must not be reinterpreted as a coordinator or runtime engine.
 
-- a coordinator
-- an event bus
-- a runtime dispatcher
-- a state-management abstraction
+## Decision 16 — The 7.3.4 Coordinator Is Minimal and Narrow by Design
 
-If later phases need execution-layer coordination, that must be introduced explicitly and separately.
+The coordinator introduced in 7.3.4 is intentionally limited to the safest currently justified concerns:
 
-## Decision 16 — Contracts Do Not Move Ownership
+- billing downstream refresh coordination
+- logout reset coordination
 
-The existence of a contract does not transfer ownership.
+It does not coordinate:
+
+- startup/auth continuation
+- routing
+- navigation
+- global feature orchestration
+- event-driven runtime behavior
+
+## Decision 17 — The Coordinator Does Not Move Ownership
+
+The existence of the coordinator does not transfer ownership.
 
 Examples:
 
-- active client change contract does not make dashboard own billing state
-- logout reset contract does not make dashboard own runtime reset
-- auth resolution contract does not make auth UI own startup boundary
-- shared runtime context read contract does not make consumers owners of provider state
+- billing downstream coordination does not make the coordinator owner of billing feature state
+- logout reset coordination does not make the coordinator owner of authenticated runtime context
+- the coordinator does not become owner of widget lifecycle
+- the coordinator does not become owner of backend flow
 
-Contracts describe interaction meaning across existing boundaries.
+## Decision 18 — Billing Widget No Longer Remains the Main Semantic Home of Downstream Coordination
 
-## Decision 17 — Dashboard and Billing Remain Consumers, Not Cross-Owners
+`billing_widget.dart` still owns:
 
-Dashboard remains the producer of active client change and logout intent.
+- rendering
+- lifecycle
+- listener attachment
+- widget-local state updates
 
-Billing remains a downstream consumer of active client context changes.
+But the semantic rule of when billing should bootstrap or react to active client change is now anchored in the coordinator rather than remaining primarily inline in the widget.
 
-Neither feature becomes owner of the other feature’s state or lifecycle.
+## Decision 19 — Dashboard Still Produces Intent, but Logout Reset Coordination Is Now Centralized Narrowly
 
-## Decision 18 — Startup Boundary Remains Separate
+Dashboard remains the producer of logout intent.
 
-Startup readiness remains a distinct context owned by `main.dart` through `AppStartupViewState`.
+The app-level transition semantics of logout execution are now anchored in the minimal coordinator.
 
-Later phases must preserve that distinction unless explicitly redesigned.
+This does not make dashboard owner of runtime reset, nor does it make the coordinator owner of dashboard state.
+
+## Decision 20 — Startup/Auth Remains Out of Scope for 7.3.4
+
+The current startup/auth/runtime continuation path remains intentionally untouched in 7.3.4.
+
+That surface is broader and more sensitive than the currently safe coordination targets.
 
 ## Validation
 
 These decisions are validated against the current ZIP because the codebase now shows all of the following:
 
-- startup remains owned by `main.dart`
-- persisted login hint remains explicit and narrow
-- authenticated runtime context is still materialized in `doLoginCallback()`
-- active client/company context is still owned by `ServiceProvider`
-- dashboard and billing continue to consume shared runtime context without becoming owners
-- the current interaction meaning can now be frozen through declarative contracts without changing runtime behavior
+- startup/auth remains untouched
+- billing downstream coordination now uses a narrow coordinator surface
+- logout reset now uses a narrow coordinator surface
+- ServiceProvider still owns runtime context and runtime reset
+- feature controllers remain feature-local
+- no broad coordination infrastructure was introduced
 
 ## Release Impact
 
 This decisions document has no direct release-facing runtime impact by itself.
 
-Its effect is to protect future implementation choices.
+Its effect is to protect future implementation choices and to keep the coordinator scope honest.
 
 ## Risks
 
 Without these decisions, the project risks:
 
-- introducing coordinator logic before freezing contract meaning
-- confusing declarative contracts with executable infrastructure
-- losing visibility over cross-feature semantics
-- regressing to raw mechanics without explicit interaction meaning
-- reintroducing vague ownership assumptions
+- over-expanding the coordinator scope
+- confusing the coordinator with a global orchestration layer
+- moving ownership accidentally
+- pulling startup/auth into the coordinator prematurely
+- reintroducing distributed semantics into widgets after extracting them
 
 ## What it does NOT solve
 
 This document does not by itself implement:
 
-- minimal application coordinator logic
-- event-driven architecture
+- startup/auth coordinator redesign
+- event-driven runtime architecture
 - backend-persisted authenticated session validation
-- automated flow-level contract tests
+- automated flow-level coordination tests
 
 It only fixes the current architectural interpretation.
 
@@ -313,4 +308,5 @@ The active interpretation of Mi IP·RED is now:
 3. preserve state-boundary clarity from Phase 7.2
 4. preserve flow inventory clarity from Phase 7.3.1
 5. preserve context semantics from Phase 7.3.2
-6. freeze real cross-feature meaning through declarative contracts in Phase 7.3.3 before introducing later coordination mechanisms
+6. preserve declarative interaction contracts from Phase 7.3.3
+7. anchor only the narrowest safe execution-level coordination concerns through a minimal coordinator in Phase 7.3.4

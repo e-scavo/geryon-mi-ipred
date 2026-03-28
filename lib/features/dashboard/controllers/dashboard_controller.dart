@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geryon_web_app_ws_v2/common_vars.dart';
-import 'package:geryon_web_app_ws_v2/core/session/session_storage.dart';
+import 'package:geryon_web_app_ws_v2/features/contracts/application_coordinator.dart';
 import 'package:geryon_web_app_ws_v2/models/ServiceProvider/data_model.dart';
 import 'package:geryon_web_app_ws_v2/models/ServiceProvider/login_data_user_message_model.dart';
 
@@ -82,8 +82,7 @@ class DashboardController {
   Future<void> logout({
     required WidgetRef ref,
   }) async {
-    await SessionStorage.removeSavedDni();
-    ref.read(notifierServiceProvider).logout();
+    await ApplicationCoordinator.performLogoutReset(ref: ref);
   }
 
   int? _resolveActiveClientIndex(

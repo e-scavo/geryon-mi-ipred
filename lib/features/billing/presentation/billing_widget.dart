@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geryon_web_app_ws_v2/common_vars.dart';
 import 'package:geryon_web_app_ws_v2/enums/const_requests.dart';
 import 'package:geryon_web_app_ws_v2/features/billing/controllers/billing_controller.dart';
+import 'package:geryon_web_app_ws_v2/features/contracts/application_coordinator.dart';
 import 'package:geryon_web_app_ws_v2/models/LoadingGeneric/widget.dart';
 import 'package:geryon_web_app_ws_v2/models/ServiceProvider/data_model.dart';
 import 'package:geryon_web_app_ws_v2/models/SimpleTableWithScroll/widget.dart';
@@ -130,7 +131,7 @@ class _BillingWidgetState extends ConsumerState<BillingWidget> {
           final String locFunctionName = 'listenManual';
           final String listenerLogFunctionName =
               '.::$functionName=>::$locFunctionName::.';
-          final currentClientIndex = next.loggedUser?.cCliente;
+          final currentClientIndex = next.activeClientIndex;
 
           if (debug) {
             developer.log(
@@ -139,7 +140,7 @@ class _BillingWidgetState extends ConsumerState<BillingWidget> {
             );
           }
 
-          if (_controller.shouldReloadForClientChange(
+          if (ApplicationCoordinator.shouldReloadBillingForActiveClientChange(
             state: _billingState,
             currentClientIndex: currentClientIndex,
           )) {
@@ -156,7 +157,7 @@ class _BillingWidgetState extends ConsumerState<BillingWidget> {
       final currentClientIndex =
           _controller.resolveCurrentClientIndex(ref: ref);
 
-      if (_controller.shouldBootstrap(
+      if (ApplicationCoordinator.shouldBootstrapBilling(
         state: _billingState,
         currentClientIndex: currentClientIndex,
       )) {
