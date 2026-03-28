@@ -2,7 +2,7 @@
 
 ## Objective
 
-Record the active architectural and implementation decisions that govern Mi IP·RED after the closure of Phase 7 and after the formal closure of Phase 8 as the completed runtime hardening baseline.
+Record the active architectural and implementation decisions that govern Mi IP·RED after the closure of Phase 7, after the formal closure of Phase 8 as the completed runtime hardening baseline, and during the opening of Phase 9 as the active product-surface consistency baseline.
 
 ## Initial Context
 
@@ -16,6 +16,9 @@ The current ZIP confirms:
 - Phase 8.3 introduced explicit recovery-trigger and policy-decision hardening
 - Phase 8.4 introduced explicit runtime diagnostic / observability signals
 - Phase 8.5 formally closes Phase 8
+- Phase 9 is opened as product surface consistency and UX hardening
+- Phase 9.1 inventories product-surface inconsistency
+- Phase 9.2.1 introduces the minimal shared state-surface contract foundation
 
 ## Problem Statement
 
@@ -25,7 +28,8 @@ The repository now needs a clear decision baseline so that future development do
 - reopen runtime-hardening scope
 - bypass the retained semantic model
 - treat runtime-global and feature-local failures as interchangeable
-- introduce policy changes without recognizing that Phase 8 is already closed
+- treat UX hardening as permission for redesign
+- introduce shared UI abstractions without boundaries
 
 ## Scope
 
@@ -36,6 +40,7 @@ These decisions govern:
 - retained interpretation of the boundary model
 - retained interpretation of trigger-aware recovery execution
 - retained interpretation of runtime observability
+- allowed interpretation of Phase 9 UX consistency work
 - sequencing expectations for future work
 - what remains explicitly out of scope
 
@@ -51,9 +56,11 @@ After Phase 8.3, recovery entry and recovery policy execution were explicitly ha
 
 After Phase 8.4, runtime observability also became explicit and bounded.
 
-At that point, the correct remaining step was formal closure.
+After Phase 8.5, the correct next concern was no longer runtime semantics.
 
-The repository now needs decisions that preserve that closure and prevent Phase 8 from being treated as still-open design space.
+It was product-surface consistency.
+
+The repository therefore now needs decisions that preserve the closure of Phase 7 and Phase 8 while allowing narrowly scoped Phase 9 consistency work.
 
 ## Files Affected
 
@@ -68,16 +75,20 @@ These decisions directly govern interpretation of:
 - `lib/models/ServiceProvider/runtime_diagnostic_event_type_model.dart`
 - `lib/models/ServiceProvider/runtime_diagnostic_event_model.dart`
 - `lib/models/ServiceProvider/runtime_diagnostic_snapshot_model.dart`
-- `lib/features/billing/controllers/billing_controller.dart`
-- `lib/core/transport/geryonsocket_model.dart`
-- `lib/core/transport/geryonsocket_model_io.dart`
-- `lib/core/transport/geryonsocket_model_web.dart`
+- `lib/features/auth/**`
+- `lib/features/dashboard/**`
+- `lib/features/billing/**`
+- `lib/shared/widgets/**`
+- `lib/models/LoadingGeneric/widget.dart`
 - `docs/phase8_runtime_reliability_failure_semantics_hardening.md`
 - `docs/phase8_runtime_reliability_failure_semantics_hardening_8_1_runtime_failure_surface_inventory.md`
 - `docs/phase8_runtime_reliability_failure_semantics_hardening_8_2_failure_boundary_normalization.md`
 - `docs/phase8_runtime_reliability_failure_semantics_hardening_8_3_retry_reboot_reconnect_policy_hardening.md`
 - `docs/phase8_runtime_reliability_failure_semantics_hardening_8_4_runtime_diagnostic_observability_signals.md`
 - `docs/phase8_runtime_reliability_failure_semantics_hardening_8_5_formal_closure.md`
+- `docs/phase9_product_surface_consistency_ux_hardening.md`
+- `docs/phase9_product_surface_consistency_ux_hardening_9_1_product_surface_inventory.md`
+- `docs/phase9_product_surface_consistency_ux_hardening_9_2_1_shared_state_surface_contract.md`
 
 ## Implementation Characteristics
 
@@ -141,15 +152,15 @@ The project explicitly retains:
 - `ServiceProviderRuntimeDiagnosticEvent`
 - `ServiceProviderRuntimeDiagnosticSnapshot`
 
-Bounded runtime observability is now part of the repository baseline, not a provisional experiment.
+Bounded runtime observability is part of the repository baseline, not a provisional experiment.
 
 ### Decision 8 — Policy changes must still follow semantics
 
 Any future change to retry / reboot / reconnect / reset behavior must continue to respect the retained semantic model first.
 
-Phase 8 closure does not remove that rule.
+Phase 8 closure did not remove that rule.
 
-It freezes it.
+It froze it.
 
 ### Decision 9 — Billing remains an explicit example of boundary distinction
 
@@ -161,13 +172,21 @@ Billing continues to represent the distinction between:
 
 That distinction remains part of the retained baseline.
 
-### Decision 10 — Error-presentation heterogeneity remains evidence, not redesign permission
+### Decision 10 — Error-presentation heterogeneity justifies controlled UI normalization only
 
-The current code still presents errors through different UI surfaces.
+The current code still presents equivalent visible states through different surfaces.
 
-That remains historical evidence of how runtime concerns evolved.
+That justifies:
 
-It is still not, by itself, justification for a new global error framework or redesign.
+- controlled shared presentation widgets
+- feature-by-feature normalization
+- explicit UX-hardening steps
+
+It does not justify:
+
+- a new global error framework
+- business-logic migration into widgets
+- architectural redesign
 
 ### Decision 11 — Runtime-global and feature-local failures must not be merged implicitly
 
@@ -179,13 +198,40 @@ The following remain distinct categories:
 - active client context invalidity
 - feature-local request failure
 
-This distinction remains mandatory after Phase 8 closure.
+This distinction remains mandatory after Phase 8 closure and during Phase 9 execution.
 
-### Decision 12 — Future larger work must open a new explicit phase
+### Decision 12 — Minimal shared state surfaces are allowed
+
+The project may now introduce narrowly scoped shared UI surfaces for:
+
+- loading
+- recoverable feature error
+- empty state
+
+only when those widgets remain:
+
+- presentation-only
+- controller-agnostic
+- narrow in scope
+- reversible
+
+### Decision 13 — Shared state widgets must not become a framework
+
+Any shared UI surface introduced in Phase 9 must stay minimal.
+
+It must not become:
+
+- a new state-management layer
+- a broad design-system engine
+- a replacement for controller-owned feature logic
+
+### Decision 14 — Future larger work must open a new explicit phase
 
 Neither Phase 7 nor Phase 8 should be reopened informally.
 
-If future work requires more than narrow maintenance, it must open a new justified phase rather than continue under implicit closed-scope labels.
+Phase 9 also must not be expanded silently into redesign or feature expansion.
+
+If future work requires more than narrow product-surface hardening, it must open a new justified phase.
 
 ## Validation
 
@@ -197,14 +243,19 @@ These decisions are valid only if the current ZIP still confirms all of the foll
 - the retained failure-boundary model exists in code
 - the retained recovery-trigger and policy model exists in code
 - the retained runtime observability model exists in code
+- Phase 9 work remains surface-oriented and minimal
 
 The current ZIP confirms those conditions.
 
 ## Release Impact
 
-These decisions have no direct user-facing impact.
+These decisions have no direct user-facing runtime impact.
 
-They protect the interpretation of the repository and ensure that both the structural baseline and the runtime-hardening baseline remain clearly frozen.
+They protect the interpretation of the repository and ensure that:
+
+- the structural baseline remains frozen
+- the runtime-hardening baseline remains frozen
+- Phase 9 remains constrained to justified product-surface consistency work
 
 ## Risks
 
@@ -214,33 +265,27 @@ If these decisions are ignored, future work may:
 - reopen runtime-hardening scope informally
 - overreact to local issues with broad runtime changes
 - weaken the clarity gained through Phase 8
-- reintroduce architecture drift under the label of maintenance
+- introduce architecture drift under the label of UX hardening
+- accumulate shared UI abstractions without discipline
 
 ## What it does NOT solve
 
-This decision record does not itself:
+This document does not itself:
 
-- change reconnect behavior
-- change retry behavior
-- change reboot behavior
-- fix current hotspots such as `setCurrentCliente()`
-- add new observability features
-- define the next phase scope
+- normalize any feature screen
+- wire retry actions into existing screens
+- replace historical technical surfaces
+- redesign the application
+- define the entire later Phase 9 sequence in implementation detail
 
-It only freezes the correct interpretation of the current baseline after formal closure of Phase 8.
+It only records the governing decisions.
 
 ## Conclusion
 
-The current project baseline is now:
+The repository now has three explicit baseline truths:
 
 - Phase 7 closed
-- architecture frozen
 - Phase 8 closed
-- ServiceProvider retained as runtime owner
-- failure surfaces inventoried in 8.1
-- failure boundaries normalized in 8.2
-- recovery execution hardened in 8.3
-- runtime observability added in 8.4
-- runtime hardening formally frozen in 8.5
+- Phase 9 active only as controlled product-surface consistency work
 
-Future work must now continue from that explicit retained baseline, and any larger new scope must begin as a new justified phase.
+Those decisions now govern how Mi IP·RED should evolve from this point forward.

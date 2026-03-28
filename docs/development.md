@@ -2,7 +2,7 @@
 
 ## Objective
 
-Define the active development rules for Mi IP·RED so that future changes preserve the working runtime, respect the current architecture, and treat both the structural baseline and the runtime hardening baseline as already closed.
+Define the active development rules for Mi IP·RED so that future changes preserve the working runtime, respect the current architecture, retain the closed Phase 7 and Phase 8 baselines, and execute Phase 9 as controlled product-surface consistency work rather than hidden redesign.
 
 ## Initial Context
 
@@ -16,20 +16,26 @@ The current ZIP confirms this baseline:
 - Phase 8.3 completed as retry / reboot / reconnect policy hardening
 - Phase 8.4 completed as runtime diagnostic / observability signals
 - Phase 8.5 completed as formal closure of Phase 8
+- Phase 9 opened as product surface consistency and UX hardening
+- Phase 9.1 completed as product surface inventory
+- Phase 9.2.1 completed as shared state surface contract foundation
 
 That means the repository is no longer in either:
 
 - a structural extraction phase, or
 - an active runtime hardening phase
 
+It is now in a controlled product-surface consistency phase.
+
 ## Problem Statement
 
-Without clear development rules after formal closure, later work could still:
+Without clear development rules after the closure of Phase 8 and the opening of Phase 9, later work could still:
 
 - reopen closed structural work from Phase 7
 - reopen closed runtime-hardening work from Phase 8
-- continue changing runtime recovery policy or runtime semantics as if Phase 8 were still open
-- blur the difference between baseline-preserving maintenance and genuinely new phase-worthy work
+- disguise redesign as UX-hardening work
+- blur the difference between product-surface consistency and feature expansion
+- add inconsistent UI state handling while claiming to improve consistency
 
 ## Scope
 
@@ -38,22 +44,25 @@ These rules apply to work touching:
 - `lib/main.dart`
 - `lib/models/ServiceProvider/**`
 - `lib/models/GeneralLoadingProgress/**`
+- `lib/models/LoadingGeneric/**`
 - `lib/core/transport/**`
 - `lib/features/auth/**`
 - `lib/features/dashboard/**`
 - `lib/features/billing/**`
 - `lib/features/contracts/**`
-- current Phase 7 and Phase 8 documents
+- `lib/shared/**`
+- current Phase 7, Phase 8, and Phase 9 documents
 
 These rules do not authorize by default:
 
 - backend protocol redesign
 - `ServiceProvider` replacement
 - navigation redesign
-- UI redesign
+- full UI redesign
 - broad coordinator expansion
 - state-management rearchitecture
 - informal reopening of Phase 8 runtime hardening scope
+- speculative introduction of a broad UI framework
 
 ## Root Cause Analysis
 
@@ -66,7 +75,17 @@ Phase 8 resolved the dominant runtime-hardening ambiguity by introducing:
 - trigger-aware recovery policy execution
 - runtime diagnostic events and snapshot exposure
 
-That means future development must now treat those outcomes as retained baseline, not as still-open design space.
+After those closures, the dominant unresolved concern became visible product-surface inconsistency.
+
+That means Phase 9 must improve:
+
+- loading surfaces
+- error surfaces
+- empty states
+- retry affordances
+- feature-to-feature UX consistency
+
+without disturbing the retained structural and runtime baselines.
 
 ## Files Affected
 
@@ -86,7 +105,14 @@ Main files governed by the current baseline include:
 - `lib/models/ServiceProvider/auth_requirement_model.dart`
 - `lib/models/ServiceProvider/login_continuation_result_model.dart`
 - `lib/models/ServiceProvider/startup_auth_continuation_coordinator_model.dart`
+- `lib/features/auth/controllers/login_controller.dart`
+- `lib/features/auth/presentation/login_widget.dart`
+- `lib/features/dashboard/controllers/dashboard_controller.dart`
+- `lib/features/dashboard/presentation/dashboard_page.dart`
 - `lib/features/billing/controllers/billing_controller.dart`
+- `lib/features/billing/presentation/billing_widget.dart`
+- `lib/shared/widgets/**`
+- `lib/models/LoadingGeneric/widget.dart`
 - `lib/core/transport/geryonsocket_model.dart`
 - `lib/core/transport/geryonsocket_model_io.dart`
 - `lib/core/transport/geryonsocket_model_web.dart`
@@ -101,7 +127,7 @@ All new work must preserve:
 
 Neither Phase 7 nor Phase 8 remains open for reinterpretation as architectural redesign.
 
-### 2. Phase 8 runtime hardening is now retained baseline
+### 2. Phase 8 runtime hardening remains retained baseline
 
 The following are no longer experimental or provisional:
 
@@ -114,7 +140,23 @@ The following are no longer experimental or provisional:
 
 Any future work must treat these as part of the active repository baseline.
 
-### 3. Runtime changes must not bypass retained semantic models
+### 3. Phase 9 may improve visible product surfaces only
+
+Phase 9 may standardize:
+
+- loading surfaces
+- recoverable feature-error surfaces
+- empty states
+- retry affordances
+- visible interaction consistency
+
+Phase 9 must not:
+
+- redesign runtime semantics
+- take ownership away from controllers or `ServiceProvider`
+- hide broad design changes under small UI wording
+
+### 4. Runtime changes must not bypass retained semantic models
 
 Any future work touching runtime continuation, recovery, or diagnostics must still respect:
 
@@ -125,9 +167,9 @@ Any future work touching runtime continuation, recovery, or diagnostics must sti
 - `ServiceProviderRuntimeRecoveryPolicyDecision`
 - runtime diagnostic event and snapshot models
 
-These are now part of the closed baseline.
+These are part of the closed baseline.
 
-### 4. ServiceProvider remains the runtime owner
+### 5. ServiceProvider remains the runtime owner
 
 `ServiceProvider` remains the owner of:
 
@@ -142,47 +184,60 @@ It may be maintained and incrementally improved when justified.
 
 It must not be replaced or bypassed casually.
 
-### 5. Widgets must not become runtime-policy owners
+### 6. Widgets must not become owners of business or runtime policy
 
 Widgets may:
 
 - display current state
 - trigger explicit user actions
-- react to already-normalized and already-owned runtime state
+- react to already-normalized and already-owned state
+- offer shared presentation surfaces for loading / error / empty cases
 
 Widgets must not:
 
 - redefine recovery policy
 - mutate runtime baseline flags ad hoc
 - become owners of diagnostic logic
-- reintroduce direct reboot-style runtime control
+- perform controller work
+- replace feature-state ownership with UI-state ownership
 
-### 6. Closed phases must not be reopened informally
+### 7. Minimal shared UI surfaces are allowed
 
-This is now a mandatory rule.
+Phase 9 explicitly allows narrowly scoped reusable widgets when they:
+
+- reduce visible inconsistency
+- remain presentation-only
+- do not become a hidden framework
+- do not pull business logic out of controllers
+
+This rule justifies small shared state-surface widgets.
+
+It does not justify a large new abstraction layer.
+
+### 8. Closed phases must not be reopened informally
+
+This remains a mandatory rule.
 
 Future work must not continue as:
 
 - implicit `7.x`
 - implicit `8.x`
 
-If future work truly requires a new scope, that scope must be opened explicitly as a new justified phase.
+If future work truly requires a new scope, that scope must be opened explicitly as a justified new phase.
 
-### 7. Narrow maintenance remains allowed
+### 9. Narrow maintenance remains allowed
 
 Closing Phase 8 does not prohibit all changes.
 
-It does allow:
+It allows:
 
 - bug fixes
 - narrowly justified hardening
 - compatibility adjustments
 - documentation alignment
-- production maintenance
+- product-surface consistency work inside the explicit Phase 9 scope
 
-However, such changes must not be misrepresented as continuation of still-open Phase 8 work.
-
-### 8. No hidden redesign under the label of maintenance
+### 10. No hidden redesign under the label of UX hardening
 
 The following remain explicitly disallowed unless the ZIP later proves a narrowly justified need:
 
@@ -193,6 +248,7 @@ The following remain explicitly disallowed unless the ZIP later proves a narrowl
 - feature-state ownership redesign
 - backend contract redesign
 - new speculative runtime engine layers
+- speculative broad design-system introduction
 
 ## Validation
 
@@ -204,13 +260,15 @@ Future work is aligned with the current baseline only if all of the following re
 - retained runtime semantic models remain respected
 - retained recovery-policy models remain respected
 - retained runtime observability models remain respected
+- Phase 9 changes stay surface-oriented
+- shared widgets remain presentation-only
 - maintenance remains narrower than redesign
 
 ## Release Impact
 
 These guidelines have no direct user-facing runtime impact.
 
-They protect the project from reopening already closed baselines and preserve the discipline of explicit phase-based evolution.
+They protect the project from reopening already closed baselines and preserve the discipline of explicit phase-based evolution while permitting controlled Phase 9 UX hardening.
 
 ## Risks
 
@@ -220,7 +278,8 @@ If these rules are ignored, future work may:
 - reopen closed runtime-hardening scope
 - bypass the retained runtime semantic baseline
 - introduce ad hoc runtime changes that weaken the current architecture
-- blur the difference between maintenance and new-phase work
+- create a fragmented pseudo-design-system
+- blur the difference between UX hardening and redesign
 
 ## What it does NOT solve
 
@@ -228,10 +287,11 @@ This document does not itself:
 
 - change runtime behavior
 - add new diagnostics
-- fix historical hotspots
-- define the next phase roadmap
+- normalize every screen immediately
+- fix all historical UI hotspots
+- define the full Phase 9 roadmap implementation order
 
-It only defines how future work must behave after formal closure of Phase 8.
+It only defines how future work must behave after the closure of Phase 8 and during active Phase 9 execution.
 
 ## Conclusion
 
@@ -240,6 +300,7 @@ The active development baseline is now:
 - Phase 7 closed
 - Phase 8 closed
 - structural and runtime-hardening baselines frozen
-- future work required to respect both retained baselines without reopening them informally
+- Phase 9 opened for controlled product-surface consistency work
+- future work required to respect retained baselines without reopening them informally
 
-Any future larger scope must now begin as a new explicitly justified phase.
+Any future larger scope beyond this must still begin as a new explicitly justified phase.
