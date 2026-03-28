@@ -2,73 +2,71 @@
 
 ## Objective
 
-Provide a coherent and accurate entry point to the technical documentation of Mi IP·RED so that the current repository structure, runtime boundaries, application-layer rules, historical phase outcomes, and active coordination baseline remain aligned with the real codebase.
+Provide a coherent and accurate entry point to the technical documentation of Mi IP·RED so that the current repository structure, runtime boundaries, phase history, and active architecture baseline remain aligned with the real codebase.
 
 ## Initial Context
 
 Mi IP·RED documentation has been built phase by phase together with the implementation.
 
-At the current project baseline, the repository has already completed:
+The current ZIP confirms the following completed baseline:
 
 - Phase 6 — Presentation Structure Cleanup
 - Phase 7.1 — Feature-local controller extraction
 - Phase 7.2 — State ownership and boundary clarification
-- Phase 7.3.1 — Application Flow Inventory
-- Phase 7.3.2 — Session & App Context Normalization
-- Phase 7.3.3 — Feature Interaction Contracts
-- Phase 7.3.4 — Application Coordinator (mínimo)
+- Phase 7.3 — Application flow inventory, context normalization, feature interaction contracts, minimal coordinator, and formal closure
 
-The project now enters:
+The project has now opened:
 
-- Phase 7.3.5 — Formal Closure of Phase 7.3
+- Phase 7.4 — Startup/Auth Continuation Boundary Hardening
 
-This closure does not introduce new runtime behavior.
+The current active subphase is:
 
-It freezes the resulting post-7.3 coordination baseline.
+- Phase 7.4.1 — Startup/Auth Continuation Inventory
 
 ## Problem Statement
 
-After Phase 7.3.4, the codebase already has:
+After Phase 7.3, the remaining application-layer concern is no longer generic coordination.
 
-- explicit flow inventory
-- explicit shared-context semantics
-- explicit declarative interaction contracts
-- a minimal coordinator for the narrowest safe execution-level coordination concerns
+The remaining concern is the still-sensitive bridge between:
 
-The remaining need is no longer implementation.
+- startup boundary
+- backend readiness
+- auth requirement
+- login popup entry
+- authenticated continuation
 
-The remaining need is to formally close the phase so that:
+That path already works, but it still depends on distributed implicit semantics.
 
-- Phase 7.3 is not extended artificially
-- the minimal coordinator is not misread as an unfinished broad coordinator initiative
-- future work starts from a stable and explicit post-7.3 architecture baseline
+The documentation index must reflect that precisely.
 
 ## Scope
 
 This index covers:
 
-- core architecture documents
-- development governance documents
+- architecture documents
+- governance documents
 - historical phase documents
-- the current Phase 7 baseline
-- the formal closure document for Phase 7.3
+- the closed Phase 7.3 baseline
+- the newly opened Phase 7.4 baseline
 
-It does not redefine architecture beyond the real codebase.
+It does not redefine runtime behavior.
 
 ## Root Cause Analysis
 
-The documentation needed to evolve in the same order as the implementation:
+The documentation must follow the same safe order as the implementation:
 
 1. structural cleanup
 2. feature extraction
-3. state-boundary clarification
-4. flow inventory
-5. context normalization
-6. contract freezing
-7. minimal coordination anchoring
-8. formal closure of the full coordination phase
+3. ownership clarification
+4. application flow inventory
+5. session/app-context normalization
+6. feature interaction contract freezing
+7. minimal safe coordinator anchoring
+8. formal closure of coordination scope
+9. startup/auth continuation inventory
+10. later normalization of the remaining startup/auth boundary
 
-That sequencing remains important because the phase can only be closed safely after all of its intended layers are both implemented and validated.
+The index must preserve that reading order.
 
 ## Files Affected
 
@@ -90,6 +88,7 @@ Primary documents indexed here include:
 - `docs/phase7_application_layer_consolidation_7_3_3_feature_interaction_contracts.md`
 - `docs/phase7_application_layer_consolidation_7_3_4_application_coordinator_minimal.md`
 - `docs/phase7_application_layer_consolidation_7_3_5_formal_closure.md`
+- `docs/phase7_application_layer_consolidation_7_4_1_startup_auth_continuation_inventory.md`
 
 ## Implementation Characteristics
 
@@ -98,22 +97,16 @@ Primary documents indexed here include:
 - `docs/architecture.md`
 - `docs/architecture-deep.md`
 
-These describe the general architecture and deeper technical interpretation of the app runtime.
-
 ### Runtime / Product Documents
 
 - `docs/flows.md`
 - `docs/release.md`
 - `docs/secutiry.md`
 
-These describe runtime flows, release concerns, and security-related aspects.
-
 ### Governance Documents
 
 - `docs/development.md`
 - `docs/decisions.md`
-
-These define the current implementation rules and active architecture decisions that future work must preserve.
 
 ### Historical / Structural Support Documents
 
@@ -125,8 +118,6 @@ These define the current implementation rules and active architecture decisions 
 - `docs/infra-normalization.md`
 - `docs/refactor-plan.md`
 - `docs/features.md`
-
-These preserve historical rationale and structural evolution context.
 
 ### Phase Documents
 
@@ -148,7 +139,7 @@ These preserve historical rationale and structural evolution context.
 #### Phase 6
 - `docs/phase6_presentation_structure_cleanup.md`
 
-#### Phase 7 — Application Layer Consolidation
+#### Phase 7
 - `docs/phase7_application_layer_consolidation.md`
 
 ##### Phase 7.1
@@ -170,19 +161,12 @@ These preserve historical rationale and structural evolution context.
 - `docs/phase7_application_layer_consolidation_7_3_4_application_coordinator_minimal.md`
 - `docs/phase7_application_layer_consolidation_7_3_5_formal_closure.md`
 
-Phase 7.3 is now fully understood as a closed coordination block composed of five layers:
-
-- flow inventory
-- context normalization
-- feature interaction contracts
-- minimal coordination anchoring
-- formal closure
+##### Phase 7.4
+- `docs/phase7_application_layer_consolidation_7_4_1_startup_auth_continuation_inventory.md`
 
 ## Validation
 
-The index is valid only if it reflects the actual current repository baseline.
-
-At this point, the correct reading order for a technical review is:
+At the current ZIP baseline, the correct reading order for technical review is:
 
 1. `README.md`
 2. `docs/index.md`
@@ -191,49 +175,43 @@ At this point, the correct reading order for a technical review is:
 5. `docs/decisions.md`
 6. `docs/phase6_presentation_structure_cleanup.md`
 7. `docs/phase7_application_layer_consolidation.md`
-8. `docs/phase7_application_layer_consolidation_7_2_5_formal_closure.md`
-9. `docs/phase7_application_layer_consolidation_7_3_1_application_flow_inventory.md`
-10. `docs/phase7_application_layer_consolidation_7_3_2_session_app_context_normalization.md`
-11. `docs/phase7_application_layer_consolidation_7_3_3_feature_interaction_contracts.md`
-12. `docs/phase7_application_layer_consolidation_7_3_4_application_coordinator_minimal.md`
-13. `docs/phase7_application_layer_consolidation_7_3_5_formal_closure.md`
+8. `docs/phase7_application_layer_consolidation_7_3_5_formal_closure.md`
+9. `docs/phase7_application_layer_consolidation_7_4_1_startup_auth_continuation_inventory.md`
 
 ## Release Impact
 
-This update does not change user-facing architecture by itself.
+This update has no direct runtime impact.
 
-Its impact is documentary and architectural:
+Its value is architectural and documentary:
 
-- it freezes the resulting post-7.3 coordination baseline
-- it prevents further accidental extension of Phase 7.3
-- it provides a clean handoff point for the next phase
+- it keeps the index aligned with the ZIP
+- it preserves Phase 7.3 as closed
+- it marks Phase 7.4 as opened with the correct real target
 
 ## Risks
 
 If this index is not updated, future work may:
 
-- continue extending 7.3 beyond its real scope
-- misread the minimal coordinator as unfinished broad infrastructure
-- blur the distinction between what 7.3 solved and what later phases should solve
+- misread the project as still being in 7.3
+- skip the startup/auth continuation inventory
+- open an unnecessarily broad next step
 
 ## What it does NOT solve
 
-This document does not by itself:
+This index does not by itself:
 
-- introduce new runtime behavior
-- redesign startup/auth coordination
-- expand the coordinator
-- redesign backend/session architecture
+- change runtime behavior
+- normalize auth requirement semantics
+- introduce a continuation contract
 
-It only reflects the real documentation baseline.
+It only reflects the real current baseline.
 
 ## Conclusion
 
-The documentation index now reflects the real project state:
+The current documentation index now reflects the real project state:
 
 - Phase 6 completed
 - Phase 7.1 completed
 - Phase 7.2 completed and closed
-- Phase 7.3 completed and formally closed through 7.3.5
-
-The project now has an explicit and stable post-7.3 coordination baseline.
+- Phase 7.3 completed and formally closed
+- Phase 7.4 opened with 7.4.1 inventory completed as the current documentary baseline

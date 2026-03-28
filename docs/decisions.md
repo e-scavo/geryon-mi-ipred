@@ -2,52 +2,49 @@
 
 ## Objective
 
-Record the active architectural decisions that define how Mi IP·RED must be interpreted and evolved after the closure of Phase 7.2 and the full formal closure of Phase 7.3.
+Record the active architectural decisions that define how Mi IP·RED must be interpreted and evolved after the formal closure of Phase 7.3 and the opening of Phase 7.4.
 
 ## Initial Context
 
-Phase 7 of Mi IP·RED progressed in layers:
+Phase 7 progressed in layers:
 
 - Phase 7.1 extracted feature-local controllers
 - Phase 7.2 clarified ownership and state boundaries
-- Phase 7.3.1 inventoried real application flows
-- Phase 7.3.2 normalized session and app-context semantics
-- Phase 7.3.3 froze current cross-feature meaning as explicit interaction contracts
-- Phase 7.3.4 introduced a minimal application coordinator for the safest execution-level coordination concerns
-- Phase 7.3.5 now closes the full 7.3 block formally
+- Phase 7.3 inventoried flows, normalized context meaning, froze interaction contracts, introduced a minimal coordinator, and closed formally
+- Phase 7.4 now begins with an inventory of the startup/auth continuation boundary
 
 These decisions capture the resulting stable baseline.
 
 ## Problem Statement
 
-Without an explicit decisions document after formal closure, future work could misread the current repository and incorrectly assume one of the following:
+Without explicit decisions after opening 7.4, future work could incorrectly assume:
 
-- that Phase 7.3 is still open
-- that the minimal coordinator is unfinished broad infrastructure
-- that ownership moved during 7.3
-- that startup/auth should now automatically be absorbed by the coordinator
-- that 7.3 should keep growing instead of being closed
+- that 7.3 should be reopened
+- that startup/auth automatically belongs inside the existing coordinator
+- that ServiceProvider should be broadly redesigned now
+- that login popup UI is the main structural problem
+- that persisted DNI/CUIT acts as a persistent authenticated session
 
-Those assumptions would be incorrect according to the current ZIP and the current phase baseline.
+Those assumptions would be incorrect according to the current ZIP.
 
 ## Scope
 
 These decisions govern:
 
 - interpretation of the current runtime
-- sequencing of future work after Phase 7.3
-- allowed architectural moves
+- sequencing of future work after 7.3 closure
+- allowed moves during 7.4
 - prohibited shortcuts and over-reaches
 
 They do not implement behavior on their own.
 
 ## Root Cause Analysis
 
-The codebase reached a point where feature-local cleanup, ownership clarification, flow inventory, context normalization, contract freezing, and minimal coordination anchoring already produced enough clarity to resolve the coordination concerns that justified Phase 7.3.
+The codebase already has enough clarity in all surrounding areas to inspect the startup/auth continuation block safely.
 
-That means the remaining need is not more implementation inside 7.3.
+That means the remaining need is no longer broad coordination work.
 
-The remaining need is to freeze the outcome correctly and prevent scope drift.
+The remaining need is to make the meaning of that boundary more explicit without breaking the runtime.
 
 ## Files Affected
 
@@ -55,9 +52,7 @@ These decisions apply to:
 
 - `lib/main.dart`
 - `lib/features/auth/**`
-- `lib/features/dashboard/**`
-- `lib/features/billing/**`
-- `lib/features/contracts/**`
+- `lib/models/GeneralLoadingProgress/**`
 - `lib/models/ServiceProvider/**`
 - `lib/core/session/**`
 
@@ -65,7 +60,7 @@ They also govern:
 
 - `docs/development.md`
 - `docs/phase7_application_layer_consolidation.md`
-- `docs/phase7_application_layer_consolidation_7_3_5_formal_closure.md`
+- `docs/phase7_application_layer_consolidation_7_4_1_startup_auth_continuation_inventory.md`
 
 ## Implementation Characteristics
 
@@ -82,209 +77,161 @@ This includes:
 - backend status validation
 - login request semantics
 
-All later work must preserve these behaviors unless a future phase explicitly and safely changes them.
+## Decision 2 — Phase 7.3 Remains Closed
 
-## Decision 2 — Structural and Application-Layer Work Must Not Imply Silent Behavioral Change
+The opening of Phase 7.4 does not reopen 7.3.
 
-Phase 7 was a consolidation phase, not a runtime redesign phase.
-
-That remains the correct interpretation of its outcomes.
+The minimal coordinator, contracts, and context-normalization work remain closed baseline work.
 
 ## Decision 3 — Controllers Remain Feature-Local Boundaries
 
-Phase 7.1 established controllers as feature-local application boundaries.
+Controllers remain the correct home for feature-local orchestration and feature-local state transitions.
 
-That remains the correct model.
+Phase 7.4 does not change that.
 
-Controllers are still the correct place for:
+## Decision 4 — Persisted Login Hint Is Not an Authenticated Session
 
-- feature-local orchestration
-- feature-local state transitions
-- feature-local derived-state rules
+Stored DNI/CUIT remains:
 
-## Decision 4 — State Ownership Clarified in Phase 7.2 Remains Frozen as Baseline
+- a remembered login hint
+- bootstrap input for possible auto-submit
 
-Phase 7.2 clarified the distinction between:
+It is not a backend-authenticated persistent session.
 
-- UI state
-- feature functional state
-- derived state
-- global source state
-
-That classification remains valid and closed as the current baseline.
-
-## Decision 5 — Flow Inventory, Context Normalization, Contract Freezing, and Minimal Coordination Were Sequential On Purpose
-
-The order of Phase 7.3 was intentional:
-
-1. flow inventory
-2. context normalization
-3. contract freezing
-4. minimal coordination anchoring
-
-This sequencing remains the correct interpretation of the phase.
-
-## Decision 6 — Persisted Login Hint Is Not an Authenticated Session
-
-The current storage abstraction only persists remembered DNI/CUIT information.
-
-It remains a persisted login hint, not a backend-validated authenticated session.
-
-## Decision 7 — Authenticated Runtime Context Remains In-Memory and Owned by ServiceProvider
+## Decision 5 — Authenticated Runtime Context Remains In-Memory and Owned by ServiceProvider
 
 The actual authenticated runtime context continues to live in `ServiceProvider`.
 
-That ownership did not move during Phase 7.3.
+This ownership does not move during 7.4.
 
-## Decision 8 — Active Operational Context Is Distinct From “Logged In”
+## Decision 6 — Startup Boundary Remains Owned by `main.dart`
 
-The active client/company context remains a separate runtime concern from merely being authenticated.
+`main.dart` continues owning startup-boundary completion state.
 
-It remains owned by `ServiceProvider` and consumed downstream by features such as dashboard and billing.
+That ownership remains distinct from auth feature state and from ServiceProvider runtime ownership.
 
-## Decision 9 — Persisted Login Hint Lifecycle Must Stay Symmetric
+## Decision 7 — The Current Auth Requirement Meaning Is Too Implicit to Remain the Long-Term Baseline
 
-Remember-me behavior remains explicitly symmetric.
+The current ZIP shows auth requirement being expressed through special return codes such as:
 
-That means:
+- `-1000`
+- `-1001`
+- `-1002`
 
-- save remembered DNI on successful login when requested
-- remove remembered DNI on successful login when remember-me is disabled
-- remove remembered DNI during logout cleanup
+That behavior is currently accepted as real baseline behavior.
 
-## Decision 10 — Logout Cleanup Must Stay Specific to Its Actual Responsibility
+But it is not the preferred long-term semantic boundary.
 
-The logout path continues removing only the persisted login hint it actually owns.
+Therefore, normalizing auth requirement meaning is a valid next step.
 
-Broader storage cleanup would exceed the current semantic responsibility of logout.
+## Decision 8 — ServiceProvider Is Still the Runtime Source, Not the Final Home of All Auth-Orchestration Meaning
 
-## Decision 11 — ServiceProvider Remains the Runtime Source, Not the Coordinator
+The current ZIP shows ServiceProvider both:
 
-`ServiceProvider` remains:
+- owning authenticated runtime context
+- triggering login popup entry through navigator
 
-- the backend/runtime source
-- the holder of authenticated runtime context
-- the holder of active operational context
-- the protected communication boundary
+That is accepted as the current baseline.
 
-The coordinator introduced in 7.3.4 does not replace it and does not absorb its ownership.
+But it should not automatically be treated as the ideal permanent semantic distribution.
 
-## Decision 12 — Shared Runtime Context May Continue to Be Read Through Explicit Accessors
+## Decision 9 — Startup/Auth Must Be Hardened Before Any Broader Coordinator Move Is Considered
 
-The normalized read-only accessors on `ServiceProvider` remain the preferred way for cross-feature consumers to read shared runtime context.
+The next safe order is:
 
-## Decision 13 — Declarative Contracts Remain Declarative
+1. inventory
+2. auth requirement normalization
+3. continuation contract
+4. only then re-evaluate whether minimal startup/auth coordination is still necessary
 
-The contract layer introduced in 7.3.3 remains:
+No broader move is justified before that sequence.
 
-- declarative
-- lightweight
-- non-executing
-- non-owning
-- non-reactive
+## Decision 10 — The Existing Minimal Coordinator Does Not Automatically Expand Into Startup/Auth
 
-It must not be reinterpreted as a coordinator or runtime engine.
+The coordinator introduced in 7.3.4 remains a narrow solution for already-validated concerns.
 
-## Decision 14 — The Minimal Coordinator Is Closed as a Narrow Solution, Not an Open Broad Program
+It does not automatically absorb startup/auth continuation.
 
-The coordinator introduced in 7.3.4 is intentionally limited to the safest currently justified concerns:
+## Decision 11 — Navigator Result Semantics Are Current Behavior, Not Yet Explicit Contract
 
-- billing downstream refresh coordination
-- logout reset coordination
+The current runtime continuation depends partly on popup return semantics.
 
-This is a completed narrow solution, not the beginning of an automatically broadening coordinator program.
+That is valid current behavior.
 
-## Decision 15 — The Coordinator Does Not Move Ownership
+It is not yet an explicit continuation contract.
 
-The existence of the coordinator does not transfer ownership.
+This distinction must be preserved.
 
-Examples:
+## Decision 12 — Logout Reentry Belongs to the Same Boundary Family
 
-- billing downstream coordination does not make the coordinator owner of billing feature state
-- logout reset coordination does not make the coordinator owner of authenticated runtime context
-- the coordinator does not become owner of widget lifecycle
-- the coordinator does not become owner of backend flow
+Logout currently resets authenticated runtime state and reenters backend/auth requirement flow.
 
-## Decision 16 — Startup/Auth Remains Out of Scope for the Minimal Coordinator
+Therefore, startup/auth hardening work must treat both initial startup entry and logout reentry as related runtime cases.
 
-The current startup/auth/runtime continuation path remains intentionally untouched by the minimal coordinator.
+## Decision 13 — Avoid New Hidden Semantics
 
-That boundary remains outside the closed scope of Phase 7.3.
+The current ZIP already contains implicit auth requirement semantics.
 
-## Decision 17 — Billing Widget No Longer Remains the Main Semantic Home of Downstream Coordination
+Future work must reduce that ambiguity, not add more of it.
 
-`billing_widget.dart` still owns:
+## Decision 14 — No Broad Redesign Under Cleanup Language
 
-- rendering
-- lifecycle
-- listener attachment
-- widget-local state updates
+Phase 7.4 must not be used to introduce:
 
-But the semantic rule of when billing should bootstrap or react to active client change is now anchored in the coordinator rather than remaining primarily inline in the widget.
+- event bus
+- global runtime engine
+- broad startup/auth coordinator
+- provider replacement
+- navigation redesign
 
-## Decision 18 — Dashboard Still Produces Intent, but Logout Reset Coordination Is Now Narrowly Anchored
-
-Dashboard remains the producer of logout intent.
-
-The app-level transition semantics of logout execution are now anchored in the minimal coordinator.
-
-This does not make dashboard owner of runtime reset, nor does it make the coordinator owner of dashboard state.
-
-## Decision 19 — Phase 7.3 Is Now Formally Closed
-
-The current ZIP confirms that the practical and architectural objective of Phase 7.3 has been achieved.
-
-Therefore:
-
-- Phase 7.3 is complete
-- its outcomes are frozen as the active baseline
-- future work must start from this baseline instead of extending 7.3 artificially
+without a later explicit phase and direct justification from code.
 
 ## Validation
 
-These decisions are validated against the current ZIP because the codebase now shows all of the following:
+These decisions are validated against the current ZIP because the codebase currently shows all of the following:
 
-- flow inventory exists
-- context normalization exists
-- contract baseline exists
-- minimal coordinator exists
-- runtime behavior remains materially unchanged
-- ownership remains materially unchanged
-- no broad coordinator or hidden re-architecture was introduced
+- local startup boundary in `main.dart`
+- popup-based bootstrap continuation
+- provider-driven backend readiness chain
+- implicit auth requirement semantics
+- feature-local login state handling
+- in-memory authenticated runtime context in ServiceProvider
+- logout-triggered reentry into auth requirement flow
 
 ## Release Impact
 
-This decisions document has no direct release-facing runtime impact by itself.
+This decisions document has no direct release-facing runtime impact.
 
-Its effect is to protect future implementation choices and keep the post-7.3 baseline stable.
+Its role is to protect the correct interpretation of the newly opened 7.4 phase.
 
 ## Risks
 
-Without these decisions, the project risks:
+If these decisions are not recorded, future work may:
 
-- reopening already-closed coordination concerns
-- over-expanding the coordinator scope
-- confusing the coordinator with a global orchestration layer
-- losing clarity over ownership
-- extending 7.3 indefinitely
+- reopen 7.3 accidentally
+- redesign ServiceProvider prematurely
+- confuse login hint persistence with authenticated session persistence
+- introduce broad coordination changes too early
 
 ## What it does NOT solve
 
-This document does not by itself implement:
+This document does not by itself:
 
-- startup/auth coordinator redesign
-- event-driven runtime architecture
-- backend-persisted authenticated session validation
-- automated flow-level coordination tests
+- normalize auth requirement semantics
+- define a continuation contract
+- change popup ownership
+- change runtime behavior
 
-Those remain outside the closed scope of Phase 7.3.
+It only freezes the correct interpretation of the current phase baseline.
 
 ## Conclusion
 
-The active interpretation of Mi IP·RED is now:
+The current project baseline is now:
 
-1. protect runtime behavior
-2. preserve feature-local controller boundaries
-3. preserve state-boundary clarity from Phase 7.2
-4. preserve the full coordination baseline completed in Phase 7.3
-5. treat Phase 7.3 as formally closed and stable
+- Phase 7.3 closed
+- Phase 7.4 opened
+- 7.4.1 completed as an inventory/documentation step
+
+The next correct safe target is:
+
+- `7.4.2 — Auth Requirement Boundary Normalization`

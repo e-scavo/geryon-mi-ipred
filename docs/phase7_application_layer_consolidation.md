@@ -2,98 +2,91 @@
 
 ## Objective
 
-Consolidate the application layer of Mi IP·RED by progressively separating presentation from business-adjacent logic, introducing explicit feature-local controller boundaries, clarifying state ownership, documenting the real coordination flows that connect already-separated features, normalizing the meaning and access patterns of shared runtime context, freezing the current cross-feature meaning as explicit interaction contracts, anchoring the narrowest safe execution-level coordination concerns through a minimal application coordinator, and formally closing the resulting coordination baseline without changing the validated runtime contract of the application.
+Consolidate the application layer of Mi IP·RED by progressively separating presentation from controller and runtime-source responsibilities, clarifying ownership boundaries, documenting real cross-feature flows, freezing shared-context semantics, anchoring only the narrowest safe coordination concerns, and continuing with a conservative hardening pass over the startup/auth continuation boundary without redesigning the current runtime.
 
 ## Initial Context
 
-After the structural cleanup completed in Phase 6, Mi IP·RED reached a point where the runtime was already functional but still had important application-layer ambiguity.
+After Phase 6, Mi IP·RED already worked in production but still had application-layer ambiguity.
 
-The problem was no longer directory structure.
+Phase 7 was opened to solve that safely and incrementally.
 
-The problem was responsibility placement.
+The current ZIP confirms the following completed baseline:
 
-Widgets still owned too much orchestration, and some runtime behavior still depended on implicit boundaries.
+- Phase 7.1 — feature-local controller extraction
+- Phase 7.2 — state ownership and boundary clarification
+- Phase 7.3 — application flow inventory, session/app-context normalization, feature interaction contracts, minimal coordinator, and formal closure
 
-Phase 7 was opened to solve that incrementally and safely.
+That closure was correct.
 
-Phase 7.1 introduced feature-local controllers and completed:
+However, the ZIP also confirms one intentionally untouched and still sensitive runtime block:
 
-- auth extraction
-- dashboard extraction
-- billing extraction
+- startup boundary
+- backend readiness
+- auth requirement
+- login popup entry
+- authenticated continuation
 
-After that, Phase 7.2 clarified state ownership and completed:
-
-- feature state inventory
-- billing state-boundary consolidation
-- dashboard state-derivation normalization
-- auth/startup initial-boundary cleanup
-- formal closure
-
-Phase 7.3 then addressed application coordination as a separate concern.
-
-The current ZIP confirms that this coordination work was completed through all of its intended subphases and is now ready for formal closure.
+That is now the correct focus of Phase 7.4.
 
 ## Problem Statement
 
-Phase 7.1 solved the problem of business-adjacent logic living inline in widgets.
+Phase 7.1 removed business-adjacent orchestration from widgets.
 
-Phase 7.2 solved the problem of unclear ownership between UI state, feature state, derived state, and runtime source state.
+Phase 7.2 clarified ownership.
 
-Phase 7.3 then solved the next layer:
+Phase 7.3 made application coordination explicit and then closed it formally.
 
-- lack of explicit flow visibility
-- lack of explicit shared-context semantics
-- lack of explicit cross-feature interaction meaning
-- lack of a minimal execution-level anchor for the safest coordination concerns
+What remains is not a broad architecture problem.
 
-The remaining need at the current ZIP baseline is no longer more coordination implementation.
+What remains is one narrow runtime boundary problem:
 
-The remaining need is to freeze the result as a stable and formally closed baseline.
+- startup/auth continuation still works through distributed implicit semantics
+- auth requirement is still represented through special provider-return codes
+- popup-driven continuation still depends on navigator result semantics
+- the runtime source layer still participates directly in login-popup orchestration
+
+That is why Phase 7.4 now exists.
 
 ## Scope
 
 Phase 7 includes:
 
 - feature-local controller extraction
-- progressive removal of business-adjacent logic from widgets
 - state ownership clarification
-- runtime-preserving normalization work
-- explicit inventory of real application flows
+- runtime-preserving consolidation
+- application flow inventory
 - session and app-context normalization
-- explicit declarative feature interaction contracts
-- minimal application coordination anchoring
-- formal closure of the Phase 7.3 coordination block
+- feature interaction contracts
+- minimal application coordinator for narrow safe concerns
+- startup/auth continuation boundary hardening
 
 Phase 7 does not include:
 
-- backend protocol changes
-- ServiceProvider redesign
+- backend protocol redesign
+- ServiceProvider replacement
 - navigation redesign
 - UI redesign
-- full state-management replacement
 - broad coordinator infrastructure
-- startup/auth coordinator redesign inside 7.3
-- coordinator sprawl
+- event bus
+- state-management replacement
 
 ## Root Cause Analysis
 
-Mi IP·RED matured in the correct practical order:
+Mi IP·RED matured in the correct order:
 
-1. stabilize runtime behavior
-2. protect ServiceProvider and backend interaction
-3. normalize project structure
+1. protect runtime
+2. protect ServiceProvider/backend flow
+3. normalize structure
 4. extract feature-local logic
-5. clarify state ownership
-6. inventory cross-feature coordination
-7. normalize shared runtime-context semantics
-8. freeze real cross-feature meaning as explicit contracts
-9. anchor only the narrowest safe execution-level coordination concerns
-10. formally close the full coordination block
+5. clarify ownership
+6. inventory real flows
+7. normalize shared context semantics
+8. freeze contract meaning
+9. anchor only the narrowest safe coordinator concerns
+10. close the coordination block
+11. return to the remaining startup/auth continuation boundary with the rest of the architecture already clarified
 
-This means the current ZIP no longer shows an open coordination phase problem.
-
-It shows a completed coordination baseline that should now be frozen.
+That last step is what the current phase now addresses.
 
 ## Files Affected
 
@@ -105,6 +98,7 @@ Core runtime surfaces involved in Phase 7 include:
 - `lib/features/billing/**`
 - `lib/features/contracts/**`
 - `lib/models/ServiceProvider/**`
+- `lib/models/GeneralLoadingProgress/**`
 - `lib/core/session/**`
 
 Phase 7 documentation includes:
@@ -126,14 +120,13 @@ Phase 7 documentation includes:
 - `docs/phase7_application_layer_consolidation_7_3_3_feature_interaction_contracts.md`
 - `docs/phase7_application_layer_consolidation_7_3_4_application_coordinator_minimal.md`
 - `docs/phase7_application_layer_consolidation_7_3_5_formal_closure.md`
+- `docs/phase7_application_layer_consolidation_7_4_1_startup_auth_continuation_inventory.md`
 
 ## Implementation Characteristics
 
 ### Phase 7.1 — Feature-Local Controller Extraction
 
-Phase 7.1 introduced the first major application-layer cleanup by moving feature-local orchestration out of widgets.
-
-Completed subphases:
+Completed:
 
 - `7.1.1 — Auth extraction`
 - `7.1.2 — Dashboard extraction`
@@ -142,22 +135,12 @@ Completed subphases:
 Result:
 
 - widgets stopped owning inline request orchestration
-- controllers became the feature-local boundary
+- controllers became the feature-local application boundary
 - runtime behavior was preserved
-
-Formal status:
-
-- completed
-- validated
-- closed
 
 ### Phase 7.2 — State Ownership and Boundary Clarification
 
-Phase 7.2 did not redesign state management globally.
-
-Its role was to clarify responsibility boundaries.
-
-Completed subphases:
+Completed:
 
 - `7.2.1 — Feature State Inventory & Ownership Definition`
 - `7.2.2 — Billing State Boundary Consolidation`
@@ -167,28 +150,14 @@ Completed subphases:
 
 Result:
 
-- billing owns explicit feature-local lifecycle state
-- dashboard uses explicit source-to-derived resolution
-- auth and startup initial boundaries are no longer modeled with ambiguous loading semantics
-- Phase 7.2 was formally closed
+- ownership is clearer and safer
+- billing owns feature-local lifecycle state
+- dashboard resolves derived state more explicitly
+- auth/startup initial boundary ambiguity was reduced
 
-### Phase 7.3 — Application Flow & Feature Coordination
+### Phase 7.3 — Application Flow & Coordination Closure
 
-Phase 7.3 began only after the closure of Phase 7.2.
-
-Its focus was not another feature-local state cleanup pass.
-
-Its focus was:
-
-- coordination between already-separated features
-- runtime transition ownership
-- application-flow sequencing
-- explicit documentation of dependencies that were previously distributed
-- normalization of shared context semantics
-- explicit freezing of interaction meaning
-- minimal execution-level anchoring for the safest coordination concerns
-
-Validated structure for Phase 7.3:
+Completed:
 
 - `7.3.1 — Application Flow Inventory`
 - `7.3.2 — Session & App Context Normalization`
@@ -196,115 +165,86 @@ Validated structure for Phase 7.3:
 - `7.3.4 — Application Coordinator (mínimo)`
 - `7.3.5 — Formal Closure of Phase 7.3`
 
-The current ZIP confirms that all five subphases are complete.
+Result:
 
-### Phase 7.3.1 — Application Flow Inventory
+- real flows are explicitly inventoried
+- shared runtime context meaning is normalized
+- interaction semantics are frozen
+- only narrow safe coordination concerns were anchored
+- the coordination block is formally closed
 
-This subphase inventoried the real flows already present in code before any new coordination abstraction was introduced.
+### Phase 7.4 — Startup/Auth Continuation Boundary Hardening
 
-Its output was a validated explicit map of current ownership and downstream effects.
+Current validated opening:
 
-### Phase 7.3.2 — Session & App Context Normalization
+- `7.4.1 — Startup/Auth Continuation Inventory`
 
-This subphase normalized the meaning, lifecycle, and read paths of the context concepts already used by the runtime.
+This subphase confirms that the remaining sensitive block is not broad coordination anymore.
 
-Its output was a safer semantic baseline for later contracts without changing backend flow ownership.
+It is the startup/auth continuation bridge itself.
 
-### Phase 7.3.3 — Feature Interaction Contracts
+The ZIP shows that this flow currently spans:
 
-This subphase froze the meaning of the interactions that the current runtime already implemented.
+- startup boundary in `main.dart`
+- popup-driven loading continuation
+- provider-stage listening
+- provider-driven auth requirement detection
+- provider-driven popup opening
+- feature-local login bootstrap and submit
+- navigator-result-based authenticated continuation
 
-Its output was:
+The flow works, but its meaning is still distributed.
 
-- a lightweight declarative code anchor for the contracts
-- documentation that defined what each contract means
-- documentation that defined what each contract does not mean
-
-### Phase 7.3.4 — Application Coordinator (mínimo)
-
-This subphase anchored only the narrowest safe execution-level coordination concerns in one small coordination surface.
-
-The implemented baseline includes:
-
-- billing downstream refresh coordination decisions
-- logout reset coordination execution
-
-This subphase did not introduce:
-
-- startup/auth coordinator redesign
-- event bus
-- runtime engine
-- provider replacement
-- new state-management architecture
-
-### Phase 7.3.5 — Formal Closure of Phase 7.3
-
-This subphase formally closes the full coordination block by freezing the resulting baseline and explicitly confirming that:
-
-- the intended objectives of 7.3 were actually completed in code
-- ownership remains preserved
-- runtime behavior remains materially unchanged
-- the minimal coordinator remains narrow
-- further 7.3 extension is no longer justified
+That is the real justification for Phase 7.4.
 
 ## Validation
 
-Phase 7 as a whole remains valid because the current ZIP still preserves:
+Phase 7 remains valid because the current ZIP still preserves:
 
 - startup bootstrap behavior
 - backend status initialization behavior
 - login popup behavior
-- dashboard rendering from runtime source
-- billing reload behavior driven by active client changes
+- controller boundaries
+- ServiceProvider as runtime source
+- billing active-client downstream refresh behavior
 - logout reset behavior
 
-Phase 7.3 specifically is now valid and complete because the current code also preserves:
-
-- explicit flow visibility
-- explicit shared-context semantics
-- explicit contract meaning
-- minimal execution-level coordination anchoring
-- unchanged ownership model
+Additionally, the ZIP now confirms that the next real safe target is the startup/auth continuation boundary rather than another generic cleanup pass.
 
 ## Release Impact
 
-Phase 7.3.5 has no intended feature-level redesign.
+This documentation update does not change runtime behavior.
 
-Its impact is architectural and documentary:
-
-- it freezes the coordination baseline
-- it prevents unnecessary extension of 7.3
-- it gives a clean starting point for future work
+Its impact is to align the current project baseline with the newly opened Phase 7.4 and prevent Phase 7.3 from being reopened indirectly.
 
 ## Risks
 
-The main current risks are:
+If this document is not updated, future work may:
 
-- over-extending the coordinator into a broader orchestration layer
-- reopening already-closed 7.3 concerns
-- confusing the closed minimal coordinator with unfinished infrastructure
+- misread 7.3 as still open
+- jump directly to a broad startup/auth coordinator
+- redesign ServiceProvider too early
+- confuse auth requirement with session persistence
+- treat the login widget as the main structural problem instead of the continuation boundary
 
 ## What it does NOT solve
 
-At the current stage, Phase 7 does not yet solve:
+This document does not by itself:
 
-- startup/auth global coordination redesign
-- backend-persisted authenticated sessions
-- event-driven runtime architecture
-- flow-level automated tests
+- normalize auth requirement semantics
+- introduce a continuation contract
+- change popup ownership
+- redesign logout reentry
+- redesign the runtime
 
-Those remain outside the closed scope of Phase 7.3.
+It only aligns the phase baseline with the current ZIP and Phase 7.4.1 findings.
 
 ## Conclusion
 
-Phase 7 is now best understood in seven progressive layers:
+Phase 7.1, 7.2, and 7.3 remain completed and correctly closed.
 
-1. extract feature-local logic
-2. clarify state ownership boundaries
-3. inventory cross-feature coordination flows
-4. normalize shared runtime-context semantics
-5. freeze real cross-feature meaning as explicit contracts
-6. anchor only the narrowest safe execution-level coordination concerns through a minimal coordinator
-7. formally close the resulting coordination baseline
+The current ZIP justifies Phase 7.4 as a narrow continuation phase focused on startup/auth continuation boundary hardening.
 
-The current ZIP confirms that Mi IP·RED has now completed that full sequence and that Phase 7.3 is formally closed.
+The first validated subphase is now complete as an inventory step, and the next correct target is:
+
+- `7.4.2 — Auth Requirement Boundary Normalization`
