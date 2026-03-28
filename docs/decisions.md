@@ -1,229 +1,217 @@
-# 🧠 Decisions — Phase 7 Alignment
+# 🧠 Architectural & Implementation Decisions
 
 ## Objective
 
-Record the architectural decisions that remain active after the completion and formal closure of Phase 7 so future work stays aligned with the real current runtime.
+Record the active architectural and implementation decisions that govern Mi IP·RED after the formal closure of Phase 7 and the opening of Phase 8 as a runtime reliability and failure semantics hardening effort.
 
 ## Initial Context
 
-The current ZIP confirms:
+The current ZIP confirms the following baseline:
 
-- Phase 7.3 is formally closed
-- Phase 7.4 is formally closed
-- Phase 7.5 is formally closed
-- `7.4.2` normalized auth-requirement semantics without redesigning the runtime
-- `7.4.3` normalized login continuation resolution without redesigning the runtime
-- `7.4.4` normalized minimal startup/auth continuation coordination without redesigning the runtime
-- `7.4.5` froze the startup/auth continuation baseline
-- `7.5` froze the full Application Layer Consolidation baseline
+- Phase 7 is formally closed
+- the active architecture remains `presentation → controller → ServiceProvider`
+- startup/auth continuation was already normalized during Phase 7.4
+- the project is no longer in an application-layer consolidation phase
+- Phase 8 is now opened for runtime reliability and failure semantics hardening
+- Phase 8.1 documents the real runtime failure surfaces
 
 ## Problem Statement
 
-Without explicit decisions, future work could incorrectly assume that the application layer still requires ongoing Phase 7 hardening.
+The repository now needs a clear decision record so that future runtime hardening does not accidentally:
 
-It does not.
+- reopen closed structural scope
+- create new hidden architecture
+- normalize error behavior inconsistently
+- treat local feature failures and runtime-global failures as the same thing
 
-The current baseline only justifies preserving the explicit, local, narrow models introduced during Phase 7, not continuing to extend that phase implicitly.
+The decisions below freeze the correct interpretation of the current baseline.
 
 ## Scope
 
 These decisions govern:
 
-- interpretation of the current application-layer runtime
-- what Phase 7 actually changed
-- what remains prohibited until a new explicitly scoped phase exists
+- active architecture interpretation
+- ownership of runtime lifecycle
+- interpretation of Phase 8
+- how runtime hardening may proceed
+- what remains explicitly out of scope
 
-They do not implement runtime behavior by themselves.
+These decisions do not themselves implement runtime changes.
 
 ## Root Cause Analysis
 
-The current project no longer needs broad application-layer cleanup inside the closed Phase 7 scope.
+After Phase 7, the main structural problem was already solved.
 
-It now has:
+The current ZIP shows that the remaining risk now lives in operational behavior:
 
-- explicit feature-local controller ownership
-- explicit state and derived-state boundaries
-- explicit shared runtime and interaction semantics
-- explicit auth-requirement meaning
-- explicit login continuation meaning
-- explicit minimal startup/auth coordination meaning
+- startup recovery
+- websocket disconnect handling
+- reconnect / reboot semantics
+- login continuation failure handling
+- feature fetch failure behavior
+- heterogeneous error presentation
 
-That means the remaining requirement is not more Phase 7 implementation, but disciplined preservation of the closed baseline.
+That means the decision model must shift from structural consolidation decisions toward runtime-hardening decisions.
 
 ## Files Affected
 
-These decisions apply primarily to:
+These decisions directly govern interpretation of:
 
 - `lib/main.dart`
+- `lib/models/GeneralLoadingProgress/model.dart`
+- `lib/models/ServiceProvider/data_model.dart`
+- `lib/models/ServiceProvider/init_stages_enum_model.dart`
+- `lib/models/ServiceProvider/startup_auth_continuation_coordinator_model.dart`
+- `lib/core/transport/geryonsocket_model.dart`
+- `lib/core/transport/geryonsocket_model_io.dart`
+- `lib/core/transport/geryonsocket_model_web.dart`
 - `lib/features/auth/**`
 - `lib/features/dashboard/**`
 - `lib/features/billing/**`
-- `lib/features/contracts/**`
-- `lib/models/GeneralLoadingProgress/**`
-- `lib/models/ServiceProvider/auth_requirement_model.dart`
-- `lib/models/ServiceProvider/login_continuation_result_model.dart`
-- `lib/models/ServiceProvider/startup_auth_continuation_coordinator_model.dart`
-- `lib/models/ServiceProvider/data_model.dart`
-- current Phase 7 documentation
+- `lib/features/contracts/application_coordinator.dart`
+- `docs/phase8_runtime_reliability_failure_semantics_hardening.md`
+- `docs/phase8_runtime_reliability_failure_semantics_hardening_8_1_runtime_failure_surface_inventory.md`
 
 ## Implementation Characteristics
 
-## Decision 1 — Phase 7 is formally closed
+### Decision 1 — Phase 7 remains closed
 
-Phase 7 has reached its intended scope and is now closed.
+Phase 7 is frozen.
 
-No further work should be introduced under Phase 7 without reopening scope explicitly and with new justification from the real code.
+No future work may continue under new `7.x` subphases unless the project explicitly reopens that phase with a separate justified decision.
 
-## Decision 2 — Phase 7.3 remains closed
+That is not the current state.
 
-The completion of later work does not reopen the earlier coordination phase.
+### Decision 2 — Phase 8 is a runtime-hardening phase, not a structural phase
 
-## Decision 3 — ServiceProvider remains the authenticated runtime source
+Phase 8 exists because the ZIP shows real runtime failure and recovery surfaces that are not yet fully normalized.
 
-The authenticated runtime context is still owned by `ServiceProvider`.
+Phase 8 does not exist to continue structural cleanup.
 
-Phase 7 did not change that ownership.
+### Decision 3 — The active architecture remains unchanged
 
-## Decision 4 — Startup boundary remains local
-
-`main.dart` still owns startup-boundary completion state.
-
-## Decision 5 — Auth requirement has explicit local semantics
-
-The preferred current semantic boundary is:
-
-- `ServiceProviderAuthRequirementKind`
-- `ServiceProviderAuthRequirement`
-- `evaluateAuthRequirement()`
-
-## Decision 6 — Login continuation has explicit local semantics
-
-The preferred post-login continuation boundary is:
-
-- `ServiceProviderLoginContinuationDisposition`
-- `ServiceProviderLoginContinuationResult`
-- `_resolveLoginContinuationResult(...)`
-- `_handleResolvedLoginContinuation(...)`
-
-## Decision 7 — Startup/auth minimal coordination has explicit local semantics
-
-The preferred startup/auth coordination boundary is:
-
-- `ServiceProviderStartupAuthContinuationDisposition`
-- `ServiceProviderStartupAuthContinuationCoordinatorState`
-- `evaluateStartupAuthContinuationCoordinatorState(...)`
-
-Widget-local inline startup/auth coordination branching is no longer the preferred semantic source.
-
-## Decision 8 — Popup ownership remains where it is for now
-
-`ServiceProvider` still triggers the login popup path.
-
-That is accepted current baseline behavior.
-
-Phase 7 did not move that ownership.
-
-## Decision 9 — Loading popup remains a UI bridge, not the owner of startup/auth semantics
-
-`ModelGeneralLoadingProgress` still renders waiting state and responds to state changes.
-
-But it must consume explicit coordinator decisions rather than inventing startup/auth coordination semantics inline.
-
-## Decision 10 — Login UI is not the current architectural problem
-
-The auth feature continues owning login bootstrap and submit behavior.
-
-The main concern solved by Phase 7 was the boundary meaning before and after popup entry, not the popup UI itself.
-
-## Decision 11 — Persisted login hint is not a backend session
-
-Stored DNI/CUIT remains a remembered login hint only.
-
-It must not be treated as a persisted authenticated backend session.
-
-## Decision 12 — Reset-before-login continuation remains conservative baseline behavior
-
-When auth requirement is evaluated from remembered local user state, the runtime may still reset authenticated runtime state conservatively before reopening login.
-
-That behavior remains accepted current baseline.
-
-## Decision 13 — Startup entry and logout reentry belong to the same boundary family
-
-Future hardening work, when explicitly justified, must continue to respect both:
-
-- initial startup entry
-- logout-triggered reentry
-
-## Decision 14 — No broad redesign under the banner of normalization
-
-Phase 7 did not authorize:
-
-- event bus
-- global runtime engine
-- broad startup/auth coordinator
-- navigation redesign
-- ServiceProvider replacement
-
-## Decision 15 — The final Phase 7 baseline is frozen
-
-The closed baseline produced by Phase 7 is:
+The active architecture remains:
 
 - `presentation → controller → ServiceProvider`
-- explicit feature-local controller ownership
-- explicit state and derived-state boundaries
-- explicit shared runtime and interaction semantics
-- explicit auth requirement, login continuation, and startup/auth coordinator semantics
-- narrow coordination only where justified
 
-Future evolution must occur under a new phase with explicit scope definition justified by the real code.
+This is a stable baseline, not an open question.
+
+### Decision 4 — ServiceProvider remains the runtime owner
+
+ServiceProvider remains the owner of:
+
+- authenticated runtime lifecycle
+- backend connectivity baseline
+- startup/runtime continuation state
+- active operational context
+
+Phase 8 may clarify or harden that ownership.
+
+It may not replace it.
+
+### Decision 5 — Runtime failures must be classified before policy is changed
+
+Before retry, reconnect, reboot, or reset behavior is changed, the project must first identify:
+
+- where failures occur
+- whether they are runtime-global or feature-local
+- whether they are recoverable, retryable, blocking, or invalidating
+
+This is why 8.1 comes before any implementation subphase.
+
+### Decision 6 — Runtime policy must stay explicit and narrow
+
+Any later hardening of:
+
+- retry
+- reboot
+- reconnect
+- reload
+- reset
+
+must remain narrowly tied to a real identified failure boundary.
+
+No broad “reliability framework” may be introduced without explicit evidence from the ZIP.
+
+### Decision 7 — Error presentation heterogeneity is evidence, not yet a bug by itself
+
+The current codebase presents errors through multiple surfaces, including:
+
+- loading popup retry path
+- `SnackBar`
+- `CatchMainScreen`
+- popup dialogs
+
+This heterogeneity is not, by itself, justification for redesign.
+
+It is evidence that failure semantics are distributed and must be normalized before any unification work is proposed.
+
+### Decision 8 — Feature-local failures and runtime-global failures must not be merged implicitly
+
+Billing failure, login failure, startup failure, and websocket disconnect are not automatically the same class of problem.
+
+Future work must keep that distinction explicit.
+
+### Decision 9 — Phase 8 implementation must proceed in order
+
+The active recommended order is:
+
+- `8.1 — Runtime Failure Surface Inventory`
+- `8.2 — Failure Boundary Normalization`
+- `8.3 — Retry / Reboot / Reconnect Policy Hardening`
+- `8.4 — Runtime Diagnostic & Observability Signals`
+- `8.5 — Formal Closure of Phase 8`
+
+This order is now part of the documentary baseline.
 
 ## Validation
 
-These decisions remain valid only if the current runtime still demonstrates:
+These decisions are valid only if the current ZIP still confirms all of the following:
 
-- popup-based startup continuation
-- explicit auth-requirement evaluation inside `ServiceProvider`
-- explicit login continuation resolution inside `ServiceProvider`
-- explicit minimal startup/auth coordination inside `ServiceProvider`
-- feature-local login handling
-- feature-local controller ownership preserved
-- in-memory authenticated runtime context ownership
-- logout reentry behavior preserved where relevant
-- Phase 7 treated as a closed baseline rather than active implementation scope
+- Phase 7 is fully closed
+- the active architecture is stable
+- runtime recovery behavior already exists in code
+- operational semantics remain partially distributed
+- runtime hardening is the next justified step
+
+The current ZIP confirms those conditions.
 
 ## Release Impact
 
 These decisions have no direct user-facing release impact.
 
-They protect the correct interpretation of the current implementation and the formal closure of the whole Application Layer Consolidation phase.
+They protect the correct interpretation of the codebase and prevent the next phase from drifting into hidden redesign.
 
 ## Risks
 
 If these decisions are ignored, future work may:
 
-- drift back into implicit semantics
-- over-expand the coordination scope
-- destabilize the current runtime
-- reopen a closed phase without recognizing it
+- reopen structural scope unnecessarily
+- normalize the wrong failure boundaries
+- patch runtime issues inconsistently
+- move recovery policy into widgets
+- destabilize the current baseline
 
 ## What it does NOT solve
 
 This decisions document does not itself:
 
-- change popup ownership
-- redesign startup completion flow
-- introduce a global application coordinator
-- define the exact contents of the next phase
+- fix runtime hotspots
+- classify all failures formally
+- change reconnect behavior
+- define the final retry policy
+- add observability signals
 
-It only freezes the correct interpretation of the current closed baseline.
+It only freezes the correct decision baseline for Phase 8.
 
 ## Conclusion
 
 The current project baseline is:
 
 - Phase 7 closed
-- application-layer consolidation completed
-- startup/auth continuation explicitly modeled and minimally coordinated
-- further evolution blocked from continuing under Phase 7 implicitly
+- architecture frozen
+- ServiceProvider retained as runtime owner
+- Phase 8 opened as runtime reliability and failure semantics hardening
+- Phase 8.1 established as the correct first step
 
-The next correct step must be introduced as a new phase with a new justified scope.
+Future work must now proceed under that interpretation.

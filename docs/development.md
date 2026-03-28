@@ -12,17 +12,21 @@ The current ZIP confirms a stable architecture with the following baseline:
 - Phase 7.3 already closed
 - Phase 7.4 completed and formally closed
 - Phase 7.5 completed and formally closed
-- `7.4.2` completed as auth-requirement boundary normalization
-- `7.4.3` completed as login resolution continuation contract normalization
-- `7.4.4` completed as minimal startup/auth continuation coordination normalization
-- `7.4.5` completed as formal closure of Phase 7.4
-- `7.5` completed as formal closure of the whole Application Layer Consolidation effort
+- Phase 8 opened as a new runtime-hardening phase
+- Phase 8.1 documented as runtime failure surface inventory
+
+That means the closed structural baseline of Phase 7 remains valid and must not be reopened implicitly.
 
 ## Problem Statement
 
-Without updated rules, later work could easily overreach and turn a closed consolidation effort into a stealth redesign.
+Without updated rules, later work could easily overreach in one of two directions:
 
-The biggest current risk is treating the already-closed application-layer and startup/auth continuation baselines as if they were still open for incremental modification under Phase 7.
+- continue reopening closed application-layer concerns under the old Phase 7 scope
+- mix runtime reliability work with stealth rearchitecture
+
+The current dominant risk is no longer application-layer ambiguity.
+
+The current dominant risk is runtime hardening being performed without explicit operational scope.
 
 ## Scope
 
@@ -35,8 +39,9 @@ These rules apply to work touching:
 - `lib/features/contracts/**`
 - `lib/models/GeneralLoadingProgress/**`
 - `lib/models/ServiceProvider/**`
+- `lib/core/transport/**`
 - `lib/core/session/**`
-- current Phase 7 documents
+- current Phase 8 documents
 
 These rules do not authorize:
 
@@ -45,22 +50,21 @@ These rules do not authorize:
 - navigation redesign
 - UI redesign
 - broad coordinator introduction
+- state-management rearchitecture
 
 ## Root Cause Analysis
 
-By the end of Phase 7.3, the project no longer had a broad coordination problem.
+Phase 7 solved the structural consolidation problem.
 
-What remained was narrower:
+The current ZIP now shows a different kind of remaining concern:
 
-- auth requirement was still implicit
-- startup/auth continuation still depended on distributed semantics
-- loading-popup close / wait / reboot coordination still remained partially inline
+- runtime-global failure boundaries
+- reconnect / reboot / retry behavior
+- heterogeneous failure presentation surfaces
+- feature-local errors dependent on runtime-global validity
+- operational sequencing hotspots
 
-Phase 7.4 addressed those concerns incrementally and conservatively.
-
-Phase 7.5 then closed the whole Application Layer Consolidation effort.
-
-That work is now complete and frozen.
+That means the repository has entered a runtime hardening stage, not a structural cleanup stage.
 
 ## Files Affected
 
@@ -69,178 +73,154 @@ Main files governed by the current baseline include:
 - `lib/main.dart`
 - `lib/features/auth/controllers/login_controller.dart`
 - `lib/features/auth/presentation/login_widget.dart`
-- `lib/features/dashboard/**`
-- `lib/features/billing/**`
+- `lib/features/dashboard/controllers/dashboard_controller.dart`
+- `lib/features/billing/controllers/billing_controller.dart`
+- `lib/features/billing/presentation/billing_widget.dart`
+- `lib/features/contracts/application_coordinator.dart`
 - `lib/models/GeneralLoadingProgress/model.dart`
-- `lib/models/ServiceProvider/auth_requirement_model.dart`
-- `lib/models/ServiceProvider/login_continuation_result_model.dart`
-- `lib/models/ServiceProvider/startup_auth_continuation_coordinator_model.dart`
 - `lib/models/ServiceProvider/data_model.dart`
-- `docs/phase7_application_layer_consolidation.md`
-- `docs/phase7_application_layer_consolidation_7_5_formal_closure.md`
+- `lib/models/ServiceProvider/init_stages_enum_model.dart`
+- `lib/models/ServiceProvider/startup_auth_continuation_coordinator_model.dart`
+- `lib/models/ServiceProvider/login_continuation_result_model.dart`
+- `lib/models/ServiceProvider/auth_requirement_model.dart`
+- `lib/core/transport/geryonsocket_model.dart`
+- `lib/core/transport/geryonsocket_model_io.dart`
+- `lib/core/transport/geryonsocket_model_web.dart`
 
 ## Implementation Characteristics
 
-### Rule 1 — Preserve `presentation → controller → ServiceProvider`
+### 1. The architecture remains frozen
 
-Feature-local presentation must remain separate from controller logic and runtime-source logic.
+All new work must preserve:
 
-Do not move feature logic back into widgets.
+- `presentation → controller → ServiceProvider`
 
-### Rule 2 — ServiceProvider remains the runtime source
+That remains the active baseline.
 
-`ServiceProvider` still owns:
+No Phase 8 change may be justified by pretending the current architecture is still unresolved.
 
-- backend/runtime connectivity state
-- authenticated runtime context
-- active client/company context
+### 2. Runtime hardening must stay runtime-focused
 
-Phase 7 did not change that ownership.
+Phase 8 work is allowed to harden:
 
-### Rule 3 — Auth requirement must remain explicit
+- failure semantics
+- retry behavior
+- reconnect behavior
+- reboot behavior
+- operational recovery boundaries
+- diagnostic signaling
 
-New work must prefer the explicit auth-requirement model over direct raw magic-code branching.
+Phase 8 work is not allowed to drift into:
 
-Current explicit boundary model:
+- broad structural extraction
+- new global service layers
+- widget/controller responsibility inversion
+- navigation flow redesign
 
-- `ServiceProviderAuthRequirementKind`
-- `ServiceProviderAuthRequirement`
-- `evaluateAuthRequirement()`
+### 3. ServiceProvider may be hardened, not replaced
 
-### Rule 4 — Login continuation resolution must remain explicit
+ServiceProvider remains the runtime source and owner of authenticated runtime lifecycle.
 
-The preferred post-login continuation boundary remains:
+It may be:
 
-- `ServiceProviderLoginContinuationDisposition`
-- `ServiceProviderLoginContinuationResult`
-- `_resolveLoginContinuationResult(...)`
-- `_handleResolvedLoginContinuation(...)`
+- clarified
+- normalized
+- hardened
+- made more explicit operationally
 
-Raw popup return values must not become the primary semantic source of continuation logic.
+It must not be:
 
-### Rule 5 — Startup/auth minimal coordination must remain explicit
+- replaced
+- bypassed by a new global engine
+- fragmented into speculative new runtime layers
 
-The preferred startup/auth boundary-coordination model remains:
+### 4. Widgets must not become recovery owners
 
-- `ServiceProviderStartupAuthContinuationDisposition`
-- `ServiceProviderStartupAuthContinuationCoordinatorState`
-- `evaluateStartupAuthContinuationCoordinatorState(...)`
+Widgets may display failure state and trigger explicit user actions.
 
-Loading-popup close / keep-waiting / reboot decisions must continue to prefer this explicit coordinator state instead of widget-local condition combinations.
+They must not become the place where runtime policy is invented ad hoc.
 
-### Rule 6 — Login UI remains feature-local
+Operational policy must remain anchored in explicit runtime boundaries.
 
-The auth feature still owns:
+### 5. Feature-local failure versus runtime-global failure must stay explicit
 
-- login bootstrap view state
-- input preparation
-- login submit UX
-- local failure rendering
+All future changes must distinguish between:
 
-Do not use post-Phase-7 work as a reason to move UI logic into `ServiceProvider` or `main.dart`.
+- failures that only affect one feature
+- failures that invalidate the current runtime continuation
 
-### Rule 7 — Startup boundary remains local to `main.dart`
+This distinction is mandatory for Phase 8.
 
-`main.dart` continues owning whether the initial startup boundary is completed.
+### 6. Phase 8 must proceed in explicit subphases
 
-Phase 7 did not change that.
+Recommended order:
 
-### Rule 8 — Persisted DNI/CUIT remains a login hint
+- `8.1 — Runtime Failure Surface Inventory`
+- `8.2 — Failure Boundary Normalization`
+- `8.3 — Retry / Reboot / Reconnect Policy Hardening`
+- `8.4 — Runtime Diagnostic & Observability Signals`
+- `8.5 — Formal Closure of Phase 8`
 
-Remembered DNI/CUIT is still only a bootstrap/login hint.
+No implementation should skip the documentary justification of the current subphase.
 
-It is not an authenticated persisted backend session.
+### 7. No hidden redesign under the label of hardening
 
-### Rule 9 — Reset behavior must stay conservative
+The following remain explicitly disallowed unless the ZIP later proves a narrowly justified need:
 
-When the auth requirement indicates a remembered local user path, the runtime may still reset authenticated runtime state conservatively before reopening login continuation.
-
-Do not loosen that behavior without explicit validation.
-
-### Rule 10 — Startup and logout reentry must both be respected
-
-The auth-requirement boundary is reached from:
-
-- initial startup
-- logout reentry
-
-Future hardening work must preserve both paths when relevant.
-
-### Rule 11 — No broad redesign under cleanup language
-
-Do not introduce under the label of cleanup:
-
-- event bus
-- global runtime engine
-- broad startup/auth coordinator
-- provider replacement
-- navigation overhaul
-
-unless a later phase explicitly justifies it against the real code.
-
-### Rule 12 — Phase 7 is closed and must not be extended implicitly
-
-The Application Layer Consolidation baseline is now considered stable.
-
-Future changes must:
-
-- not extend Phase 7 implicitly
-- not introduce new startup/auth continuation logic as a hidden continuation of the closed phase
-- not bypass the explicit auth / continuation / coordinator models established during Phase 7
-- not reopen earlier controller/boundary/coordination work without a new explicit phase and new justification
-
-Any new work must be introduced under a new phase with explicit justification grounded in the real code.
+- broad application coordinator expansion
+- event-bus introduction
+- global error framework replacement
+- navigation replacement
+- feature-state ownership redesign
+- backend contract redesign
 
 ## Validation
 
-Any change after Phase 7 closure must preserve all of the following:
+Future work is aligned with the current baseline only if all of the following remain true:
 
-- startup with no remembered user still opens login correctly
-- startup with remembered local user still behaves conservatively
-- manual login still works
-- login popup still returns correctly
-- invalid or null popup return values remain handled explicitly
-- authenticated runtime context still materializes correctly
-- loading popup closes only when coordinator state resolves authenticated continuation
-- explicit blocked states do not silently close startup boundary
-- logout still reenters unauthenticated flow safely when relevant
-- the closed Phase 7 baseline is not bypassed implicitly
+- the architecture remains `presentation → controller → ServiceProvider`
+- runtime hardening stays narrower than redesign
+- feature-local logic remains outside widgets where already extracted
+- ServiceProvider remains the runtime owner
+- failures are analyzed before semantics are normalized
+- semantics are normalized before policy is hardened
+- policy is hardened before documentary closure
 
 ## Release Impact
 
-These rules do not change runtime behavior directly.
+These guidelines have no direct user-facing release impact.
 
-They constrain how future work is allowed to evolve the code after the formal closure of the whole Application Layer Consolidation phase.
+They protect the repository from mixing runtime hardening with structural redesign and keep Phase 8 scoped correctly.
 
 ## Risks
 
-Without these rules, future work may:
+If these rules are ignored, future work may:
 
-- add new hidden semantics on top of the frozen baseline
-- redesign `ServiceProvider` too early
-- break the current startup/auth bridge while claiming to “continue Phase 7”
-- reopen a closed consolidation phase without acknowledging it
+- reopen closed Phase 7 concerns
+- disguise rearchitecture as reliability work
+- normalize failure behavior inconsistently
+- introduce recovery logic in the wrong layer
+- destabilize the current production runtime
 
 ## What it does NOT solve
 
-This document does not by itself:
+This document does not itself:
 
-- relocate popup ownership
-- redesign startup semantics
-- introduce a global startup/auth coordinator
-- define the next phase content
+- classify failures
+- harden reconnect behavior
+- fix runtime hotspots
+- unify failure presentation
+- implement observability
 
-It only freezes the correct implementation discipline after Phase 7 closure.
+It only defines the rules under which that work must occur.
 
 ## Conclusion
 
-The current development baseline is conservative and explicit:
+The current development baseline is now:
 
-- keep runtime behavior stable
-- preserve `presentation → controller → ServiceProvider`
-- prefer explicit auth-requirement meaning
-- prefer explicit login continuation meaning
-- prefer explicit minimal startup/auth coordinator meaning
-- treat Phase 7 as formally closed
+- Phase 7 closed
+- structural consolidation frozen
+- Phase 8 active
+- runtime reliability and failure semantics as the correct current scope
 
-Any further evolution must proceed under a new phase.
+All future implementation must respect that boundary.

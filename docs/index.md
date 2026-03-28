@@ -14,6 +14,8 @@ The current ZIP confirms the following phase status:
 - Phase 7.3 completed and formally closed
 - Phase 7.4 completed and formally closed
 - Phase 7.5 completed and formally closed
+- Phase 8 opened
+- Phase 8.1 documented as the active first subphase
 
 Current completed subphases inside the Phase 7 consolidation effort are:
 
@@ -37,13 +39,21 @@ Current completed subphases inside the Phase 7 consolidation effort are:
 - `7.4.5 — Formal Closure of Phase 7.4`
 - `7.5 — Formal Closure of Phase 7`
 
+Current active Phase 8 documentary baseline is:
+
+- `8.1 — Runtime Failure Surface Inventory`
+
 ## Problem Statement
 
 The documentation index must reflect the real current state of the project.
 
-At this point, the Application Layer Consolidation effort is no longer active work.
+At this point:
 
-Phase 7 is now formally closed and must be treated as a frozen baseline.
+- Phase 7 is closed and frozen
+- Phase 8 is now the active phase
+- the current active scope is runtime reliability and failure semantics hardening rather than application-layer restructuring
+
+If the index does not make this explicit, future work could incorrectly continue reopening Phase 7 concerns.
 
 ## Scope
 
@@ -53,15 +63,20 @@ This index covers:
 - governance documents
 - historical phase documents
 - the completed Phase 7 baseline
-- the closed documentary set for the whole Application Layer Consolidation effort
+- the newly opened Phase 8 runtime-hardening effort
 
-It does not define runtime behavior.
+It does not define runtime behavior by itself.
 
 ## Root Cause Analysis
 
 The documentation has been built phase by phase together with the implementation.
 
-That means the index must preserve the same reading order as the real architecture work and clearly show which phases remain active versus formally closed.
+That means the index must preserve the real reading order of the project and clearly distinguish:
+
+- closed structural work
+- active runtime hardening work
+
+The current ZIP justifies that distinction.
 
 ## Files Affected
 
@@ -77,12 +92,9 @@ Primary entry documents include:
 - `docs/features.md`
 - `docs/phase6_presentation_structure_cleanup.md`
 - `docs/phase7_application_layer_consolidation.md`
-- `docs/phase7_application_layer_consolidation_7_4_1_startup_auth_continuation_inventory.md`
-- `docs/phase7_application_layer_consolidation_7_4_2_auth_requirement_boundary_normalization.md`
-- `docs/phase7_application_layer_consolidation_7_4_3_login_resolution_continuation_contract.md`
-- `docs/phase7_application_layer_consolidation_7_4_4_minimal_startup_auth_continuation_coordinator.md`
-- `docs/phase7_application_layer_consolidation_7_4_5_formal_closure.md`
 - `docs/phase7_application_layer_consolidation_7_5_formal_closure.md`
+- `docs/phase8_runtime_reliability_failure_semantics_hardening.md`
+- `docs/phase8_runtime_reliability_failure_semantics_hardening_8_1_runtime_failure_surface_inventory.md`
 
 ## Implementation Characteristics
 
@@ -165,6 +177,12 @@ Primary entry documents include:
 ##### Phase 7.5
 - `docs/phase7_application_layer_consolidation_7_5_formal_closure.md`
 
+#### Phase 8
+- `docs/phase8_runtime_reliability_failure_semantics_hardening.md`
+
+##### Phase 8.1
+- `docs/phase8_runtime_reliability_failure_semantics_hardening_8_1_runtime_failure_surface_inventory.md`
+
 ## Validation
 
 Recommended current reading order:
@@ -174,20 +192,15 @@ Recommended current reading order:
 3. `docs/architecture.md`
 4. `docs/development.md`
 5. `docs/decisions.md`
-6. `docs/phase7_application_layer_consolidation.md`
-7. `docs/phase7_application_layer_consolidation_7_3_5_formal_closure.md`
-8. `docs/phase7_application_layer_consolidation_7_4_1_startup_auth_continuation_inventory.md`
-9. `docs/phase7_application_layer_consolidation_7_4_2_auth_requirement_boundary_normalization.md`
-10. `docs/phase7_application_layer_consolidation_7_4_3_login_resolution_continuation_contract.md`
-11. `docs/phase7_application_layer_consolidation_7_4_4_minimal_startup_auth_continuation_coordinator.md`
-12. `docs/phase7_application_layer_consolidation_7_4_5_formal_closure.md`
-13. `docs/phase7_application_layer_consolidation_7_5_formal_closure.md`
+6. `docs/phase7_application_layer_consolidation_7_5_formal_closure.md`
+7. `docs/phase8_runtime_reliability_failure_semantics_hardening.md`
+8. `docs/phase8_runtime_reliability_failure_semantics_hardening_8_1_runtime_failure_surface_inventory.md`
 
 ## Release Impact
 
 This document has no direct runtime impact.
 
-It keeps the documentation aligned with the real current phase baseline and makes the formal closure of the whole Phase 7 effort explicit.
+It keeps the documentation aligned with the real current phase baseline and makes the transition from closed Phase 7 to active Phase 8 explicit.
 
 ## Risks
 
@@ -195,17 +208,18 @@ If this index is not aligned, future work may:
 
 - treat Phase 7 as still active
 - reopen closed application-layer concerns implicitly
-- misread the frozen baseline as still pending
+- misread runtime hardening as structural redesign
+- lose the correct documentary handoff into Phase 8
 
 ## What it does NOT solve
 
 This index does not by itself:
 
 - change runtime behavior
-- normalize auth requirement semantics
-- define continuation contracts
-- coordinate startup/auth behavior
-- define the next phase
+- define retry policy
+- normalize failure taxonomy
+- harden reconnect behavior
+- fix runtime hotspots
 
 It only reflects the real current baseline.
 
@@ -214,10 +228,8 @@ It only reflects the real current baseline.
 The current documentation baseline is:
 
 - Phase 6 completed
-- Phase 7.1 completed
-- Phase 7.2 completed and closed
-- Phase 7.3 completed and closed
-- Phase 7.4 completed and closed
-- Phase 7.5 completed and closed
+- Phase 7 completed and formally closed
+- Phase 8 opened
+- Phase 8.1 documented as runtime failure surface inventory
 
-Future work must proceed under a new phase.
+That is the correct current entry point for the project.
