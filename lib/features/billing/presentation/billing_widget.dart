@@ -13,6 +13,8 @@ import 'package:geryon_web_app_ws_v2/models/SimpleTableWithScroll/widget.dart';
 import 'package:geryon_web_app_ws_v2/models/child_popup_error_message.dart';
 import 'package:geryon_web_app_ws_v2/models/error_handler.dart';
 import 'package:geryon_web_app_ws_v2/pages/CatchMainScreen/widget.dart';
+import 'package:geryon_web_app_ws_v2/shared/widgets/feature_empty_state.dart';
+import 'package:geryon_web_app_ws_v2/shared/widgets/feature_error_state.dart';
 import 'package:geryon_web_app_ws_v2/shared/window/window_model.dart';
 import 'package:geryon_web_app_ws_v2/shared/window/window_widget.dart';
 
@@ -200,38 +202,92 @@ Error: ${e.toString()}
     }
   }
 
+  void _requestBillingReload() {
+    unawaited(_reloadBillingData());
+  }
+
   @override
   Widget build(BuildContext context) {
     String functionName = 'BillingWidget.build';
     String locFunc = '.::$functionName::.';
 
     Widget buildWindowHeader() {
-      return Placeholder(
-        fallbackHeight: 50,
-        child: Text('Header for ${widget.pType}'),
+      final theme = Theme.of(context);
+
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+        decoration: BoxDecoration(
+          color: Colors.grey.shade50,
+          border: Border(
+            bottom: BorderSide(
+              color: Colors.grey.shade300,
+            ),
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              _controller.resolveBillingHeaderTitle(
+                billingType: widget.pType,
+              ),
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              _controller.resolveBillingHeaderSubtitle(
+                billingType: widget.pType,
+              ),
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.textTheme.bodyMedium?.color?.withValues(
+                  alpha: 0.78,
+                ),
+              ),
+            ),
+          ],
+        ),
       );
     }
 
     Widget buildWindowBody({
       required BoxConstraints constraints,
     }) {
-      if (_billingState.hasError) {
-        constraints = BoxConstraints(
-          maxHeight: constraints.maxHeight - 32,
-          maxWidth: constraints.maxWidth,
+      if (_billingState.isLoading) {
+        return LoadingGeneric(
+          loadingText: _controller.resolveBillingLoadingText(
+            billingType: widget.pType,
+          ),
         );
+      }
 
-        return CatchMainScreen(
-          locFunc: locFunc,
-          constraints: constraints,
-          e: _billingState.error?.errorDsc ?? 'Error desconocido',
-          stacktrace: _billingState.error?.stacktrace ?? StackTrace.current,
-          debug: true,
-          pScreenMaxHeight: constraints.maxHeight - 32,
-          pScreenMaxWidth: constraints.maxWidth,
-          showTitleBar: false,
-          showClosebutton: false,
-          showStacktrace: false,
+      if (_billingState.hasError) {
+        return FeatureErrorState(
+          title: _controller.resolveBillingErrorTitle(
+            billingType: widget.pType,
+            state: _billingState,
+          ),
+          message: _controller.resolveBillingErrorMessage(
+            billingType: widget.pType,
+            state: _billingState,
+          ),
+          retryLabel: 'Reintentar',
+          onRetry: _requestBillingReload,
+        );
+      }
+
+      if (_controller.isEmptyState(state: _billingState)) {
+        return FeatureEmptyState(
+          title: _controller.resolveBillingEmptyTitle(
+            billingType: widget.pType,
+          ),
+          message: _controller.resolveBillingEmptyMessage(
+            billingType: widget.pType,
+          ),
+          actionLabel: 'Actualizar',
+          onAction: _requestBillingReload,
         );
       }
 
@@ -241,14 +297,12 @@ Error: ${e.toString()}
             )
           : const <Map<String, dynamic>>[];
 
-      return _billingState.isLoading
-          ? LoadingGeneric()
-          : SizedBox(
-              child: SimpleTableWithScrollLimit(
-                data: comprobantes,
-                constraints: constraints,
-              ),
-            );
+      return SizedBox(
+        child: SimpleTableWithScrollLimit(
+          data: comprobantes,
+          constraints: constraints,
+        ),
+      );
     }
 
     developer.log(

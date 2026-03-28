@@ -19,6 +19,7 @@ The current ZIP confirms:
 - Phase 9 is opened as product surface consistency and UX hardening
 - Phase 9.1 inventories product-surface inconsistency
 - Phase 9.2.1 introduces the minimal shared state-surface contract foundation
+- Phase 9.2.2 applies that shared contract concretely to Billing
 
 ## Problem Statement
 
@@ -89,6 +90,7 @@ These decisions directly govern interpretation of:
 - `docs/phase9_product_surface_consistency_ux_hardening.md`
 - `docs/phase9_product_surface_consistency_ux_hardening_9_1_product_surface_inventory.md`
 - `docs/phase9_product_surface_consistency_ux_hardening_9_2_1_shared_state_surface_contract.md`
+- `docs/phase9_product_surface_consistency_ux_hardening_9_2_2_billing_state_surface_normalization.md`
 
 ## Implementation Characteristics
 
@@ -225,7 +227,30 @@ It must not become:
 - a broad design-system engine
 - a replacement for controller-owned feature logic
 
-### Decision 14 — Future larger work must open a new explicit phase
+### Decision 14 — Billing recoverable errors now use feature-level surfaces
+
+Normal recoverable Billing failures are no longer treated as system crashes.
+
+That means:
+
+- `FeatureErrorState` is now the correct primary surface for recoverable Billing errors
+- retry affordance belongs on the feature surface
+- `CatchMainScreen` remains reserved for unexpected or higher-severity failures, such as outer rendering/build failures
+
+### Decision 15 — Billing empty state is now a feature-surface concern
+
+Billing no longer leaves empty-state semantics buried exclusively inside the table widget.
+
+The feature itself now decides when it is:
+
+- loading
+- errored
+- empty
+- ready
+
+That is the required product-surface pattern for later Phase 9 feature adoption.
+
+### Decision 16 — Future larger work must open a new explicit phase
 
 Neither Phase 7 nor Phase 8 should be reopened informally.
 
@@ -272,9 +297,9 @@ If these decisions are ignored, future work may:
 
 This document does not itself:
 
-- normalize any feature screen
-- wire retry actions into existing screens
-- replace historical technical surfaces
+- normalize Auth
+- normalize Dashboard
+- replace historical technical surfaces globally
 - redesign the application
 - define the entire later Phase 9 sequence in implementation detail
 
@@ -282,10 +307,11 @@ It only records the governing decisions.
 
 ## Conclusion
 
-The repository now has three explicit baseline truths:
+The repository now has these explicit baseline truths:
 
 - Phase 7 closed
 - Phase 8 closed
 - Phase 9 active only as controlled product-surface consistency work
+- Billing is now the first concrete feature that adopts the shared state-surface contract in production code
 
 Those decisions now govern how Mi IP·RED should evolve from this point forward.

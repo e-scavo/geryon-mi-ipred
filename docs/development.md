@@ -19,6 +19,7 @@ The current ZIP confirms this baseline:
 - Phase 9 opened as product surface consistency and UX hardening
 - Phase 9.1 completed as product surface inventory
 - Phase 9.2.1 completed as shared state surface contract foundation
+- Phase 9.2.2 completed as Billing state surface normalization
 
 That means the repository is no longer in either:
 
@@ -214,7 +215,18 @@ This rule justifies small shared state-surface widgets.
 
 It does not justify a large new abstraction layer.
 
-### 8. Closed phases must not be reopened informally
+### 8. Billing normalization now acts as the reference adoption pattern
+
+Billing is the first concrete adopter of the shared Phase 9.2.1 state-surface contract.
+
+That means future feature adoption should follow the same discipline:
+
+- controller keeps feature-state semantics
+- widget renders shared surface states
+- recoverable feature errors remain distinct from system failures
+- empty state is elevated to feature-surface level rather than hidden in lower-level widgets
+
+### 9. Closed phases must not be reopened informally
 
 This remains a mandatory rule.
 
@@ -225,7 +237,7 @@ Future work must not continue as:
 
 If future work truly requires a new scope, that scope must be opened explicitly as a justified new phase.
 
-### 9. Narrow maintenance remains allowed
+### 10. Narrow maintenance remains allowed
 
 Closing Phase 8 does not prohibit all changes.
 
@@ -237,7 +249,7 @@ It allows:
 - documentation alignment
 - product-surface consistency work inside the explicit Phase 9 scope
 
-### 10. No hidden redesign under the label of UX hardening
+### 11. No hidden redesign under the label of UX hardening
 
 The following remain explicitly disallowed unless the ZIP later proves a narrowly justified need:
 
@@ -301,6 +313,7 @@ The active development baseline is now:
 - Phase 8 closed
 - structural and runtime-hardening baselines frozen
 - Phase 9 opened for controlled product-surface consistency work
+- Phase 9.2.2 established Billing as the first concrete feature adoption of the shared state-surface contract
 - future work required to respect retained baselines without reopening them informally
 
 Any future larger scope beyond this must still begin as a new explicitly justified phase.

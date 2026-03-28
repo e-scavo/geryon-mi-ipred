@@ -11,6 +11,7 @@ import 'package:geryon_web_app_ws_v2/models/CommonParamRequest/header_request.da
 import 'package:geryon_web_app_ws_v2/models/CommonUtils/common_utils.dart';
 import 'package:geryon_web_app_ws_v2/models/GenericDataModel/data_model.dart';
 import 'package:geryon_web_app_ws_v2/models/GenericDataModel/model.dart';
+import 'package:geryon_web_app_ws_v2/models/ServiceProvider/failure_boundary_scope_model.dart';
 import 'package:geryon_web_app_ws_v2/models/ServiceProvider/failure_boundary_state_model.dart';
 import 'package:geryon_web_app_ws_v2/models/ServiceProvider/failure_recovery_expectation_model.dart';
 import 'package:geryon_web_app_ws_v2/models/error_handler.dart';
@@ -252,6 +253,161 @@ class BillingController {
       dataModel: result.dataModel!,
       trackedClientIndex: currentClientIndex,
     );
+  }
+
+  bool hasRows({
+    required BillingFeatureState state,
+  }) {
+    return state.isReady &&
+        state.dataModel != null &&
+        state.dataModel!.cData.isNotEmpty;
+  }
+
+  bool isEmptyState({
+    required BillingFeatureState state,
+  }) {
+    return state.isReady &&
+        state.dataModel != null &&
+        state.dataModel!.cData.isEmpty;
+  }
+
+  String resolveBillingCollectionLabel({
+    required String billingType,
+  }) {
+    switch (billingType) {
+      case 'FacturasVT':
+        return 'facturas';
+      case 'RecibosVT':
+        return 'recibos';
+      case 'DebitosVT':
+        return 'notas de débito';
+      case 'CreditosVT':
+        return 'notas de crédito';
+      default:
+        return 'comprobantes';
+    }
+  }
+
+  String resolveBillingHeaderTitle({
+    required String billingType,
+  }) {
+    switch (billingType) {
+      case 'FacturasVT':
+        return 'Facturas';
+      case 'RecibosVT':
+        return 'Recibos';
+      case 'DebitosVT':
+        return 'Notas de débito';
+      case 'CreditosVT':
+        return 'Notas de crédito';
+      default:
+        return 'Comprobantes';
+    }
+  }
+
+  String resolveBillingHeaderSubtitle({
+    required String billingType,
+  }) {
+    switch (billingType) {
+      case 'FacturasVT':
+        return 'Consultá y descargá las facturas disponibles del cliente activo.';
+      case 'RecibosVT':
+        return 'Consultá y descargá los recibos disponibles del cliente activo.';
+      case 'DebitosVT':
+        return 'Consultá y descargá las notas de débito disponibles del cliente activo.';
+      case 'CreditosVT':
+        return 'Consultá y descargá las notas de crédito disponibles del cliente activo.';
+      default:
+        return 'Consultá y descargá los comprobantes disponibles del cliente activo.';
+    }
+  }
+
+  String resolveBillingLoadingText({
+    required String billingType,
+  }) {
+    final label = resolveBillingCollectionLabel(
+      billingType: billingType,
+    );
+    return 'Cargando $label...';
+  }
+
+  String resolveBillingErrorTitle({
+    required String billingType,
+    required BillingFeatureState state,
+  }) {
+    final label = resolveBillingCollectionLabel(
+      billingType: billingType,
+    );
+
+    switch (state.failureBoundaryState?.scope) {
+      case ServiceProviderFailureBoundaryScope.authContinuation:
+        return 'Necesitás volver a validar tu sesión';
+      case ServiceProviderFailureBoundaryScope.activeOperationalContext:
+        return 'No pudimos resolver el cliente activo';
+      case ServiceProviderFailureBoundaryScope.featureLocal:
+      case ServiceProviderFailureBoundaryScope.backendRequest:
+      case ServiceProviderFailureBoundaryScope.transport:
+        return 'No pudimos cargar los $label';
+      case ServiceProviderFailureBoundaryScope.none:
+      case ServiceProviderFailureBoundaryScope.runtimeGlobal:
+      case ServiceProviderFailureBoundaryScope.startupBoundary:
+      case null:
+        return 'No pudimos cargar los $label';
+    }
+  }
+
+  String resolveBillingErrorMessage({
+    required String billingType,
+    required BillingFeatureState state,
+  }) {
+    final rawMessage = state.error?.errorDsc?.trim();
+    if (rawMessage != null && rawMessage.isNotEmpty) {
+      return rawMessage;
+    }
+
+    switch (state.failureBoundaryState?.scope) {
+      case ServiceProviderFailureBoundaryScope.authContinuation:
+        return 'La sesión actual no está lista para consultar esta sección. Intentá nuevamente.';
+      case ServiceProviderFailureBoundaryScope.activeOperationalContext:
+        return 'No se encontró un cliente activo válido para consultar esta sección. Probá actualizar nuevamente.';
+      case ServiceProviderFailureBoundaryScope.featureLocal:
+      case ServiceProviderFailureBoundaryScope.backendRequest:
+      case ServiceProviderFailureBoundaryScope.transport:
+      case ServiceProviderFailureBoundaryScope.none:
+      case ServiceProviderFailureBoundaryScope.runtimeGlobal:
+      case ServiceProviderFailureBoundaryScope.startupBoundary:
+      case null:
+        final label = resolveBillingCollectionLabel(
+          billingType: billingType,
+        );
+        return 'Ocurrió un problema al cargar los $label. Probá nuevamente.';
+    }
+  }
+
+  String resolveBillingEmptyTitle({
+    required String billingType,
+  }) {
+    final label = resolveBillingCollectionLabel(
+      billingType: billingType,
+    );
+    return 'No hay $label disponibles';
+  }
+
+  String resolveBillingEmptyMessage({
+    required String billingType,
+  }) {
+    switch (billingType) {
+      case 'FacturasVT':
+        return 'No encontramos facturas para el cliente activo en este momento.';
+      case 'RecibosVT':
+        return 'No encontramos recibos para el cliente activo en este momento.';
+      case 'DebitosVT':
+        return 'No encontramos notas de débito para el cliente activo en este momento.';
+      case 'CreditosVT':
+        return 'No encontramos notas de crédito para el cliente activo en este momento.';
+      default:
+        return 'No encontramos comprobantes para el cliente activo en este momento.';
+    }
   }
 
   Future<BillingLoadResult> loadBillingData({
