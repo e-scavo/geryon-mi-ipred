@@ -21,6 +21,7 @@ The current ZIP confirms this baseline:
 - Phase 9.2.1 completed as shared state surface contract foundation
 - Phase 9.2.2 completed as Billing state surface normalization
 - Phase 9.2.3 completed as Dashboard state presentation normalization
+- Phase 9.2.4 completed as Auth interaction feedback normalization
 
 That means the repository is no longer in either:
 
@@ -216,16 +217,17 @@ This rule justifies small shared state-surface widgets.
 
 It does not justify a large new abstraction layer.
 
-### 8. Billing and Dashboard now act as the reference adoption pattern
+### 8. Billing, Dashboard, and Auth now act as the reference adoption pattern
 
-Billing and Dashboard are now the first concrete adopters of the shared Phase 9.2.1 state-surface contract.
+Billing, Dashboard, and Auth are now the concrete adopters of the shared Phase 9 consistency baseline.
 
 That means future feature adoption should follow the same discipline:
 
 - controller keeps feature-state semantics
-- widget renders shared surface states
+- widget renders clear visible state branches
 - recoverable feature errors remain distinct from system failures
-- empty and invalid states are elevated to feature-surface level rather than hidden behind generic fallbacks
+- loading meanings remain explicit rather than generic
+- retry stays natural to the feature context
 
 ### 9. Closed phases must not be reopened informally
 
@@ -314,8 +316,9 @@ The active development baseline is now:
 - Phase 8 closed
 - structural and runtime-hardening baselines frozen
 - Phase 9 opened for controlled product-surface consistency work
-- Phase 9.2.2 established Billing as the first concrete feature adoption of the shared state-surface contract
-- Phase 9.2.3 established Dashboard as the second concrete feature adoption of the shared state-surface contract
+- Phase 9.2.2 established Billing normalization
+- Phase 9.2.3 established Dashboard normalization
+- Phase 9.2.4 established Auth normalization
 - future work required to respect retained baselines without reopening them informally
 
 Any future larger scope beyond this must still begin as a new explicitly justified phase.

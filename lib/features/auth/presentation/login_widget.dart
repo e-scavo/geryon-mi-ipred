@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geryon_web_app_ws_v2/features/auth/controllers/login_controller.dart';
+import 'package:geryon_web_app_ws_v2/models/LoadingGeneric/widget.dart';
+import 'package:geryon_web_app_ws_v2/shared/widgets/feature_error_state.dart';
 import 'package:geryon_web_app_ws_v2/shared/widgets/shake_text_field.dart';
 
 class LoginPageWidget extends ConsumerStatefulWidget {
@@ -36,13 +38,22 @@ class _LoginPageWidgetState extends ConsumerState<LoginPageWidget> {
 
     _dniController.text = bootstrapResult.state.dni;
 
-    setState(() {
-      _loginState = bootstrapResult.state;
-    });
-
     if (bootstrapResult.shouldAutoSubmit) {
+      setState(() {
+        _loginState = bootstrapResult.state;
+      });
+
       await _login(isAutoSubmit: true);
+      return;
     }
+
+    setState(() {
+      _loginState = _controller.buildBootstrapReadyState(
+        currentState: bootstrapResult.state,
+        dni: bootstrapResult.state.dni,
+        rememberMe: bootstrapResult.state.rememberMe,
+      );
+    });
   }
 
   Future<void> _login({
@@ -51,15 +62,13 @@ class _LoginPageWidgetState extends ConsumerState<LoginPageWidget> {
     final currentDni = _dniController.text.trim();
     final currentRememberMe = _loginState.rememberMe;
 
-    if (!isAutoSubmit) {
-      setState(() {
-        _loginState = _controller.buildSubmitLoadingState(
-          currentState: _loginState,
-          dni: currentDni,
-          rememberMe: currentRememberMe,
-        );
-      });
-    }
+    setState(() {
+      _loginState = _controller.buildSubmitLoadingState(
+        currentState: _loginState,
+        dni: currentDni,
+        rememberMe: currentRememberMe,
+      );
+    });
 
     final result = await _controller.login(
       ref: ref,
@@ -77,16 +86,16 @@ class _LoginPageWidgetState extends ConsumerState<LoginPageWidget> {
           currentState: _loginState,
           dni: currentDni,
           rememberMe: currentRememberMe,
+          errorTitle: result.errorTitle,
+          errorMessage: result.errorMessage,
+          errorType: result.errorType,
         );
       });
 
-      if ((result.errorMessage ?? '').contains('DNI/CUIT válido')) {
+      if (_loginState.hasValidationError) {
         _shakeKey.currentState?.shake();
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(result.errorMessage ?? 'Error desconocido.')),
-      );
       return;
     }
 
@@ -103,49 +112,148 @@ class _LoginPageWidgetState extends ConsumerState<LoginPageWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final isLoading = _loginState.isLoading;
+    final bool isBootstrapLoading = _loginState.isBootstrapLoading;
+    final bool isSubmitLoading = _loginState.isSubmitLoading;
+    final bool isBusy = _loginState.isLoading;
+    final theme = Theme.of(context);
+
+    Widget buildLoginCard() {
+      return ConstrainedBox(
+        constraints: const BoxConstraints(
+          maxWidth: 460,
+        ),
+        child: Card(
+          elevation: 3,
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: IgnorePointer(
+              ignoring: isBusy,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Image.asset(
+                    'assets/logo-ipred-color.png',
+                    scale: 2.5,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Ingresá con tu DNI o CUIT',
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Accedé a tu panel de cliente y a tus comprobantes disponibles.',
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.textTheme.bodyMedium?.color?.withValues(
+                        alpha: 0.8,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  ShakeTextField(
+                    key: _shakeKey,
+                    controller: _dniController,
+                    hintText: 'Ingrese DNI/CUIT',
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Checkbox(
+                        value: _loginState.rememberMe,
+                        onChanged: isBusy
+                            ? null
+                            : (v) {
+                                setState(() {
+                                  _loginState =
+                                      _controller.buildToggleRememberMeState(
+                                    currentState: _loginState,
+                                    rememberMe: v ?? false,
+                                  );
+                                });
+                              },
+                      ),
+                      const SizedBox(width: 4),
+                      const Expanded(
+                        child: Text("Recordarme"),
+                      ),
+                    ],
+                  ),
+                  if (_loginState.hasError) ...[
+                    const SizedBox(height: 16),
+                    FeatureErrorState(
+                      title: _loginState.errorTitle ?? 'No pudimos ingresar',
+                      message: _loginState.errorMessage ??
+                          'Ocurrió un problema al intentar ingresar.',
+                      padding: EdgeInsets.zero,
+                      maxWidth: double.infinity,
+                      icon: _loginState.hasValidationError
+                          ? Icons.edit_note_outlined
+                          : Icons.error_outline,
+                    ),
+                  ],
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: isBusy ? null : _login,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          if (isSubmitLoading) ...[
+                            const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.2,
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                          ],
+                          Text(_loginState.submitButtonLabel),
+                        ],
+                      ),
+                    ),
+                  ),
+                  if (_loginState.hasRecoverableError) ...[
+                    const SizedBox(height: 10),
+                    Text(
+                      'Revisá el dato ingresado o reintentá nuevamente.',
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.textTheme.bodySmall?.color?.withValues(
+                          alpha: 0.78,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    if (isBootstrapLoading) {
+      return Scaffold(
+        body: LoadingGeneric(
+          loadingText: _loginState.bootstrapLoadingText,
+        ),
+      );
+    }
 
     return Scaffold(
       body: Center(
         child: Padding(
-          padding: EdgeInsets.all(32),
+          padding: const EdgeInsets.all(32),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Image.asset(
-                'assets/logo-ipred-color.png',
-                scale: 2.5,
-              ),
-              SizedBox(height: 24),
-              ShakeTextField(
-                key: _shakeKey,
-                controller: _dniController,
-                hintText: 'Ingrese DNI/CUIT',
-              ),
-              SizedBox(height: 16),
-              Row(
-                children: [
-                  Checkbox(
-                    value: _loginState.rememberMe,
-                    onChanged: isLoading
-                        ? null
-                        : (v) {
-                            setState(() {
-                              _loginState = _loginState.copyWith(
-                                rememberMe: v ?? false,
-                              );
-                            });
-                          },
-                  ),
-                  Text("Recordarme"),
-                ],
-              ),
-              SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: isLoading ? null : _login,
-                child:
-                    isLoading ? CircularProgressIndicator() : Text("Ingresar"),
-              ),
+              buildLoginCard(),
             ],
           ),
         ),
@@ -170,8 +278,11 @@ class PopUpLoginWidget<T> extends PopupRoute<T> {
   Duration get transitionDuration => const Duration(milliseconds: 300);
 
   @override
-  Widget buildPage(BuildContext context, Animation<double> animation,
-      Animation<double> secondaryAnimation) {
+  Widget buildPage(
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+  ) {
     return const Center(
       child: Material(
         type: MaterialType.transparency,

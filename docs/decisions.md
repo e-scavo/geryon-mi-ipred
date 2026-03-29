@@ -21,6 +21,7 @@ The current ZIP confirms:
 - Phase 9.2.1 introduces the minimal shared state-surface contract foundation
 - Phase 9.2.2 applies that shared contract concretely to Billing
 - Phase 9.2.3 applies that shared contract concretely to Dashboard
+- Phase 9.2.4 applies consistent interaction feedback normalization to Auth
 
 ## Problem Statement
 
@@ -93,6 +94,7 @@ These decisions directly govern interpretation of:
 - `docs/phase9_product_surface_consistency_ux_hardening_9_2_1_shared_state_surface_contract.md`
 - `docs/phase9_product_surface_consistency_ux_hardening_9_2_2_billing_state_surface_normalization.md`
 - `docs/phase9_product_surface_consistency_ux_hardening_9_2_3_dashboard_state_presentation_normalization.md`
+- `docs/phase9_product_surface_consistency_ux_hardening_9_2_4_auth_interaction_feedback_normalization.md`
 
 ## Implementation Characteristics
 
@@ -277,7 +279,26 @@ That means:
 
 This preserves feature clarity and avoids mixed rendering semantics.
 
-### Decision 18 — Future larger work must open a new explicit phase
+### Decision 18 — Auth now distinguishes bootstrap and submit feedback explicitly
+
+Auth no longer treats all busy behavior as the same visible condition.
+
+It now explicitly distinguishes between:
+
+- bootstrap loading while preparing remembered-session login behavior
+- submit loading while validating login input and sending credentials
+- validation failure
+- recoverable login failure
+
+This aligns Auth with the same explicit product-surface standard already applied to Billing and Dashboard.
+
+### Decision 19 — Auth retry remains natural to the main action
+
+Auth retry is not introduced as a separate feature flow.
+
+It remains centered on the existing main submit action, which is the correct product behavior for login.
+
+### Decision 20 — Future larger work must open a new explicit phase
 
 Neither Phase 7 nor Phase 8 should be reopened informally.
 
@@ -324,7 +345,7 @@ If these decisions are ignored, future work may:
 
 This document does not itself:
 
-- normalize Auth
+- close Phase 9 formally
 - replace historical technical surfaces globally
 - redesign the application
 - define the entire later Phase 9 sequence in implementation detail
@@ -338,6 +359,6 @@ The repository now has these explicit baseline truths:
 - Phase 7 closed
 - Phase 8 closed
 - Phase 9 active only as controlled product-surface consistency work
-- Billing and Dashboard are now concrete features that adopt the shared state-surface contract in production code
+- Billing, Dashboard, and Auth are now concrete adopters of the shared consistency standard in production code
 
 Those decisions now govern how Mi IP·RED should evolve from this point forward.
