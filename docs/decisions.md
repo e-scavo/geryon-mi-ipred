@@ -2,7 +2,7 @@
 
 ## Objective
 
-Record the active architectural and implementation decisions that govern Mi IP·RED after the closure of Phase 7, after the formal closure of Phase 8 as the completed runtime hardening baseline, and during the opening of Phase 9 as the active product-surface consistency baseline.
+Record the active architectural and implementation decisions that govern Mi IP·RED after the closure of Phase 7, after the formal closure of Phase 8 as the completed runtime hardening baseline, during the opening and execution of Phase 9 as the active product-surface consistency baseline, and now after the implementation and formal closure of Phase 9.3.3 as the completed local density / layout consistency baseline inside that broader Phase 9 track.
 
 ## Initial Context
 
@@ -25,10 +25,16 @@ The current ZIP confirms:
 - Phase 9.3 opens cross-feature UX consistency consolidation
 - Phase 9.3.1 defines the cross-feature UX consistency inventory
 - Phase 9.3.2 defines the copy / action / feedback consolidation contract
+- Phase 9.3.3 is now implemented as the local density / layout consistency adjustment layer
+- Phase 9.3.3.1 establishes the shared surface density baseline
+- Phase 9.3.3.2 normalizes dashboard layout rhythm
+- Phase 9.3.3.3 aligns auth surface density
+- Phase 9.3.3.4 improves billing embedded surface fit
+- Phase 9.3.3.5 formally closes the 9.3.3 series
 
 ## Problem Statement
 
-The repository now needs a clear decision baseline so that future development does not:
+The repository needs a clear decision baseline so that future development does not:
 
 - reopen structural scope
 - reopen runtime-hardening scope
@@ -36,6 +42,8 @@ The repository now needs a clear decision baseline so that future development do
 - treat runtime-global and feature-local failures as interchangeable
 - treat UX hardening as permission for redesign
 - introduce shared UI abstractions without boundaries
+- reopen already-resolved local density/layout work after its formal closure
+- confuse responsive/platform review work with the already-completed local visual consolidation layer
 
 ## Scope
 
@@ -48,6 +56,7 @@ These decisions govern:
 - retained interpretation of runtime observability
 - allowed interpretation of Phase 9 UX consistency work
 - documented interpretation of Phase 9.3 cross-feature consolidation work
+- retained interpretation of the completed 9.3.3 local visual baseline
 - sequencing expectations for future work
 - what remains explicitly out of scope
 
@@ -67,7 +76,18 @@ After Phase 8.5, the correct next concern was no longer runtime semantics.
 
 It was product-surface consistency.
 
-The repository therefore now needs decisions that preserve the closure of Phase 7 and Phase 8 while allowing narrowly scoped Phase 9 consistency work.
+The repository therefore needed decisions that preserved the closure of Phase 7 and Phase 8 while allowing narrowly scoped Phase 9 consistency work.
+
+Inside that Phase 9 work, the repository then evolved through two different but related layers:
+
+- semantic / wording consistency
+- local visual density / layout consistency
+
+Phase 9.2 and Phase 9.3.2 established the semantic layer.
+
+Phase 9.3.3 established the local visual layer.
+
+That means the repository now needs decisions that preserve not only the Phase 7 and Phase 8 closures, but also the completed local visual baseline already implemented through the 9.3.3 series.
 
 ## Files Affected
 
@@ -86,6 +106,7 @@ These decisions directly govern interpretation of:
 - `lib/features/dashboard/**`
 - `lib/features/billing/**`
 - `lib/shared/widgets/**`
+- `lib/shared/window/**`
 - `lib/models/LoadingGeneric/widget.dart`
 - `docs/phase8_runtime_reliability_failure_semantics_hardening.md`
 - `docs/phase8_runtime_reliability_failure_semantics_hardening_8_1_runtime_failure_surface_inventory.md`
@@ -101,6 +122,12 @@ These decisions directly govern interpretation of:
 - `docs/phase9_product_surface_consistency_ux_hardening_9_2_4_auth_interaction_feedback_normalization.md`
 - `docs/phase9_product_surface_consistency_ux_hardening_9_3_1_cross_feature_ux_consistency_inventory.md`
 - `docs/phase9_product_surface_consistency_ux_hardening_9_3_2_copy_action_feedback_consolidation.md`
+- `docs/phase9_product_surface_consistency_ux_hardening_9_3_3_surface_density_layout_consistency_adjustments.md`
+- `docs/phase9_product_surface_consistency_ux_hardening_9_3_3_1_shared_surface_density_baseline.md`
+- `docs/phase9_product_surface_consistency_ux_hardening_9_3_3_2_dashboard_layout_rhythm_normalization.md`
+- `docs/phase9_product_surface_consistency_ux_hardening_9_3_3_3_auth_surface_density_alignment.md`
+- `docs/phase9_product_surface_consistency_ux_hardening_9_3_3_4_billing_embedded_surface_fit.md`
+- `docs/phase9_product_surface_consistency_ux_hardening_9_3_3_5_formal_closure.md`
 
 ## Implementation Characteristics
 
@@ -184,21 +211,23 @@ Billing continues to represent the distinction between:
 
 That distinction remains part of the retained baseline.
 
-### Decision 10 — Error-presentation heterogeneity justifies controlled UI normalization only
+### Decision 10 — Error-presentation heterogeneity justified controlled UI normalization only
 
-The current code still presents equivalent visible states through different surfaces.
+The codebase historically presented equivalent visible states through different surfaces.
 
-That justifies:
+That justified:
 
 - controlled shared presentation widgets
 - feature-by-feature normalization
 - explicit UX-hardening steps
 
-It does not justify:
+It did not justify:
 
 - a new global error framework
 - business-logic migration into widgets
 - architectural redesign
+
+That decision remains valid after 9.3.3 closure.
 
 ### Decision 11 — Runtime-global and feature-local failures must not be merged implicitly
 
@@ -214,7 +243,7 @@ This distinction remains mandatory after Phase 8 closure and during Phase 9 exec
 
 ### Decision 12 — Minimal shared state surfaces are allowed
 
-The project may now introduce narrowly scoped shared UI surfaces for:
+The project may introduce narrowly scoped shared UI surfaces for:
 
 - loading
 - recoverable feature error
@@ -226,6 +255,8 @@ only when those widgets remain:
 - controller-agnostic
 - narrow in scope
 - reversible
+
+That decision remains valid and is now materially reflected in the current repository baseline.
 
 ### Decision 13 — Shared state widgets must not become a framework
 
@@ -306,47 +337,116 @@ It remains centered on the existing main submit action, which is the correct pro
 
 ### Decision 20 — Phase 9.3 is justified as cross-feature consolidation, not redesign
 
-After Phase 9.2 completed feature-by-feature normalization of Billing, Dashboard, and Auth, the next justified concern is no longer an isolated feature surface.
+After Phase 9.2 completed feature-by-feature normalization of Billing, Dashboard, and Auth, the next justified concern was no longer an isolated feature surface.
 
-It is the consistency between those already-hardened surfaces.
+It was the consistency between those already-hardened surfaces.
 
-That justifies Phase 9.3 specifically as:
+That justified Phase 9.3 specifically as:
 
 - copy consistency
 - action-label consistency
 - loading / error / retry wording consistency
 - feedback hierarchy consistency
 - cross-feature product coherence
+- and later, local density / layout consolidation once semantic consistency had already been established
 
-It does not justify architecture changes, runtime changes, or broad visual redesign.
+It did not justify architecture changes, runtime changes, or broad visual redesign.
 
-### Decision 21 — Phase 9.3 documentation must precede any broader visual adjustment
+### Decision 21 — Phase 9.3 documentation had to precede broader visual adjustment
 
-Before broader visual or spacing adjustments are proposed, the repository should first record:
+Before broader visual or spacing adjustments were proposed, the repository needed to record:
 
-- what inconsistency exists across features
+- what inconsistency existed across features
 - what wording and interaction rules should be treated as baseline
-- what remains deliberately out of scope
+- what remained deliberately out of scope
 
-This preserves traceability and prevents ad hoc UI changes.
+That preserved traceability and prevented ad hoc UI changes.
 
-### Decision 22 — Copy / action / feedback normalization must remain surface-local in implementation
+### Decision 22 — Copy / action / feedback normalization remained surface-local in implementation
 
-Even when Phase 9.3 later applies visible wording improvements in code, ownership must remain unchanged:
+Even when Phase 9.3 applied visible wording improvements in code, ownership remained unchanged:
 
 - controllers still own state meaning
 - widgets still render feature-local visible branches
 - `ServiceProvider` still owns runtime lifecycle
 
-Cross-feature consistency does not authorize ownership drift.
+Cross-feature consistency did not authorize ownership drift.
 
-### Decision 23 — Future larger work must open a new explicit phase
+### Decision 23 — 9.3.3 is now a retained local visual baseline
+
+With the current ZIP, the project now explicitly retains the results of the 9.3.3 series as completed baseline work.
+
+That means the following local concerns are no longer active open problems:
+
+- mismatch between shared state-surface density
+- dashboard vertical rhythm inconsistency
+- auth visual over-compactness relative to the shared baseline
+- billing embedded header/body fit mismatch
+
+They are now part of the retained visible product baseline.
+
+### Decision 24 — Shared surface density baseline is retained
+
+`FeatureErrorState`, `FeatureEmptyState`, and `InfoCard` now form the retained local density baseline for shared product surfaces.
+
+They may still receive narrow bug fixes, but not casual redesign.
+
+### Decision 25 — Dashboard layout rhythm baseline is retained
+
+Dashboard content spacing, constrained width behavior, section cadence, and billing embedding rhythm now form part of the retained UI baseline.
+
+Future work must not continue tuning them informally under the old local-density subphase.
+
+### Decision 26 — Auth density alignment baseline is retained
+
+The login surface remains intentionally compact, but it is no longer treated as a pre-baseline outlier.
+
+Its current local width/elevation/padding cadence now belongs to the retained product-surface baseline.
+
+### Decision 27 — Billing embedded fit baseline is retained
+
+Billing embedded composition now includes:
+
+- actual rendering of `headerWidget`
+- more integrated header/body composition
+- theme-aligned title-bar treatment
+- corrected reserved height from dashboard after the header became real rendered structure
+
+This is now part of the retained baseline for billing as an embedded dashboard surface.
+
+### Decision 28 — Theme-aligned billing title-bar color is now the preferred baseline
+
+The earlier use of strong per-type colors for embedded billing title bars is no longer the preferred baseline.
+
+The retained contract now prioritizes:
+
+- product coherence first
+- section identity second
+
+That means alignment to the active theme now has priority over saturated category-color signaling for the embedded billing surface.
+
+### Decision 29 — Remaining wide-screen / platform issues belong to the next concern class
+
+The repository may still show unresolved behavior in cases such as:
+
+- maximized web viewport focus
+- large empty regions on wide screens
+- composition centering on web
+- Web / Android layout drift
+
+Those concerns do not belong to the already completed local density/layout layer anymore.
+
+They belong to the next justified concern class after 9.3.3 closure.
+
+### Decision 30 — Future larger work must still open a new explicit phase
 
 Neither Phase 7 nor Phase 8 should be reopened informally.
 
 Phase 9 also must not be expanded silently into redesign or feature expansion.
 
-If future work requires more than narrow product-surface hardening, it must open a new justified phase.
+And now, after 9.3.3 closure, the repository must not keep using 9.3.3 as an implicit catch-all bucket for local polishing.
+
+If future work requires more than narrow retained-baseline bug fixing, it must open or continue under the next explicitly justified phase.
 
 ## Validation
 
@@ -359,6 +459,7 @@ These decisions are valid only if the current ZIP still confirms all of the foll
 - the retained recovery-trigger and policy model exists in code
 - the retained runtime observability model exists in code
 - Phase 9 work remains surface-oriented and minimal
+- the 9.3.3 local visual adjustments are materially present in the repository
 
 The current ZIP confirms those conditions.
 
@@ -371,6 +472,7 @@ They protect the interpretation of the repository and ensure that:
 - the structural baseline remains frozen
 - the runtime-hardening baseline remains frozen
 - Phase 9 remains constrained to justified product-surface consistency work
+- the completed 9.3.3 local visual layer is treated as retained baseline rather than as ongoing undocumented tweaking
 
 ## Risks
 
@@ -382,6 +484,8 @@ If these decisions are ignored, future work may:
 - weaken the clarity gained through Phase 8
 - introduce architecture drift under the label of UX hardening
 - accumulate shared UI abstractions without discipline
+- reopen already-completed local visual consolidation work by ambiguity
+- blur the boundary between retained local baseline and future responsive/platform review work
 
 ## What it does NOT solve
 
@@ -391,6 +495,7 @@ This document does not itself:
 - replace historical technical surfaces globally
 - redesign the application
 - define the entire later Phase 9 sequence in implementation detail
+- solve wide-screen Web / Android parity by itself
 
 It only records the governing decisions.
 
@@ -401,7 +506,9 @@ The repository now has these explicit baseline truths:
 - Phase 7 closed
 - Phase 8 closed
 - Phase 9 active only as controlled product-surface consistency work
-- Billing, Dashboard, and Auth are now concrete adopters of the shared consistency standard in production code
-- Phase 9.3 is now the documented cross-feature consistency continuation
+- Billing, Dashboard, and Auth are concrete adopters of the shared consistency standard in production code
+- Phase 9.3 first established cross-feature semantic consistency and then completed the local density / layout consistency layer through 9.3.3
+- the 9.3.3 local visual series is now retained baseline rather than active open work
+- the next justified concern begins after that closure, not inside it
 
 Those decisions now govern how Mi IP·RED should evolve from this point forward.

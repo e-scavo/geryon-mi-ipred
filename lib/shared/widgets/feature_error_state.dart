@@ -16,8 +16,8 @@ class FeatureErrorState extends StatelessWidget {
     this.retryLabel,
     this.onRetry,
     this.icon = Icons.error_outline,
-    this.padding = const EdgeInsets.all(24),
-    this.maxWidth = 520,
+    this.padding = const EdgeInsets.all(20),
+    this.maxWidth = 560,
   });
 
   @override
@@ -35,7 +35,10 @@ class FeatureErrorState extends StatelessWidget {
             elevation: 2,
             surfaceTintColor: theme.colorScheme.surface,
             child: Padding(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24,
+                vertical: 24,
+              ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -44,7 +47,7 @@ class FeatureErrorState extends StatelessWidget {
                     size: 40,
                     color: theme.colorScheme.error,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 18),
                   Text(
                     title,
                     textAlign: TextAlign.center,
@@ -52,14 +55,14 @@ class FeatureErrorState extends StatelessWidget {
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 10),
                   Text(
                     message,
                     textAlign: TextAlign.center,
                     style: theme.textTheme.bodyMedium,
                   ),
                   if (canRetry) ...[
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 18),
                     OutlinedButton.icon(
                       onPressed: onRetry,
                       icon: const Icon(Icons.refresh),

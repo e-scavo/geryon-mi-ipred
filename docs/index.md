@@ -2,85 +2,136 @@
 
 ## Objective
 
-Provide the current entry point to the Mi IP·RED documentation so the repository reading order stays aligned with the real code, the closed Phase 7 baseline, the formally closed Phase 8 runtime-hardening baseline, the now active Phase 9 product-surface consistency baseline, and the newly documented Phase 9.3 cross-feature UX consistency baseline.
+Provide the canonical documentation entry point for Mi IP·RED so the reading order of the repository remains aligned with:
+
+- the real code currently present in the ZIP
+- the already closed structural consolidation baseline from Phase 7
+- the already closed runtime-hardening baseline from Phase 8
+- the active product-surface consistency baseline introduced in Phase 9
+- the now completed semantic and local visual consolidation work executed through Phase 9.3.3
+- the correct documentary handoff into the next justified step after that closure
+
+This index is not only a file list. It is the high-level map that preserves continuity between historical restructuring, runtime hardening, product-surface normalization, and the current UX-consistency baseline.
 
 ## Initial Context
 
-The current ZIP confirms the following phase baseline:
+The current ZIP confirms the following real repository baseline:
 
 - Phase 6 completed
-- Phase 7.1 completed
-- Phase 7.2 completed and formally closed
-- Phase 7.3 completed and formally closed
-- Phase 7.4 completed and formally closed
-- Phase 7.5 completed and formally closed
-- Phase 8 opened
-- Phase 8.1 completed as runtime failure surface inventory
-- Phase 8.2 completed as failure boundary normalization
-- Phase 8.3 completed as retry / reboot / reconnect policy hardening
-- Phase 8.4 completed as runtime diagnostic / observability signals
-- Phase 8.5 completed as formal closure of Phase 8
+- Phase 7 completed and formally closed
+- Phase 8 completed and formally closed
 - Phase 9 opened as product surface consistency and UX hardening
+
+Inside Phase 9, the current confirmed baseline is:
+
 - Phase 9.1 completed as product surface inventory
 - Phase 9.2.1 completed as shared state surface contract foundation
 - Phase 9.2.2 completed as Billing state surface normalization
 - Phase 9.2.3 completed as Dashboard state presentation normalization
 - Phase 9.2.4 completed as Auth interaction feedback normalization
-- Phase 9.3 opened as cross-feature UX consistency consolidation
-- Phase 9.3.1 defined as cross-feature UX consistency inventory
-- Phase 9.3.2 defined as copy / action / feedback consolidation
+- Phase 9.3.1 completed as cross-feature UX consistency inventory
+- Phase 9.3.2 completed as copy / action / feedback consolidation
+- Phase 9.3.3 completed as local density / layout consistency adjustments
+- Phase 9.3.3.1 completed as shared surface density baseline
+- Phase 9.3.3.2 completed as dashboard layout rhythm normalization
+- Phase 9.3.3.3 completed as auth surface density alignment
+- Phase 9.3.3.4 completed as billing embedded surface fit
+- Phase 9.3.3.5 completed as formal closure of the 9.3.3 series
+
+That means the repository is no longer at the point where the main unresolved concern is:
+
+- structure
+- runtime semantics
+- semantic wording consistency
+- local panel density inconsistency
+
+The next justified concern begins after this baseline.
 
 ## Problem Statement
 
-The documentation index must clearly distinguish between:
+The index must preserve the correct documentary progression of the project.
 
-- closed structural work
-- closed runtime hardening work
-- active product-surface consistency work
-- the currently defined Phase 9.3 cross-feature UX consistency continuation
-- whatever future phase comes next after those completed and active baselines
+If it stops at a partially updated state or collapses completed work into a short summary, it creates several risks:
 
-If that distinction is lost, future work can incorrectly reopen Phase 7 or Phase 8 concerns implicitly, or treat Phase 9 as a redesign phase instead of a controlled UX-hardening phase.
+- Phase 7 and Phase 8 look less foundational than they really are
+- Phase 9.2 and Phase 9.3 lose their incremental relation
+- the 9.3.3 implementation work in the code is not reflected faithfully in docs
+- the next phase boundary becomes blurry
+- future work can reopen already closed local UI adjustments accidentally
+
+The index therefore needs to be both:
+
+- historical
+- current
+- incremental
+- truthful to the ZIP
 
 ## Scope
 
 This index covers:
 
-- current architecture documents
-- governance documents
-- historical phase documents
-- the closed Phase 7 consolidation baseline
-- the closed Phase 8 runtime-hardening baseline
-- the active Phase 9 product-surface consistency baseline
+- architecture and deep-architecture documents
+- governance and development rules
+- feature and flow documents
+- historical structural phases
+- runtime-hardening phases
+- product-surface consistency phases
+- current closure state of 9.3.3
+
+It does not itself modify behavior, define design tokens, or implement UI changes.
 
 ## Root Cause Analysis
 
-The project evolved phase by phase together with the implementation.
+The project evolved in layered form:
 
-That means the documentation index must mirror the real repository state.
+### Phase 1 to Phase 6
+The project first required audit, structural planning, cleanup, normalization, ServiceProvider decomposition, and presentation cleanup.
 
-The current ZIP shows that the structural consolidation baseline and the runtime hardening baseline are already closed, while product-surface consistency work is now the active justified next phase.
+### Phase 7
+The dominant unresolved concern became application-layer consolidation. That phase clarified:
 
-Phase 9.2 already normalized the three critical surfaces independently:
+- feature extraction
+- state boundaries
+- session/app context normalization
+- interaction contracts
+- startup/auth continuation coordination
 
+### Phase 8
+Once structure was stable, the next unresolved concern became runtime reliability and failure semantics. That phase clarified:
+
+- runtime failure surface inventory
+- failure boundary normalization
+- retry / reboot / reconnect policy hardening
+- runtime diagnostic / observability signals
+- formal closure of the runtime-hardening baseline
+
+### Phase 9
+Only after those two larger baselines were closed did the project move into product-surface consistency and UX hardening.
+
+That Phase 9 progression is itself layered:
+
+#### Phase 9.1
+Inventory of product-surface inconsistency.
+
+#### Phase 9.2
+Semantic consistency hardening across the three critical surfaces:
 - Billing
 - Dashboard
 - Auth
 
-That leaves a new justified continuation inside Phase 9:
+#### Phase 9.3
+Cross-feature UX consistency work, which then split into:
+- inventory of cross-feature inconsistency
+- copy / action / feedback consolidation
+- local density / layout consistency adjustments
 
-- cross-feature UX consistency consolidation
+The current ZIP now confirms that the 9.3.3 local density/layout layer is no longer pending; it is implemented and formally closable.
 
-The index must therefore stop presenting Phase 8 as an active working phase, must present Phase 9 as the active UI/UX consistency phase, and must distinguish between:
-
-- Phase 9.2 completed surface-by-surface normalization
-- Phase 9.3 documented cross-feature consolidation work
-
-without implying redesign of architecture or runtime ownership.
+That is why the index now needs to represent 9.3.3 as completed work rather than as an open or undefined continuation.
 
 ## Files Affected
 
-Primary entry documents include:
+Primary documentation entry documents include:
 
 - `README.md`
 - `docs/index.md`
@@ -90,52 +141,49 @@ Primary entry documents include:
 - `docs/decisions.md`
 - `docs/flows.md`
 - `docs/features.md`
-- `docs/phase7_application_layer_consolidation_7_5_formal_closure.md`
-- `docs/phase8_runtime_reliability_failure_semantics_hardening.md`
-- `docs/phase8_runtime_reliability_failure_semantics_hardening_8_1_runtime_failure_surface_inventory.md`
-- `docs/phase8_runtime_reliability_failure_semantics_hardening_8_2_failure_boundary_normalization.md`
-- `docs/phase8_runtime_reliability_failure_semantics_hardening_8_3_retry_reboot_reconnect_policy_hardening.md`
-- `docs/phase8_runtime_reliability_failure_semantics_hardening_8_4_runtime_diagnostic_observability_signals.md`
-- `docs/phase8_runtime_reliability_failure_semantics_hardening_8_5_formal_closure.md`
-- `docs/phase9_product_surface_consistency_ux_hardening.md`
-- `docs/phase9_product_surface_consistency_ux_hardening_9_1_product_surface_inventory.md`
-- `docs/phase9_product_surface_consistency_ux_hardening_9_2_1_shared_state_surface_contract.md`
-- `docs/phase9_product_surface_consistency_ux_hardening_9_2_2_billing_state_surface_normalization.md`
-- `docs/phase9_product_surface_consistency_ux_hardening_9_2_3_dashboard_state_presentation_normalization.md`
-- `docs/phase9_product_surface_consistency_ux_hardening_9_2_4_auth_interaction_feedback_normalization.md`
-- `docs/phase9_product_surface_consistency_ux_hardening_9_3_1_cross_feature_ux_consistency_inventory.md`
-- `docs/phase9_product_surface_consistency_ux_hardening_9_3_2_copy_action_feedback_consolidation.md`
+- `docs/release.md`
+
+Historical support documents include:
+
+- `docs/module-inventory.md`
+- `docs/cleanup-checklist.md`
+- `docs/infra-normalization.md`
+- `docs/refactor-plan.md`
+- `docs/service-provider-decomposition.md`
+- `docs/target-structure.md`
+- `docs/legacy.md`
+
+Phase-specific documents include all phase files from:
+
+- `docs/phase1_audit.md`
+through
+- `docs/phase9_product_surface_consistency_ux_hardening_9_3_3_5_formal_closure.md`
 
 ## Implementation Characteristics
 
-### Core Architecture
+### Core Architecture Documents
 
 - `docs/architecture.md`
 - `docs/architecture-deep.md`
 
-### Runtime / Product
+These remain the primary reference for architecture and layering.
 
-- `docs/flows.md`
-- `docs/features.md`
-- `docs/release.md`
-- `docs/secutiry.md`
-
-### Governance
+### Governance Documents
 
 - `docs/development.md`
 - `docs/decisions.md`
 
-### Historical / Structural Support
+These define how the repository is allowed to evolve after each baseline closure.
 
-- `docs/service-provider-decomposition.md`
-- `docs/module-inventory.md`
-- `docs/target-structure.md`
-- `docs/legacy.md`
-- `docs/cleanup-checklist.md`
-- `docs/infra-normalization.md`
-- `docs/refactor-plan.md`
+### Feature and Runtime Interpretation Documents
 
-### Phase Documents
+- `docs/flows.md`
+- `docs/features.md`
+- `docs/release.md`
+
+These help relate architectural decisions to visible product behavior.
+
+### Structural History
 
 #### Phase 1
 - `docs/phase1_audit.md`
@@ -155,153 +203,119 @@ Primary entry documents include:
 #### Phase 6
 - `docs/phase6_presentation_structure_cleanup.md`
 
-#### Phase 7
+### Phase 7 — Application Layer Consolidation
+
+Master:
 - `docs/phase7_application_layer_consolidation.md`
 
-##### Phase 7.1
+Subphases:
 - `docs/phase7_application_layer_consolidation_7_1_1_auth_extraction.md`
 - `docs/phase7_application_layer_consolidation_7_1_2_dashboard_extraction.md`
 - `docs/phase7_application_layer_consolidation_7_1_3_billing_extraction.md`
-
-##### Phase 7.2
 - `docs/phase7_application_layer_consolidation_7_2_1_feature_state_inventory.md`
 - `docs/phase7_application_layer_consolidation_7_2_2_billing_state_boundary_consolidation.md`
 - `docs/phase7_application_layer_consolidation_7_2_3_dashboard_state_derivation_normalization.md`
 - `docs/phase7_application_layer_consolidation_7_2_4_auth_startup_initial_state_boundary_cleanup.md`
 - `docs/phase7_application_layer_consolidation_7_2_5_formal_closure.md`
-
-##### Phase 7.3
 - `docs/phase7_application_layer_consolidation_7_3_1_application_flow_inventory.md`
 - `docs/phase7_application_layer_consolidation_7_3_2_session_app_context_normalization.md`
 - `docs/phase7_application_layer_consolidation_7_3_3_feature_interaction_contracts.md`
 - `docs/phase7_application_layer_consolidation_7_3_4_application_coordinator_minimal.md`
 - `docs/phase7_application_layer_consolidation_7_3_5_formal_closure.md`
-
-##### Phase 7.4
 - `docs/phase7_application_layer_consolidation_7_4_1_startup_auth_continuation_inventory.md`
 - `docs/phase7_application_layer_consolidation_7_4_2_auth_requirement_boundary_normalization.md`
 - `docs/phase7_application_layer_consolidation_7_4_3_login_resolution_continuation_contract.md`
 - `docs/phase7_application_layer_consolidation_7_4_4_minimal_startup_auth_continuation_coordinator.md`
 - `docs/phase7_application_layer_consolidation_7_4_5_formal_closure.md`
-
-##### Phase 7.5
 - `docs/phase7_application_layer_consolidation_7_5_formal_closure.md`
 
-#### Phase 8
+### Phase 8 — Runtime Reliability / Failure Semantics Hardening
+
+Master:
 - `docs/phase8_runtime_reliability_failure_semantics_hardening.md`
 
-##### Phase 8.1
+Subphases:
 - `docs/phase8_runtime_reliability_failure_semantics_hardening_8_1_runtime_failure_surface_inventory.md`
-
-##### Phase 8.2
 - `docs/phase8_runtime_reliability_failure_semantics_hardening_8_2_failure_boundary_normalization.md`
-
-##### Phase 8.3
 - `docs/phase8_runtime_reliability_failure_semantics_hardening_8_3_retry_reboot_reconnect_policy_hardening.md`
-
-##### Phase 8.4
 - `docs/phase8_runtime_reliability_failure_semantics_hardening_8_4_runtime_diagnostic_observability_signals.md`
-
-##### Phase 8.5
 - `docs/phase8_runtime_reliability_failure_semantics_hardening_8_5_formal_closure.md`
 
-#### Phase 9
+### Phase 9 — Product Surface Consistency & UX Hardening
+
+Master:
 - `docs/phase9_product_surface_consistency_ux_hardening.md`
 
-##### Phase 9.1
+#### Phase 9.1
 - `docs/phase9_product_surface_consistency_ux_hardening_9_1_product_surface_inventory.md`
 
-##### Phase 9.2.1
+#### Phase 9.2
 - `docs/phase9_product_surface_consistency_ux_hardening_9_2_1_shared_state_surface_contract.md`
-
-##### Phase 9.2.2
 - `docs/phase9_product_surface_consistency_ux_hardening_9_2_2_billing_state_surface_normalization.md`
-
-##### Phase 9.2.3
 - `docs/phase9_product_surface_consistency_ux_hardening_9_2_3_dashboard_state_presentation_normalization.md`
-
-##### Phase 9.2.4
 - `docs/phase9_product_surface_consistency_ux_hardening_9_2_4_auth_interaction_feedback_normalization.md`
 
-##### Phase 9.3.1
+#### Phase 9.3
 - `docs/phase9_product_surface_consistency_ux_hardening_9_3_1_cross_feature_ux_consistency_inventory.md`
-
-##### Phase 9.3.2
 - `docs/phase9_product_surface_consistency_ux_hardening_9_3_2_copy_action_feedback_consolidation.md`
+- `docs/phase9_product_surface_consistency_ux_hardening_9_3_3_surface_density_layout_consistency_adjustments.md`
+- `docs/phase9_product_surface_consistency_ux_hardening_9_3_3_1_shared_surface_density_baseline.md`
+- `docs/phase9_product_surface_consistency_ux_hardening_9_3_3_2_dashboard_layout_rhythm_normalization.md`
+- `docs/phase9_product_surface_consistency_ux_hardening_9_3_3_3_auth_surface_density_alignment.md`
+- `docs/phase9_product_surface_consistency_ux_hardening_9_3_3_4_billing_embedded_surface_fit.md`
+- `docs/phase9_product_surface_consistency_ux_hardening_9_3_3_5_formal_closure.md`
 
 ## Validation
 
-Recommended current reading order:
+This index is aligned only if all of the following are true:
 
-1. `README.md`
-2. `docs/index.md`
-3. `docs/architecture.md`
-4. `docs/development.md`
-5. `docs/decisions.md`
-6. `docs/phase7_application_layer_consolidation_7_5_formal_closure.md`
-7. `docs/phase8_runtime_reliability_failure_semantics_hardening.md`
-8. `docs/phase8_runtime_reliability_failure_semantics_hardening_8_1_runtime_failure_surface_inventory.md`
-9. `docs/phase8_runtime_reliability_failure_semantics_hardening_8_2_failure_boundary_normalization.md`
-10. `docs/phase8_runtime_reliability_failure_semantics_hardening_8_3_retry_reboot_reconnect_policy_hardening.md`
-11. `docs/phase8_runtime_reliability_failure_semantics_hardening_8_4_runtime_diagnostic_observability_signals.md`
-12. `docs/phase8_runtime_reliability_failure_semantics_hardening_8_5_formal_closure.md`
-13. `docs/phase9_product_surface_consistency_ux_hardening.md`
-14. `docs/phase9_product_surface_consistency_ux_hardening_9_1_product_surface_inventory.md`
-15. `docs/phase9_product_surface_consistency_ux_hardening_9_2_1_shared_state_surface_contract.md`
-16. `docs/phase9_product_surface_consistency_ux_hardening_9_2_2_billing_state_surface_normalization.md`
-17. `docs/phase9_product_surface_consistency_ux_hardening_9_2_3_dashboard_state_presentation_normalization.md`
-18. `docs/phase9_product_surface_consistency_ux_hardening_9_2_4_auth_interaction_feedback_normalization.md`
-19. `docs/phase9_product_surface_consistency_ux_hardening_9_3_1_cross_feature_ux_consistency_inventory.md`
-20. `docs/phase9_product_surface_consistency_ux_hardening_9_3_2_copy_action_feedback_consolidation.md`
+- it still presents Phase 7 and Phase 8 as closed foundational baselines
+- it still presents Phase 9 as active product-surface consistency work
+- it preserves the distinction between semantic consistency and local visual consistency
+- it reflects the fact that 9.3.3 is now implemented and formally closable
+- it leaves the next justified concern outside the local density/layout layer
+
+The current ZIP supports that reading.
 
 ## Release Impact
 
 This index has no direct runtime impact.
 
-It keeps the documentation aligned with the current repository baseline and makes explicit that:
+Its purpose is documentary truth and navigation quality:
 
-- Phase 7 is closed
-- Phase 8 is closed
-- Phase 9 is now the active product-surface consistency phase
-- Billing, Dashboard, and Auth are now normalized adopters of the shared consistency baseline
-- Phase 9.3 is now the active documented cross-feature consistency continuation
+- preserving historical continuity
+- keeping phase progression understandable
+- preventing reopened work by ambiguity
+- strengthening the handoff from 9.3.3 to the next phase
 
 ## Risks
 
-If the index is not aligned, future work may:
+If this document remains partial or over-compressed, future work may:
 
-- treat Phase 8 as still active
-- reopen application-layer or runtime-hardening concerns implicitly
-- blur the handoff between completed baseline work and active UX-hardening work
-- misread Phase 9 as redesign permission instead of controlled consistency work
+- treat 9.3.3 as incompletely documented work
+- reopen local layout tuning without phase control
+- misread Phase 9 as still centered only on wording/copy
+- lose continuity between code and documentation
 
 ## What it does NOT solve
 
 This index does not itself:
 
-- change runtime behavior
-- add new diagnostics
-- harden retry / reboot / reconnect further
-- redesign the application surface
-- implement the remaining Phase 9 work beyond Auth normalization and documented cross-feature consolidation planning
+- solve wide web viewport focus
+- solve Android vs Web parity
+- redesign screens
+- modify any widget or controller
 
-It only reflects the correct current documentary baseline.
+It only preserves the correct documentary map.
 
 ## Conclusion
 
-The current project baseline is:
+The correct documentary reading of the repository is now:
 
 - Phase 7 closed
 - Phase 8 closed
-- runtime hardening baseline frozen through Phase 8.5
-- Phase 9 opened for product surface consistency and UX hardening
-- Phase 9.1 completed as inventory
-- Phase 9.2.1 completed as shared-state foundation
-- Phase 9.2.2 completed as Billing normalization
-- Phase 9.2.3 completed as Dashboard normalization
-- Phase 9.2.4 completed as Auth normalization
-- Phase 9.3 opened as cross-feature UX consistency consolidation
-- Phase 9.3.1 documented as inventory baseline
-- Phase 9.3.2 documented as consolidation contract baseline
-
-That is now the correct documentation entry point for Mi IP·RED.
+- Phase 9 active
+- Phase 9.2 closed semantic consistency across critical surfaces
+- Phase 9.3.3 completed local density / layout consistency work
+- formal closure of 9.3.3 is now part of the truthful baseline
+- the next justified concern begins after that closure, not inside it

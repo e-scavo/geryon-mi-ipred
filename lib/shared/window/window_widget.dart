@@ -24,54 +24,53 @@ class _WindowWidgetState extends State<WindowWidget> {
     final double windowWidth = widget.windowModel.constraints.maxWidth;
     final double windowHeight = widget.windowModel.constraints.maxHeight;
     const double windowTitle = 30;
-    const double windowFooter = 0;
-    final double windowBody = windowHeight - windowTitle - windowFooter;
+    final bool hasHeader = widget.windowModel.headerWidget != null;
     final String titleMessage = widget.windowModel.title;
 
     developer.log(
       'logFunc: $logFunc, titleMessage: $titleMessage, '
-      'windowWidth: $windowWidth, windowHeight: $windowHeight',
+      'windowWidth: $windowWidth, windowHeight: $windowHeight, hasHeader: $hasHeader',
       name: logFunc,
     );
 
     try {
       return Container(
         decoration: const BoxDecoration(
-          borderRadius: BorderRadius.all(Radius.circular(5)),
+          borderRadius: BorderRadius.all(Radius.circular(8)),
           color: Colors.white,
         ),
         width: windowWidth,
         height: windowHeight,
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                decoration: BoxDecoration(
-                  color: widget.windowModel.titleColorBackground,
-                  borderRadius: const BorderRadiusDirectional.only(
-                    topStart: Radius.circular(5),
-                    topEnd: Radius.circular(5),
-                  ),
+        child: Column(
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                color: widget.windowModel.titleColorBackground,
+                borderRadius: const BorderRadiusDirectional.only(
+                  topStart: Radius.circular(8),
+                  topEnd: Radius.circular(8),
                 ),
-                height: windowTitle,
-                child: Align(
-                  alignment: Alignment.center,
-                  child: RichText(
-                    textAlign: TextAlign.start,
-                    text: TextSpan(
-                      text: titleMessage,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+              ),
+              height: windowTitle,
+              width: double.infinity,
+              child: Align(
+                alignment: Alignment.center,
+                child: RichText(
+                  textAlign: TextAlign.start,
+                  text: TextSpan(
+                    text: titleMessage,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ),
               ),
-              Container(
+            ),
+            Expanded(
+              child: Container(
                 decoration: const BoxDecoration(
-                  color: Colors.transparent,
+                  color: Colors.white,
                   border: Border(
                     top: BorderSide(
                       color: Colors.black26,
@@ -90,21 +89,23 @@ class _WindowWidgetState extends State<WindowWidget> {
                       width: 1.0,
                     ),
                   ),
-                  borderRadius: BorderRadiusDirectional.only(
-                    topStart: Radius.zero,
-                    topEnd: Radius.zero,
-                    bottomStart: Radius.zero,
-                    bottomEnd: Radius.zero,
-                  ),
                 ),
-                height: windowBody,
-                width: windowWidth,
-                child: SizedBox(
-                  child: widget.windowModel.bodyWidget,
+                width: double.infinity,
+                child: Column(
+                  children: [
+                    if (hasHeader) widget.windowModel.headerWidget!,
+                    Expanded(
+                      child: SizedBox(
+                        width: double.infinity,
+                        child:
+                            widget.windowModel.bodyWidget ?? const SizedBox(),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       );
     } catch (e, stacktrace) {

@@ -319,6 +319,20 @@ class _DashboardContent extends StatelessWidget {
     );
   }
 
+  Widget _buildBillingSection({
+    required BoxConstraints constraints,
+    required String type,
+  }) {
+    return SizedBox(
+      width: double.infinity,
+      height: 472,
+      child: BillingWidget(
+        constraints: constraints,
+        pType: type,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     String functionName = '_DashboardContent.build';
@@ -345,58 +359,57 @@ class _DashboardContent extends StatelessWidget {
             break;
         }
 
-        var rbody = Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                "Bienvenido, ${data.razonSocial}",
-                style: Theme.of(context).textTheme.headlineSmall,
+        final Widget rbody = Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 24,
+            vertical: 20,
+          ),
+          child: Align(
+            alignment: Alignment.topCenter,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxWidth: 1180,
               ),
-              const SizedBox(height: 24),
-              Wrap(
-                spacing: 16,
-                runSpacing: 16,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  InfoCard(title: "Documento", value: myDNI),
-                  InfoCard(
-                    title: "Saldo",
-                    value: data.saldoActual.asStringWithPrecSpanish(2),
-                    actionLabel: "Ver medios de pago",
-                    onAction: () => _showPaymentDialog(context, data),
+                  Text(
+                    "Bienvenido, ${data.razonSocial}",
+                    style: Theme.of(context).textTheme.headlineSmall,
                   ),
-                  InfoCard(
-                    title: "Último pago",
-                    value: data.ultFechaPago.toES(),
+                  const SizedBox(height: 28),
+                  Wrap(
+                    spacing: 18,
+                    runSpacing: 18,
+                    children: [
+                      InfoCard(title: "Documento", value: myDNI),
+                      InfoCard(
+                        title: "Saldo",
+                        value: data.saldoActual.asStringWithPrecSpanish(2),
+                        actionLabel: "Ver medios de pago",
+                        onAction: () => _showPaymentDialog(context, data),
+                      ),
+                      InfoCard(
+                        title: "Último pago",
+                        value: data.ultFechaPago.toES(),
+                      ),
+                      InfoCard(title: "Estado", value: data.estado),
+                    ],
                   ),
-                  InfoCard(title: "Estado", value: data.estado),
-                  const SizedBox(height: 5),
+                  const SizedBox(height: 28),
+                  _buildBillingSection(
+                    constraints: constraints,
+                    type: "FacturasVT",
+                  ),
+                  const SizedBox(height: 22),
+                  _buildBillingSection(
+                    constraints: constraints,
+                    type: "RecibosVT",
+                  ),
+                  const SizedBox(height: 12),
                 ],
               ),
-              SizedBox(
-                width: constraints.maxWidth != double.infinity
-                    ? constraints.maxWidth - 32
-                    : constraints.maxWidth,
-                height: 400,
-                child: BillingWidget(
-                  constraints: constraints,
-                  pType: "FacturasVT",
-                ),
-              ),
-              const SizedBox(height: 5),
-              SizedBox(
-                width: constraints.maxWidth != double.infinity
-                    ? constraints.maxWidth - 32
-                    : constraints.maxWidth,
-                height: 400,
-                child: BillingWidget(
-                  constraints: constraints,
-                  pType: "RecibosVT",
-                ),
-              ),
-              const SizedBox(height: 5),
-            ],
+            ),
           ),
         );
 

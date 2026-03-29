@@ -210,13 +210,12 @@ Error: ${e.toString()}
   Widget build(BuildContext context) {
     String functionName = 'BillingWidget.build';
     String locFunc = '.::$functionName::.';
+    final theme = Theme.of(context);
 
     Widget buildWindowHeader() {
-      final theme = Theme.of(context);
-
       return Container(
         width: double.infinity,
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+        padding: const EdgeInsets.fromLTRB(18, 14, 18, 14),
         decoration: BoxDecoration(
           color: Colors.grey.shade50,
           border: Border(
@@ -236,7 +235,7 @@ Error: ${e.toString()}
                 fontWeight: FontWeight.w700,
               ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 6),
             Text(
               _controller.resolveBillingHeaderSubtitle(
                 billingType: widget.pType,
@@ -311,27 +310,24 @@ Error: ${e.toString()}
     );
 
     String wTitle = 'Comprobantes';
-    Color? wColor;
 
     switch (widget.pType) {
       case "FacturasVT":
         wTitle = 'FACTURAS';
-        wColor = Colors.redAccent;
         break;
       case "RecibosVT":
         wTitle = 'RECIBOS';
-        wColor = Colors.greenAccent.shade700;
         break;
       case "DebitosVT":
         wTitle = 'NOTAS DE DÉBITO';
-        wColor = Colors.redAccent.shade400;
         break;
       case "CreditosVT":
         wTitle = 'NOTAS DE CRÉDITO';
-        wColor = Colors.blueAccent.shade400;
         break;
       default:
     }
+
+    final Color wColor = theme.colorScheme.primary;
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -346,28 +342,21 @@ Error: ${e.toString()}
         try {
           return Container(
             decoration: const BoxDecoration(
-              borderRadius: BorderRadius.all(Radius.circular(5)),
+              borderRadius: BorderRadius.all(Radius.circular(8)),
               color: Colors.white,
             ),
             width: windowWidth,
             height: windowHeight,
             constraints: constraints,
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  WindowWidget(
-                    windowModel: WindowModel(
-                      title: wTitle,
-                      titleColorBackground: wColor ?? Colors.black45,
-                      constraints: constraints,
-                      headerWidget: buildWindowHeader(),
-                      bodyWidget: buildWindowBody(
-                        constraints: constraints,
-                      ),
-                    ),
-                  ),
-                ],
+            child: WindowWidget(
+              windowModel: WindowModel(
+                title: wTitle,
+                titleColorBackground: wColor,
+                constraints: constraints,
+                headerWidget: buildWindowHeader(),
+                bodyWidget: buildWindowBody(
+                  constraints: constraints,
+                ),
               ),
             ),
           );

@@ -2,75 +2,131 @@
 
 ## Objective
 
-Define the active Phase 9 baseline as a controlled product-surface consistency and UX-hardening phase that improves visible behavior without reopening architecture, runtime ownership, or backend flow.
+Define Phase 9 as the active product-surface consistency and UX-hardening phase of Mi IP·RED, whose purpose is to consolidate the visible product experience without reopening:
+
+- architecture
+- runtime ownership
+- backend flow
+- structural baselines already closed in earlier phases
+
+Phase 9 is the phase where the app moves from “individually functional surfaces” to “a more coherent product surface”.
 
 ## Initial Context
 
-The current ZIP confirms the following repository baseline:
+The current ZIP confirms that Phase 9 sits on top of two already closed foundational baselines:
 
-- Phase 6 closed
+### Structural baseline already closed
 - Phase 7 closed
-- Phase 8 closed
-- active architecture remains `presentation → controller → ServiceProvider`
-- `ServiceProvider` remains the runtime owner
-- the dominant remaining problem is no longer structural or runtime-related
-- the dominant remaining problem is visible product-surface inconsistency
-- Phase 9.2 completed the independent normalization of the three critical surfaces: Billing, Dashboard, and Auth
-- the next justified continuation is now cross-feature UX consistency consolidation
 
-Phase 9 therefore starts only after the structural baseline and runtime-hardening baseline are both already closed.
+### Runtime / reliability baseline already closed
+- Phase 8 closed
+
+The architecture also remains stable:
+
+- `presentation → controller → ServiceProvider`
+
+And `ServiceProvider` remains the runtime owner.
+
+Within that stable base, the repository now confirms the following Phase 9 progression:
+
+### Phase 9.1
+Completed as product surface inventory.
+
+### Phase 9.2
+Completed as semantic consistency work across the three critical product surfaces:
+- Billing
+- Dashboard
+- Auth
+
+### Phase 9.3.1
+Completed as cross-feature UX consistency inventory.
+
+### Phase 9.3.2
+Completed as copy / action / feedback consolidation.
+
+### Phase 9.3.3
+Completed as local density / layout consistency adjustments, including:
+- shared surface density baseline
+- dashboard rhythm normalization
+- auth density alignment
+- billing embedded surface fit
+- formal closure of the local visual series
+
+That means the repository has already moved beyond semantic consolidation and beyond local panel/card density drift.
 
 ## Problem Statement
 
-The current product surface is functional but still heterogeneous across:
+When Phase 9 opened, the product still showed visible inconsistency across critical surfaces in several layers:
 
+### Layer 1 — Product-state meaning
 - loading surfaces
-- error surfaces
 - empty states
-- retry affordances
-- auth / dashboard / billing interaction behavior
-- Web vs Android visible consistency
-- cross-feature consistency between already-hardened surfaces
+- feature-local recoverable errors
+- action affordances
 
-Without a dedicated phase, those inconsistencies would continue to accumulate as isolated local fixes rather than as controlled product hardening.
+### Layer 2 — Cross-feature wording
+- copy tone
+- action labels
+- retry wording
+- feedback hierarchy
+
+### Layer 3 — Local visual coherence
+- panel density
+- spacing cadence
+- card rhythm
+- embedded surface composition
+
+Those layers had to be solved incrementally rather than all at once.
+
+The current ZIP confirms that the first three layers above are now materially solved to the level justified by the repository.
 
 ## Scope
 
 Phase 9 includes:
 
 - product surface inventory
-- interaction consistency
-- state presentation consistency
-- UX hardening for auth / dashboard / billing
-- responsive and layout polish where justified by the real ZIP
-- minimal reusable UI state surfaces when justified
-- cross-feature copy / action / feedback consolidation when justified by the real ZIP
+- semantic consistency across critical features
+- cross-feature copy/action/feedback consolidation
+- local density/layout consistency adjustments where justified by the real code
+- later responsive/platform consistency review where justified by the real code
 
 Phase 9 does not include:
 
 - architecture redesign
 - `ServiceProvider` replacement
-- navigation redesign
-- backend-flow redesign
-- reopening closed Phase 7 or Phase 8 work
-- turning UX hardening into an unrelated feature phase
+- runtime redesign
+- backend flow redesign
+- speculative design-system replacement
+- hidden feature expansion
+- broad unrelated visual rebranding
 
 ## Root Cause Analysis
 
-Phase 7 resolved the dominant structural ambiguity.
+After the closure of Phase 7 and Phase 8, the dominant unresolved concern was no longer:
 
-Phase 8 resolved the dominant runtime ambiguity.
+- structure
+- orchestration ownership
+- runtime survival semantics
 
-That leaves a different class of issue:
+Instead, it was the visible product surface itself.
 
-- visible inconsistency
-- fragmented interaction behavior
-- uneven state presentation quality
-- copy / action / feedback drift across already-normalized features
+That concern then broke down naturally into sublayers:
 
-The repository therefore now requires a product-surface consistency phase rather than further structure or runtime work.
+### First sublayer — Inventory
+The project first needed to identify where the product surface was inconsistent.
 
-Inside that phase, once individual feature normalization is complete, the next justified subphase is cross-feature UX consistency consolidation.
+### Second sublayer — Semantic normalization
+The three critical surfaces needed clearer and more consistent visible meaning.
+
+### Third sublayer — Cross-feature wording
+Equivalent visible situations needed more coherent copy, actions, retry wording, and feedback language.
+
+### Fourth sublayer — Local visual consolidation
+Once meaning was aligned, local panel/card density and embedded composition still needed consolidation.
+
+The current ZIP confirms that Phase 9 has already progressed through that fourth local layer.
+
+That is why the next justified problem after this point is no longer the same kind of local visual mismatch.
 
 ## Files Affected
 
@@ -79,60 +135,73 @@ Phase 9 primarily governs interpretation of:
 - `lib/features/auth/**`
 - `lib/features/dashboard/**`
 - `lib/features/billing/**`
-- `lib/shared/**`
+- `lib/shared/widgets/**`
+- `lib/shared/window/**`
 - `lib/models/LoadingGeneric/**`
-- `docs/index.md`
-- `docs/development.md`
-- `docs/decisions.md`
-- `docs/phase9_product_surface_consistency_ux_hardening*.md`
-- `docs/phase9_product_surface_consistency_ux_hardening_9_3_1_cross_feature_ux_consistency_inventory.md`
-- `docs/phase9_product_surface_consistency_ux_hardening_9_3_2_copy_action_feedback_consolidation.md`
+- all `docs/phase9_product_surface_consistency_ux_hardening*.md` documents
+
+Its concrete implementation history already includes direct impact on:
+
+- auth presentation
+- dashboard presentation
+- billing presentation
+- shared surface widgets
+- embedded window rendering behavior
 
 ## Implementation Characteristics
 
-### 1. Architecture remains frozen
+### Phase 9.1 — Product Surface Inventory
 
-All work must preserve:
+This subphase documented where the product still showed visible inconsistency and justified product-surface work as the next real concern after structural and runtime closure.
 
-- `presentation → controller → ServiceProvider`
+### Phase 9.2 — Semantic Consistency Across Critical Surfaces
 
-### 2. ServiceProvider remains the runtime owner
+This layer normalized meaning across Billing, Dashboard, and Auth by consolidating:
 
-Phase 9 may improve visible behavior, but it must not move runtime ownership away from `ServiceProvider`.
+- visible state surfaces
+- feature-local recoverable error behavior
+- interaction feedback semantics
+- shared state contract expectations
 
-### 3. UI consistency is the active concern
+Subphases:
+- `9.2.1` shared state surface contract
+- `9.2.2` Billing state surface normalization
+- `9.2.3` Dashboard state presentation normalization
+- `9.2.4` Auth interaction feedback normalization
 
-The active concern is no longer runtime survival.
+### Phase 9.3.1 — Cross-Feature UX Consistency Inventory
 
-The active concern is:
+This step documented the remaining inconsistency after feature-by-feature semantic normalization and established the cross-feature inventory baseline.
 
-- predictability
-- visible consistency
-- product coherence
-- clearer state surfaces
+### Phase 9.3.2 — Copy / Action / Feedback Consolidation
 
-### 4. Changes must be incremental and reversible
+This step consolidated the shared user-facing semantic language of the product in:
 
-Phase 9 work must be introduced in controlled, narrow steps.
-
-### 5. Shared state surfaces are allowed
-
-Minimal shared widgets for loading / error / empty states are allowed when they reduce visible inconsistency without introducing a new framework or hidden redesign.
-
-### 6. Cross-feature UX consolidation is the justified continuation after 9.2
-
-Once Billing, Dashboard, and Auth have each been normalized individually, the next justified continuation is to review and consolidate the consistency between them.
-
-That includes:
-
-- copy
+- copy tone
 - action labels
-- loading semantics
-- recoverable error semantics
 - retry wording
 - feedback hierarchy
 
-This continuation must remain narrower than redesign and must respect the same architecture and runtime boundaries as the earlier Phase 9 work.
+### Phase 9.3.3 — Surface Density / Layout Consistency Adjustments
+
+This step addressed the local visual layer that still remained after semantics and wording had already been hardened.
+
+It included:
+
+#### 9.3.3.1 — Shared Surface Density Baseline
+Alignment of shared state surfaces and summary cards so they stop feeling like unrelated widget families.
+
+#### 9.3.3.2 — Dashboard Layout Rhythm Normalization
+Normalization of dashboard section cadence, constrained width, spacing, and billing embedding rhythm.
+
+#### 9.3.3.3 — Auth Surface Density Alignment
+Alignment of login density with the retained shared local baseline while preserving auth’s compact role.
+
+#### 9.3.3.4 — Billing Embedded Surface Fit
+Improvement of billing as an embedded dashboard surface, including real header rendering support and more coherent internal composition.
+
+#### 9.3.3.5 — Formal Closure of 9.3.3
+Documentary closure of the local visual consistency series to keep the repository aligned with actual code state.
 
 ## Validation
 
@@ -140,48 +209,55 @@ Phase 9 remains valid only if all of the following remain true:
 
 - architecture stays unchanged
 - runtime ownership stays unchanged
-- changes are surface-oriented rather than backend-oriented
-- auth / dashboard / billing consistency improves incrementally
-- cross-feature consolidation remains justified by the real ZIP rather than assumption
+- semantic surface work remains incremental and traceable
+- local visual consolidation is documented in line with real code
 - no hidden redesign is introduced under UX-hardening language
+- each completed layer is treated as retained baseline before the next one begins
+
+The current ZIP supports that reading.
 
 ## Release Impact
 
-Phase 9 should improve:
+Phase 9 improves:
 
-- perceived quality
-- consistency of user feedback
-- clarity of state presentation
+- visible consistency
+- clarity of product states
+- cross-feature coherence
+- local visual stability
 - maintainability of visible product behavior
-- traceability of cross-feature UX consolidation decisions
+- documentary traceability of UI evolution
 
-It should do so without destabilizing the runtime baseline closed in Phase 8.
+It does so without destabilizing the runtime baseline closed in Phase 8.
 
 ## Risks
 
-If Phase 9 is implemented incorrectly, future work may:
+If Phase 9 is implemented or documented incorrectly, future work may:
 
 - overreach into redesign
-- introduce new abstractions without enough justification
-- conflate product-surface issues with runtime issues
-- scatter new UI patterns instead of reducing heterogeneity
-- confuse cross-feature consolidation with broad redesign
+- reopen already-solved concerns
+- lose distinction between semantic and local-visual problems
+- accumulate undocumented UI drift
+- blur the handoff from one justified layer to the next
 
 ## What it does NOT solve
 
-Phase 9 does not itself:
+Phase 9 does not itself imply that every later responsive/platform issue is already solved.
 
-- add new product features
-- redesign the architecture
-- replace the runtime model
-- change transport semantics
-- reopen Phase 8 runtime-hardening work
-- prematurely imply that every documented cross-feature rule has already been implemented in code
+Even after 9.3.3 closure, there may still remain justified concerns around:
+
+- wide viewport focus
+- cross-platform layout parity
+- Web / Android review
+
+Those belong to the next justified continuation after the now-retained local visual baseline.
 
 ## Conclusion
 
-Phase 9 is the correct next justified phase after the closure of Phase 7 and Phase 8.
+Phase 9 remains the correct active phase for product-surface consistency and UX hardening.
 
-Its purpose is to harden the visible product surface so that the app behaves like a coherent product rather than a set of individually functional screens.
+At the current repository state, the truthful cumulative reading is:
 
-Phase 9.3 is the justified continuation of that same goal after the closure of the independent Billing, Dashboard, and Auth normalization steps.
+- semantic consistency work is completed through 9.3.2
+- local visual consistency work is completed through 9.3.3
+- both are now part of the retained product baseline
+- the next justified continuation must build on that closure rather than reopen it

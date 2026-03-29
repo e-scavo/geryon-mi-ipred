@@ -16,8 +16,8 @@ class FeatureEmptyState extends StatelessWidget {
     this.actionLabel,
     this.onAction,
     this.icon = Icons.inbox_outlined,
-    this.padding = const EdgeInsets.all(24),
-    this.maxWidth = 520,
+    this.padding = const EdgeInsets.all(20),
+    this.maxWidth = 560,
   });
 
   @override
@@ -33,10 +33,13 @@ class FeatureEmptyState extends StatelessWidget {
         child: Padding(
           padding: padding,
           child: Card(
-            elevation: 1,
+            elevation: 2,
             surfaceTintColor: theme.colorScheme.surface,
             child: Padding(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24,
+                vertical: 24,
+              ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -45,7 +48,7 @@ class FeatureEmptyState extends StatelessWidget {
                     size: 40,
                     color: theme.colorScheme.primary,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 18),
                   Text(
                     title,
                     textAlign: TextAlign.center,
@@ -53,14 +56,14 @@ class FeatureEmptyState extends StatelessWidget {
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 10),
                   Text(
                     message,
                     textAlign: TextAlign.center,
                     style: theme.textTheme.bodyMedium,
                   ),
                   if (hasAction) ...[
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 18),
                     OutlinedButton.icon(
                       onPressed: onAction,
                       icon: const Icon(Icons.refresh),

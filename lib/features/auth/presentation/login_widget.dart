@@ -120,12 +120,16 @@ class _LoginPageWidgetState extends ConsumerState<LoginPageWidget> {
     Widget buildLoginCard() {
       return ConstrainedBox(
         constraints: const BoxConstraints(
-          maxWidth: 460,
+          maxWidth: 500,
         ),
         child: Card(
-          elevation: 3,
+          elevation: 2,
+          surfaceTintColor: theme.colorScheme.surface,
           child: Padding(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 28,
+              vertical: 28,
+            ),
             child: IgnorePointer(
               ignoring: isBusy,
               child: Column(
@@ -135,7 +139,7 @@ class _LoginPageWidgetState extends ConsumerState<LoginPageWidget> {
                     'assets/logo-ipred-color.png',
                     scale: 2.5,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 18),
                   Text(
                     'Ingresá con tu DNI o CUIT',
                     textAlign: TextAlign.center,
@@ -143,9 +147,9 @@ class _LoginPageWidgetState extends ConsumerState<LoginPageWidget> {
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 10),
                   Text(
-                    'Accedé a tu panel de cliente y consultá tus comprobantes disponibles.',
+                    'Accedé a tu panel de cliente y a tus comprobantes disponibles.',
                     textAlign: TextAlign.center,
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: theme.textTheme.bodyMedium?.color?.withValues(
@@ -153,13 +157,13 @@ class _LoginPageWidgetState extends ConsumerState<LoginPageWidget> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 24),
                   ShakeTextField(
                     key: _shakeKey,
                     controller: _dniController,
                     hintText: 'Ingresá tu DNI o CUIT',
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 18),
                   Row(
                     children: [
                       Checkbox(
@@ -178,12 +182,12 @@ class _LoginPageWidgetState extends ConsumerState<LoginPageWidget> {
                       ),
                       const SizedBox(width: 4),
                       const Expanded(
-                        child: Text("Recordarme"),
+                        child: Text('Recordarme'),
                       ),
                     ],
                   ),
                   if (_loginState.hasError) ...[
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 18),
                     FeatureErrorState(
                       title: _loginState.errorTitle ?? 'No pudimos ingresar',
                       message: _loginState.errorMessage ??
@@ -195,7 +199,7 @@ class _LoginPageWidgetState extends ConsumerState<LoginPageWidget> {
                           : Icons.error_outline,
                     ),
                   ],
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 18),
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
@@ -219,7 +223,7 @@ class _LoginPageWidgetState extends ConsumerState<LoginPageWidget> {
                     ),
                   ),
                   if (_loginState.hasRecoverableError) ...[
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 14),
                     Text(
                       'Revisá el dato ingresado y volvé a intentarlo.',
                       textAlign: TextAlign.center,
@@ -249,7 +253,7 @@ class _LoginPageWidgetState extends ConsumerState<LoginPageWidget> {
     return Scaffold(
       body: Center(
         child: Padding(
-          padding: const EdgeInsets.all(32),
+          padding: const EdgeInsets.all(36),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [

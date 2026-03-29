@@ -2,346 +2,286 @@
 
 ## Objective
 
-Define the active development rules for Mi IP·RED so that future changes preserve the working runtime, respect the current architecture, retain the closed Phase 7 and Phase 8 baselines, and execute Phase 9 as controlled product-surface consistency work rather than hidden redesign.
+Define the active development rules for Mi IP·RED after the completion and formal closure of Phase 9.3.3 so that future changes:
+
+- preserve the current architecture
+- preserve the retained runtime baseline from Phase 8
+- preserve the semantic consistency baseline from Phase 9.2
+- preserve the local visual consistency baseline established through 9.3.3
+- move into the next justified phase without reopening already-resolved concerns implicitly
 
 ## Initial Context
 
-The current ZIP confirms this baseline:
+The current ZIP confirms the following active baseline:
 
-- active architecture: `presentation → controller → ServiceProvider`
-- Phase 7 closed
-- Phase 8 closed
-- Phase 8.1 completed as runtime failure surface inventory
-- Phase 8.2 completed as failure boundary normalization
-- Phase 8.3 completed as retry / reboot / reconnect policy hardening
-- Phase 8.4 completed as runtime diagnostic / observability signals
-- Phase 8.5 completed as formal closure of Phase 8
-- Phase 9 opened as product surface consistency and UX hardening
-- Phase 9.1 completed as product surface inventory
-- Phase 9.2.1 completed as shared state surface contract foundation
-- Phase 9.2.2 completed as Billing state surface normalization
-- Phase 9.2.3 completed as Dashboard state presentation normalization
-- Phase 9.2.4 completed as Auth interaction feedback normalization
-- Phase 9.3 opened as cross-feature UX consistency consolidation
-- Phase 9.3.1 defined as cross-feature UX consistency inventory
-- Phase 9.3.2 defined as copy / action / feedback consolidation
+- architecture remains `presentation → controller → ServiceProvider`
+- Phase 7 is closed
+- Phase 8 is closed
+- runtime ownership remains with `ServiceProvider`
+- Phase 9 is active as product-surface consistency and UX hardening
 
-That means the repository is no longer in either:
+Within Phase 9, the repository now confirms:
 
-- a structural extraction phase, or
-- an active runtime hardening phase
+### Semantic baseline already completed
+- product-surface inventory completed
+- shared state surface contract completed
+- Billing state surface normalization completed
+- Dashboard state presentation normalization completed
+- Auth interaction feedback normalization completed
+- cross-feature UX consistency inventory completed
+- copy / action / feedback consolidation completed
 
-It is now in a controlled product-surface consistency phase, with Phase 9.3 defined as the next cross-feature consolidation step after the independent normalization of Billing, Dashboard, and Auth.
+### Local visual baseline already completed
+- shared surface density baseline completed
+- dashboard layout rhythm normalization completed
+- auth surface density alignment completed
+- billing embedded surface fit completed
+- formal closure of 9.3.3 now required to keep docs aligned with code
+
+This means the repository is no longer inside a phase whose dominant concern is:
+
+- structural layering
+- runtime semantics
+- semantic wording consistency
+- local density/layout drift
+
+That local density/layout layer is now part of the retained baseline.
 
 ## Problem Statement
 
-Without clear development rules after the closure of Phase 8 and the opening of Phase 9, later work could still:
+After 9.3.3 closure, the project needs stricter guidance so future work does not accidentally:
 
-- reopen closed structural work from Phase 7
-- reopen closed runtime-hardening work from Phase 8
-- disguise redesign as UX-hardening work
-- blur the difference between product-surface consistency and feature expansion
-- add inconsistent UI state handling while claiming to improve consistency
-- skip cross-feature consolidation rules after independent feature normalization
+- keep doing local spacing tweaks under the old subphase
+- reopen dashboard, auth, shared widgets, or billing embedded fit without explicit reason
+- mix responsive cross-platform issues into already-closed local UI work
+- treat visual polish as permission for global redesign
+
+The current baseline is mature enough that the next work must be more tightly bounded by phase intent.
 
 ## Scope
 
-These rules apply to work touching:
+These guidelines govern work touching:
 
-- `lib/main.dart`
-- `lib/models/ServiceProvider/**`
-- `lib/models/GeneralLoadingProgress/**`
-- `lib/models/LoadingGeneric/**`
-- `lib/core/transport/**`
 - `lib/features/auth/**`
 - `lib/features/dashboard/**`
 - `lib/features/billing/**`
-- `lib/features/contracts/**`
-- `lib/shared/**`
-- current Phase 7, Phase 8, and Phase 9 documents
-- the new Phase 9.3 inventory and consolidation-contract documents
+- `lib/shared/widgets/**`
+- `lib/shared/window/**`
+- current Phase 9 docs
+- later responsive/platform review work
+- any future UI consistency adjustments proposed after 9.3.3 closure
 
 These rules do not authorize by default:
 
-- backend protocol redesign
-- `ServiceProvider` replacement
-- navigation redesign
-- full UI redesign
-- broad coordinator expansion
-- state-management rearchitecture
-- informal reopening of Phase 8 runtime hardening scope
-- speculative introduction of a broad UI framework
+- architecture redesign
+- runtime redesign
+- backend flow redesign
+- broad theme redesign
+- design-system replacement
+- undocumented reopening of already-closed local visual work
 
 ## Root Cause Analysis
 
-Phase 7 resolved the dominant structural ambiguity.
+The project advanced through distinct layers for good reason:
 
-Phase 8 resolved the dominant runtime-hardening ambiguity by introducing:
+### First layer — structure
+Structure had to be clarified and stabilized before visible behavior could be treated coherently.
 
-- failure surface inventory
-- failure-boundary normalization
-- trigger-aware recovery policy execution
-- runtime diagnostic events and snapshot exposure
+### Second layer — runtime semantics
+Once structure stabilized, runtime failure boundaries, recovery policy, and observability had to be hardened before product polish could be trusted.
 
-After those closures, the dominant unresolved concern became visible product-surface inconsistency.
+### Third layer — semantic product-surface consistency
+Only then did it make sense to normalize:
 
-That means Phase 9 must improve:
+- state meaning
+- copy
+- actions
+- retry
+- feedback
 
-- loading surfaces
-- error surfaces
-- empty states
-- retry affordances
-- feature-to-feature UX consistency
-- cross-feature copy / action / feedback consolidation
+across Billing, Dashboard, and Auth.
 
-without disturbing the retained structural and runtime baselines.
+### Fourth layer — local density/layout consistency
+Once semantics were aligned, the product still showed visible mismatch in:
+
+- shared surface breathing
+- dashboard rhythm
+- auth compactness
+- billing embedded composition
+
+Phase 9.3.3 solved that local visual layer.
+
+Because those layers were solved in order, future work must respect that sequence and not collapse them back together.
 
 ## Files Affected
 
-Main files governed by the current baseline include:
+The retained baseline now directly governs interpretation of:
 
-- `lib/main.dart`
-- `lib/models/ServiceProvider/data_model.dart`
-- `lib/models/ServiceProvider/failure_boundary_scope_model.dart`
-- `lib/models/ServiceProvider/failure_recovery_expectation_model.dart`
-- `lib/models/ServiceProvider/failure_boundary_state_model.dart`
-- `lib/models/ServiceProvider/runtime_recovery_trigger_model.dart`
-- `lib/models/ServiceProvider/runtime_recovery_policy_decision_model.dart`
-- `lib/models/ServiceProvider/runtime_diagnostic_event_type_model.dart`
-- `lib/models/ServiceProvider/runtime_diagnostic_event_model.dart`
-- `lib/models/ServiceProvider/runtime_diagnostic_snapshot_model.dart`
-- `lib/models/ServiceProvider/init_stages_enum_model.dart`
-- `lib/models/ServiceProvider/auth_requirement_model.dart`
-- `lib/models/ServiceProvider/login_continuation_result_model.dart`
-- `lib/models/ServiceProvider/startup_auth_continuation_coordinator_model.dart`
-- `lib/features/auth/controllers/login_controller.dart`
-- `lib/features/auth/presentation/login_widget.dart`
-- `lib/features/dashboard/controllers/dashboard_controller.dart`
+- `lib/shared/widgets/feature_error_state.dart`
+- `lib/shared/widgets/feature_empty_state.dart`
+- `lib/shared/widgets/info_card.dart`
 - `lib/features/dashboard/presentation/dashboard_page.dart`
-- `lib/features/billing/controllers/billing_controller.dart`
+- `lib/features/auth/presentation/login_widget.dart`
 - `lib/features/billing/presentation/billing_widget.dart`
-- `lib/shared/widgets/**`
-- `lib/models/LoadingGeneric/widget.dart`
-- `lib/core/transport/geryonsocket_model.dart`
-- `lib/core/transport/geryonsocket_model_io.dart`
-- `lib/core/transport/geryonsocket_model_web.dart`
+- `lib/shared/window/window_widget.dart`
+
+The documentary baseline also directly governs:
+
+- `docs/index.md`
+- `docs/development.md`
+- `docs/decisions.md`
+- `docs/phase9_product_surface_consistency_ux_hardening.md`
+- all `docs/phase9_product_surface_consistency_ux_hardening_9_3_*` files
 
 ## Implementation Characteristics
 
-### 1. The architecture remains frozen
+### 1. Architecture remains frozen
 
-All new work must preserve:
+All future work must preserve:
 
 - `presentation → controller → ServiceProvider`
 
-Neither Phase 7 nor Phase 8 remains open for reinterpretation as architectural redesign.
+Widgets remain presentation surfaces.
+Controllers remain feature meaning/orchestration owners.
+`ServiceProvider` remains runtime owner.
 
 ### 2. Phase 8 runtime hardening remains retained baseline
 
-The following are no longer experimental or provisional:
+Nothing in later UI/product work authorizes bypassing or weakening:
 
 - failure-boundary semantics
-- recovery trigger semantics
-- recovery policy decision semantics
-- guarded runtime recovery entry points
-- bounded runtime diagnostic events
-- runtime diagnostic snapshot exposure
+- recovery-trigger semantics
+- runtime diagnostic behavior
+- startup/runtime continuation ownership
 
-Any future work must treat these as part of the active repository baseline.
+Those remain frozen baseline assumptions.
 
-### 3. Phase 9 may improve visible product surfaces only
+### 3. Phase 9.2 semantic consolidation remains retained baseline
 
-Phase 9 may standardize:
+The semantic rules established in 9.2 and reinforced through 9.3.2 remain active:
 
-- loading surfaces
-- recoverable feature-error surfaces
-- empty states
-- retry affordances
-- visible interaction consistency
+- copy consistency
+- action-label consistency
+- retry wording consistency
+- feedback hierarchy consistency
+- clearer distinction between local feature surfaces and broader failures
 
-Phase 9 must not:
+Future work must not casually undo those gains.
 
-- redesign runtime semantics
-- take ownership away from controllers or `ServiceProvider`
-- hide broad design changes under small UI wording
+### 4. Phase 9.3.3 local visual consolidation remains retained baseline
 
-### 4. Runtime changes must not bypass retained semantic models
+The following now represent the retained local visual baseline:
 
-Any future work touching runtime continuation, recovery, or diagnostics must still respect:
+- shared state surfaces have aligned density
+- dashboard has normalized section rhythm
+- auth is no longer visually isolated from the product baseline
+- billing embedded composition is more integrated and no longer ignores header rendering
+- billing title-bar color is aligned to theme rather than per-type strong category colors
+- the embedded billing height reservation was corrected to absorb the new internal structure
 
-- `ServiceProviderFailureBoundaryScope`
-- `ServiceProviderFailureRecoveryExpectation`
-- `ServiceProviderFailureBoundaryState`
-- `ServiceProviderRuntimeRecoveryTrigger`
-- `ServiceProviderRuntimeRecoveryPolicyDecision`
-- runtime diagnostic event and snapshot models
+These are no longer experimental changes. They are part of the current repository baseline.
 
-These are part of the closed baseline.
+### 5. 9.3.3 must not be reopened casually
 
-### 5. ServiceProvider remains the runtime owner
+From this point forward, future work must not continue making small local density/layout adjustments as if 9.3.3 were still open.
 
-`ServiceProvider` remains the owner of:
+Minor bug fixes are allowed.
+Informal continuation is not.
 
-- transport bootstrap
-- authenticated runtime lifecycle
-- active operational context
-- startup/runtime continuation
-- recovery policy execution
-- runtime diagnostic signal emission
+### 6. The next concern must be treated as a different problem class
 
-It may be maintained and incrementally improved when justified.
+The remaining concerns after 9.3.3 closure are no longer primarily about local widget/panel/card density.
 
-It must not be replaced or bypassed casually.
+They are about:
 
-### 6. Widgets must not become owners of business or runtime policy
+- wide-screen composition
+- viewport focus
+- Web vs Android layout parity
+- responsive behavior on large browser windows
 
-Widgets may:
+Those concerns must be treated as a separate subphase concern, not as leftovers hidden inside 9.3.3.
 
-- display current state
-- trigger explicit user actions
-- react to already-normalized and already-owned state
-- offer shared presentation surfaces for loading / error / empty cases
+### 7. Shared widgets remain narrow and presentation-only
 
-Widgets must not:
+The shared surfaces introduced or adjusted through Phase 9 remain legitimate only while they stay:
 
-- redefine recovery policy
-- mutate runtime baseline flags ad hoc
-- become owners of diagnostic logic
-- perform controller work
-- replace feature-state ownership with UI-state ownership
-
-### 7. Minimal shared UI surfaces are allowed
-
-Phase 9 explicitly allows narrowly scoped reusable widgets when they:
-
-- reduce visible inconsistency
-- remain presentation-only
-- do not become a hidden framework
-- do not pull business logic out of controllers
-
-This rule justifies small shared state-surface widgets.
-
-It does not justify a large new abstraction layer.
-
-### 8. Billing, Dashboard, and Auth now act as the reference adoption pattern
-
-Billing, Dashboard, and Auth are now the concrete adopters of the shared Phase 9 consistency baseline.
-
-That means future feature adoption should follow the same discipline:
-
-- controller keeps feature-state semantics
-- widget renders clear visible state branches
-- recoverable feature errors remain distinct from system failures
-- loading meanings remain explicit rather than generic
-- retry stays natural to the feature context
-
-### 9. Phase 9.3 is allowed to define cross-feature UX rules before broader visual changes
-
-Phase 9.3 may define and document shared UX rules for:
-
-- copy tone
-- action labels
-- loading wording
-- recoverable error wording
-- retry labels
-- feedback hierarchy
-
-That documentation work must remain:
-
-- incremental
+- presentation-only
+- narrow in purpose
+- feature-agnostic in logic
 - reversible
-- aligned with the current ZIP
-- narrower than a redesign
 
-### 10. Cross-feature consistency does not authorize global redesign
+They must not drift into:
+- state ownership
+- orchestration
+- cross-feature business logic
+- new hidden framework behavior
 
-Phase 9.3 may consolidate visible semantics across Auth, Dashboard, and Billing.
+### 8. Billing embedded fit is a retained composition contract
 
-It must not use consistency language to justify:
+The billing panel is no longer treated as a legacy surface accidentally dropped into the dashboard.
 
-- brand redesign
+The current retained contract now includes:
+
+- rendered header support when provided
+- a more integrated header/body composition
+- theme-aligned title bar treatment
+- correct reserved height in dashboard for the additional header structure
+
+Future work must preserve that unless a later justified phase explicitly changes it.
+
+### 9. No hidden redesign under consistency language
+
+Even after this visual consolidation, the following remain explicitly disallowed unless the ZIP later justifies a new phase:
+
+- broad responsive framework introduction
 - navigation redesign
-- dense global restyling
-- speculative design-system expansion
-
-### 11. Closed phases must not be reopened informally
-
-This remains a mandatory rule.
-
-Future work must not continue as:
-
-- implicit `7.x`
-- implicit `8.x`
-
-If future work truly requires a new scope, that scope must be opened explicitly as a justified new phase.
-
-### 12. Narrow maintenance remains allowed
-
-Closing Phase 8 does not prohibit all changes.
-
-It allows:
-
-- bug fixes
-- narrowly justified hardening
-- compatibility adjustments
-- documentation alignment
-- product-surface consistency work inside the explicit Phase 9 scope
-
-### 13. No hidden redesign under the label of UX hardening
-
-The following remain explicitly disallowed unless the ZIP later proves a narrowly justified need:
-
-- broad application coordinator expansion
-- event-bus introduction
-- global error framework replacement
-- navigation replacement
-- feature-state ownership redesign
-- backend contract redesign
-- new speculative runtime engine layers
-- speculative broad design-system introduction
+- theme overhaul
+- design-system replacement
+- runtime engine redesign
+- ownership drift from controller/service layers into widgets
 
 ## Validation
 
-Future work is aligned with the current baseline only if all of the following remain true:
+Future work remains aligned only if all of the following stay true:
 
-- architecture remains `presentation → controller → ServiceProvider`
-- closed Phase 7 scope is not reopened informally
-- closed Phase 8 scope is not reopened informally
-- retained runtime semantic models remain respected
-- retained recovery-policy models remain respected
-- retained runtime observability models remain respected
-- Phase 9 changes stay surface-oriented
-- shared widgets remain presentation-only
-- maintenance remains narrower than redesign
+- architecture remains unchanged
+- `ServiceProvider` remains runtime owner
+- semantic surface contracts remain respected
+- 9.3.3 local visual baseline is treated as closed and retained
+- later changes are justified under a new explicit concern rather than under leftover local tweaking
+- no broad redesign is smuggled in as UX-hardening work
 
 ## Release Impact
 
-These guidelines have no direct user-facing runtime impact.
+These guidelines do not themselves change runtime behavior.
 
-They protect the project from reopening already closed baselines and preserve the discipline of explicit phase-based evolution while permitting controlled Phase 9 UX hardening.
+They protect:
+
+- code/docs alignment
+- phase traceability
+- already-achieved UX consistency
+- the clarity of the next step after 9.3.3
 
 ## Risks
 
 If these rules are ignored, future work may:
 
-- reopen closed structural scope
-- reopen closed runtime-hardening scope
-- bypass the retained runtime semantic baseline
-- introduce ad hoc runtime changes that weaken the current architecture
-- create a fragmented pseudo-design-system
-- blur the difference between UX hardening and redesign
+- reopen 9.3.3 informally
+- reintroduce local inconsistency by small undocumented tweaks
+- mix responsive issues into old visual substeps
+- weaken the current coherence gains
+- blur the transition to the next justified phase
 
 ## What it does NOT solve
 
 This document does not itself:
 
-- change runtime behavior
-- add new diagnostics
-- normalize every screen immediately
-- fix all historical UI hotspots
-- define the full Phase 9 roadmap implementation order
+- implement the next responsive/platform review
+- solve wide viewport focus
+- redesign dashboard for every screen class
+- guarantee total Web/Android parity by itself
 
-It only defines how future work must behave after the closure of Phase 8 and during active Phase 9 execution.
+It only defines the rules for development after the closure of 9.3.3.
 
 ## Conclusion
 
@@ -349,13 +289,7 @@ The active development baseline is now:
 
 - Phase 7 closed
 - Phase 8 closed
-- structural and runtime-hardening baselines frozen
-- Phase 9 opened for controlled product-surface consistency work
-- Phase 9.2.2 established Billing normalization
-- Phase 9.2.3 established Dashboard normalization
-- Phase 9.2.4 established Auth normalization
-- Phase 9.3.1 documented the cross-feature inventory baseline
-- Phase 9.3.2 documented the copy / action / feedback consolidation baseline
-- future work required to respect retained baselines without reopening them informally
-
-Any future larger scope beyond this must still begin as a new explicitly justified phase.
+- Phase 9 semantic consistency baseline retained
+- Phase 9.3.3 local visual consistency baseline retained
+- local density/layout work no longer open
+- the next justified concern shifted beyond local panel rhythm and into the next explicit review layer
