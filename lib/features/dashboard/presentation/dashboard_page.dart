@@ -6,9 +6,12 @@ import 'package:geryon_web_app_ws_v2/common_vars.dart';
 import 'package:geryon_web_app_ws_v2/core/utils/utils.dart';
 import 'package:geryon_web_app_ws_v2/features/billing/presentation/billing_widget.dart';
 import 'package:geryon_web_app_ws_v2/features/dashboard/controllers/dashboard_controller.dart';
+import 'package:geryon_web_app_ws_v2/models/LoadingGeneric/widget.dart';
 import 'package:geryon_web_app_ws_v2/models/ServiceProvider/login_data_user_message_model.dart';
 import 'package:geryon_web_app_ws_v2/shared/layouts/frame_with_scroll.dart';
 import 'package:geryon_web_app_ws_v2/shared/widgets/copyable_list_tile.dart';
+import 'package:geryon_web_app_ws_v2/shared/widgets/feature_empty_state.dart';
+import 'package:geryon_web_app_ws_v2/shared/widgets/feature_error_state.dart';
 import 'package:geryon_web_app_ws_v2/shared/widgets/info_card.dart';
 
 class DashboardPage extends ConsumerWidget {
@@ -47,15 +50,35 @@ class DashboardPage extends ConsumerWidget {
             ref: ref,
           );
 
+    Widget body;
+
+    if (dashboardState.isLoadingSurface) {
+      body = LoadingGeneric(
+        loadingText: dashboardState.loadingTitle,
+      );
+    } else if (dashboardState.isEmptySurface) {
+      body = FeatureEmptyState(
+        title: dashboardState.emptyTitle,
+        message: dashboardState.emptyMessage,
+        icon: Icons.groups_2_outlined,
+      );
+    } else if (dashboardState.isOperationalContextInvalid) {
+      body = FeatureErrorState(
+        title: dashboardState.invalidContextTitle,
+        message: dashboardState.invalidContextMessage,
+        icon: Icons.person_search_outlined,
+      );
+    } else {
+      body = _DashboardContent(data: userData!);
+    }
+
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: kToolbarHeight * 1.25,
         title: dashboardTitle,
         actions: dashboardActions,
       ),
-      body: userData == null
-          ? const Center(child: CircularProgressIndicator())
-          : _DashboardContent(data: userData),
+      body: body,
     );
   }
 
@@ -71,7 +94,7 @@ class DashboardPage extends ConsumerWidget {
                 height: kToolbarHeight * 0.8,
               ),
             ),
-            SizedBox(width: 8),
+            const SizedBox(width: 8),
             const Text("Panel de Usuario"),
           ],
         ),
@@ -84,6 +107,8 @@ class DashboardPage extends ConsumerWidget {
     required WidgetRef ref,
     required DashboardResolvedState dashboardState,
   }) {
+    final bool selectorEnabled = dashboardState.canSelectClient;
+
     return Column(
       children: [
         Row(
@@ -95,7 +120,7 @@ class DashboardPage extends ConsumerWidget {
                 height: kToolbarHeight * 0.8,
               ),
             ),
-            SizedBox(width: 8),
+            const SizedBox(width: 8),
             const Text("Panel de Usuario"),
           ],
         ),
@@ -104,7 +129,10 @@ class DashboardPage extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             PopupMenuButton<int>(
-              tooltip: "Seleccionar Cliente",
+              enabled: selectorEnabled,
+              tooltip: selectorEnabled
+                  ? "Seleccionar Cliente"
+                  : "No hay más clientes disponibles",
               onSelected: (int result) async {
                 await _controller.selectClient(
                   ref: ref,
@@ -118,7 +146,7 @@ class DashboardPage extends ConsumerWidget {
                         value: option.index,
                         child: Text(
                           option.label,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w400,
                           ),
@@ -130,17 +158,24 @@ class DashboardPage extends ConsumerWidget {
               child: Row(
                 children: [
                   Text(
-                    dashboardState.activeClientDisplayName,
+                    _controller.resolveSelectorLabel(
+                      state: dashboardState,
+                    ),
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
+                      color: selectorEnabled
+                          ? Colors.white
+                          : Colors.white.withValues(alpha: 0.75),
                     ),
                   ),
                   const SizedBox(width: 10),
-                  const Icon(
+                  Icon(
                     Icons.person,
                     size: 20,
-                    color: Colors.white,
+                    color: selectorEnabled
+                        ? Colors.white
+                        : Colors.white.withValues(alpha: 0.75),
                   ),
                 ],
               ),
@@ -156,9 +191,14 @@ class DashboardPage extends ConsumerWidget {
     required WidgetRef ref,
     required DashboardResolvedState dashboardState,
   }) {
+    final bool selectorEnabled = dashboardState.canSelectClient;
+
     return [
       PopupMenuButton<int>(
-        tooltip: "Seleccionar Cliente",
+        enabled: selectorEnabled,
+        tooltip: selectorEnabled
+            ? "Seleccionar Cliente"
+            : "No hay más clientes disponibles",
         onSelected: (int result) async {
           await _controller.selectClient(
             ref: ref,
@@ -177,7 +217,12 @@ class DashboardPage extends ConsumerWidget {
         },
         child: Row(
           children: [
-            Text(dashboardState.activeClientDisplayName),
+            Text(
+              _controller.resolveSelectorLabel(
+                state: dashboardState,
+              ),
+            ),
+            const SizedBox(width: 6),
             const Icon(Icons.person),
           ],
         ),
@@ -339,7 +384,7 @@ class _DashboardContent extends StatelessWidget {
                   pType: "FacturasVT",
                 ),
               ),
-              SizedBox(height: 5),
+              const SizedBox(height: 5),
               SizedBox(
                 width: constraints.maxWidth != double.infinity
                     ? constraints.maxWidth - 32
@@ -350,7 +395,7 @@ class _DashboardContent extends StatelessWidget {
                   pType: "RecibosVT",
                 ),
               ),
-              SizedBox(height: 5),
+              const SizedBox(height: 5),
             ],
           ),
         );

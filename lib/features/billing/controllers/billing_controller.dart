@@ -1,5 +1,4 @@
-/// ignore_for_file: unnecessary_cast
-
+// ignore_for_file: unnecessary_cast
 import 'dart:developer' as developer;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';

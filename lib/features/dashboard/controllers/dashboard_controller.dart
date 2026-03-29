@@ -4,6 +4,13 @@ import 'package:geryon_web_app_ws_v2/features/contracts/application_coordinator.
 import 'package:geryon_web_app_ws_v2/models/ServiceProvider/data_model.dart';
 import 'package:geryon_web_app_ws_v2/models/ServiceProvider/login_data_user_message_model.dart';
 
+enum DashboardSurfaceStateType {
+  loading,
+  empty,
+  invalidOperationalContext,
+  ready,
+}
+
 class DashboardClientOption {
   final int index;
   final String label;
@@ -27,12 +34,14 @@ class DashboardSourceState {
 }
 
 class DashboardResolvedState {
+  final DashboardSurfaceStateType surfaceStateType;
   final ServiceProviderLoginDataUserMessageModel? activeClient;
   final int? activeClientIndex;
   final String activeClientDisplayName;
   final List<DashboardClientOption> clientOptions;
 
   const DashboardResolvedState({
+    required this.surfaceStateType,
     required this.activeClient,
     required this.activeClientIndex,
     required this.activeClientDisplayName,
@@ -40,6 +49,32 @@ class DashboardResolvedState {
   });
 
   bool get hasActiveClient => activeClient != null;
+  bool get hasClientOptions => clientOptions.isNotEmpty;
+  bool get canSelectClient => clientOptions.length > 1;
+
+  bool get isLoadingSurface =>
+      surfaceStateType == DashboardSurfaceStateType.loading;
+
+  bool get isEmptySurface =>
+      surfaceStateType == DashboardSurfaceStateType.empty;
+
+  bool get isOperationalContextInvalid =>
+      surfaceStateType == DashboardSurfaceStateType.invalidOperationalContext;
+
+  bool get isReadySurface =>
+      surfaceStateType == DashboardSurfaceStateType.ready;
+
+  String get loadingTitle => 'Cargando panel...';
+
+  String get emptyTitle => 'No hay clientes disponibles';
+
+  String get emptyMessage =>
+      'Tu sesión está iniciada, pero no encontramos clientes disponibles para mostrar en este momento.';
+
+  String get invalidContextTitle => 'No pudimos resolver el cliente activo';
+
+  String get invalidContextMessage =>
+      'La sesión está iniciada, pero no se pudo determinar un cliente activo válido para mostrar el panel.';
 }
 
 class DashboardController {
@@ -56,15 +91,48 @@ class DashboardController {
   DashboardResolvedState resolveStateFromSource({
     required DashboardSourceState source,
   }) {
+    final clientOptions = _buildClientOptions(source);
+
+    if (source.authenticatedUser == null) {
+      return DashboardResolvedState(
+        surfaceStateType: DashboardSurfaceStateType.loading,
+        activeClient: null,
+        activeClientIndex: null,
+        activeClientDisplayName: 'Cargando...',
+        clientOptions: clientOptions,
+      );
+    }
+
+    if (source.availableClients.isEmpty) {
+      return const DashboardResolvedState(
+        surfaceStateType: DashboardSurfaceStateType.empty,
+        activeClient: null,
+        activeClientIndex: null,
+        activeClientDisplayName: 'SIN CLIENTES',
+        clientOptions: <DashboardClientOption>[],
+      );
+    }
+
     final activeClientIndex = _resolveActiveClientIndex(source);
     final activeClient = _resolveActiveClient(
       source: source,
       activeClientIndex: activeClientIndex,
     );
-    final clientOptions = _buildClientOptions(source);
+
+    if (activeClient == null) {
+      return DashboardResolvedState(
+        surfaceStateType: DashboardSurfaceStateType.invalidOperationalContext,
+        activeClient: null,
+        activeClientIndex: activeClientIndex,
+        activeClientDisplayName: 'CLIENTE NO RESUELTO',
+        clientOptions: clientOptions,
+      );
+    }
+
     final activeClientDisplayName = _resolveDisplayName(activeClient);
 
     return DashboardResolvedState(
+      surfaceStateType: DashboardSurfaceStateType.ready,
       activeClient: activeClient,
       activeClientIndex: activeClientIndex,
       activeClientDisplayName: activeClientDisplayName,
@@ -85,13 +153,32 @@ class DashboardController {
     await ApplicationCoordinator.performLogoutReset(ref: ref);
   }
 
+  String resolveSelectorLabel({
+    required DashboardResolvedState state,
+  }) {
+    if (state.isLoadingSurface) {
+      return 'Resolviendo cliente...';
+    }
+
+    if (state.isEmptySurface) {
+      return 'Sin clientes';
+    }
+
+    if (state.isOperationalContextInvalid) {
+      return 'Cliente no disponible';
+    }
+
+    final displayName = state.activeClientDisplayName.trim();
+    if (displayName.isNotEmpty) {
+      return displayName;
+    }
+
+    return 'Cliente activo';
+  }
+
   int? _resolveActiveClientIndex(
     DashboardSourceState source,
   ) {
-    if (source.authenticatedUser == null) {
-      return null;
-    }
-
     if (source.availableClients.isEmpty) {
       return null;
     }
@@ -110,10 +197,6 @@ class DashboardController {
     required DashboardSourceState source,
     required int? activeClientIndex,
   }) {
-    if (source.authenticatedUser == null) {
-      return null;
-    }
-
     if (source.availableClients.isEmpty) {
       return null;
     }
@@ -128,10 +211,6 @@ class DashboardController {
   List<DashboardClientOption> _buildClientOptions(
     DashboardSourceState source,
   ) {
-    if (source.authenticatedUser == null) {
-      return const <DashboardClientOption>[];
-    }
-
     if (source.availableClients.isEmpty) {
       return const <DashboardClientOption>[];
     }

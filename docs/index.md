@@ -24,6 +24,7 @@ The current ZIP confirms the following phase baseline:
 - Phase 9.1 completed as product surface inventory
 - Phase 9.2.1 completed as shared state surface contract foundation
 - Phase 9.2.2 completed as Billing state surface normalization
+- Phase 9.2.3 completed as Dashboard state presentation normalization
 
 ## Problem Statement
 
@@ -80,6 +81,7 @@ Primary entry documents include:
 - `docs/phase9_product_surface_consistency_ux_hardening_9_1_product_surface_inventory.md`
 - `docs/phase9_product_surface_consistency_ux_hardening_9_2_1_shared_state_surface_contract.md`
 - `docs/phase9_product_surface_consistency_ux_hardening_9_2_2_billing_state_surface_normalization.md`
+- `docs/phase9_product_surface_consistency_ux_hardening_9_2_3_dashboard_state_presentation_normalization.md`
 
 ## Implementation Characteristics
 
@@ -192,6 +194,9 @@ Primary entry documents include:
 ##### Phase 9.2.2
 - `docs/phase9_product_surface_consistency_ux_hardening_9_2_2_billing_state_surface_normalization.md`
 
+##### Phase 9.2.3
+- `docs/phase9_product_surface_consistency_ux_hardening_9_2_3_dashboard_state_presentation_normalization.md`
+
 ## Validation
 
 Recommended current reading order:
@@ -212,6 +217,7 @@ Recommended current reading order:
 14. `docs/phase9_product_surface_consistency_ux_hardening_9_1_product_surface_inventory.md`
 15. `docs/phase9_product_surface_consistency_ux_hardening_9_2_1_shared_state_surface_contract.md`
 16. `docs/phase9_product_surface_consistency_ux_hardening_9_2_2_billing_state_surface_normalization.md`
+17. `docs/phase9_product_surface_consistency_ux_hardening_9_2_3_dashboard_state_presentation_normalization.md`
 
 ## Release Impact
 
@@ -222,7 +228,7 @@ It keeps the documentation aligned with the current repository baseline and make
 - Phase 7 is closed
 - Phase 8 is closed
 - Phase 9 is now the active product-surface consistency phase
-- Billing is now the first normalized feature adopter of the shared state-surface contract
+- Billing and Dashboard are now normalized adopters of the shared state-surface contract
 
 ## Risks
 
@@ -241,7 +247,7 @@ This index does not itself:
 - add new diagnostics
 - harden retry / reboot / reconnect further
 - redesign the application surface
-- implement the remaining feature-state adoptions beyond Billing
+- implement the remaining feature-state adoptions beyond Billing and Dashboard
 
 It only reflects the correct current documentary baseline.
 
@@ -256,5 +262,6 @@ The current project baseline is:
 - Phase 9.1 completed as inventory
 - Phase 9.2.1 completed as shared-state foundation
 - Phase 9.2.2 completed as Billing state surface normalization
+- Phase 9.2.3 completed as Dashboard state presentation normalization
 
 That is now the correct documentation entry point for Mi IP·RED.

@@ -20,6 +20,7 @@ The current ZIP confirms:
 - Phase 9.1 inventories product-surface inconsistency
 - Phase 9.2.1 introduces the minimal shared state-surface contract foundation
 - Phase 9.2.2 applies that shared contract concretely to Billing
+- Phase 9.2.3 applies that shared contract concretely to Dashboard
 
 ## Problem Statement
 
@@ -91,6 +92,7 @@ These decisions directly govern interpretation of:
 - `docs/phase9_product_surface_consistency_ux_hardening_9_1_product_surface_inventory.md`
 - `docs/phase9_product_surface_consistency_ux_hardening_9_2_1_shared_state_surface_contract.md`
 - `docs/phase9_product_surface_consistency_ux_hardening_9_2_2_billing_state_surface_normalization.md`
+- `docs/phase9_product_surface_consistency_ux_hardening_9_2_3_dashboard_state_presentation_normalization.md`
 
 ## Implementation Characteristics
 
@@ -250,7 +252,32 @@ The feature itself now decides when it is:
 
 That is the required product-surface pattern for later Phase 9 feature adoption.
 
-### Decision 16 — Future larger work must open a new explicit phase
+### Decision 16 — Dashboard now classifies surface states explicitly
+
+Dashboard no longer treats the absence of a resolved active client as a single generic loading case.
+
+It now explicitly distinguishes between:
+
+- loading
+- empty available-client surface
+- invalid operational context
+- ready
+
+This becomes the required pattern for later feature normalization.
+
+### Decision 17 — Ready content must stay isolated from surface-state branches
+
+Dashboard ready content remains in `_DashboardContent`.
+
+That means:
+
+- loading does not leak into ready UI
+- empty does not leak into ready UI
+- invalid context does not leak into ready UI
+
+This preserves feature clarity and avoids mixed rendering semantics.
+
+### Decision 18 — Future larger work must open a new explicit phase
 
 Neither Phase 7 nor Phase 8 should be reopened informally.
 
@@ -298,7 +325,6 @@ If these decisions are ignored, future work may:
 This document does not itself:
 
 - normalize Auth
-- normalize Dashboard
 - replace historical technical surfaces globally
 - redesign the application
 - define the entire later Phase 9 sequence in implementation detail
@@ -312,6 +338,6 @@ The repository now has these explicit baseline truths:
 - Phase 7 closed
 - Phase 8 closed
 - Phase 9 active only as controlled product-surface consistency work
-- Billing is now the first concrete feature that adopts the shared state-surface contract in production code
+- Billing and Dashboard are now concrete features that adopt the shared state-surface contract in production code
 
 Those decisions now govern how Mi IP·RED should evolve from this point forward.

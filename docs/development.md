@@ -20,6 +20,7 @@ The current ZIP confirms this baseline:
 - Phase 9.1 completed as product surface inventory
 - Phase 9.2.1 completed as shared state surface contract foundation
 - Phase 9.2.2 completed as Billing state surface normalization
+- Phase 9.2.3 completed as Dashboard state presentation normalization
 
 That means the repository is no longer in either:
 
@@ -215,16 +216,16 @@ This rule justifies small shared state-surface widgets.
 
 It does not justify a large new abstraction layer.
 
-### 8. Billing normalization now acts as the reference adoption pattern
+### 8. Billing and Dashboard now act as the reference adoption pattern
 
-Billing is the first concrete adopter of the shared Phase 9.2.1 state-surface contract.
+Billing and Dashboard are now the first concrete adopters of the shared Phase 9.2.1 state-surface contract.
 
 That means future feature adoption should follow the same discipline:
 
 - controller keeps feature-state semantics
 - widget renders shared surface states
 - recoverable feature errors remain distinct from system failures
-- empty state is elevated to feature-surface level rather than hidden in lower-level widgets
+- empty and invalid states are elevated to feature-surface level rather than hidden behind generic fallbacks
 
 ### 9. Closed phases must not be reopened informally
 
@@ -314,6 +315,7 @@ The active development baseline is now:
 - structural and runtime-hardening baselines frozen
 - Phase 9 opened for controlled product-surface consistency work
 - Phase 9.2.2 established Billing as the first concrete feature adoption of the shared state-surface contract
+- Phase 9.2.3 established Dashboard as the second concrete feature adoption of the shared state-surface contract
 - future work required to respect retained baselines without reopening them informally
 
 Any future larger scope beyond this must still begin as a new explicitly justified phase.
