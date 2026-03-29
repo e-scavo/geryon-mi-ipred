@@ -2,7 +2,7 @@
 
 ## Objective
 
-Provide the current entry point to the Mi IP·RED documentation so the repository reading order stays aligned with the real code, the closed Phase 7 baseline, the formally closed Phase 8 runtime-hardening baseline, and the now active Phase 9 product-surface consistency baseline.
+Provide the current entry point to the Mi IP·RED documentation so the repository reading order stays aligned with the real code, the closed Phase 7 baseline, the formally closed Phase 8 runtime-hardening baseline, the now active Phase 9 product-surface consistency baseline, and the newly documented Phase 9.3 cross-feature UX consistency baseline.
 
 ## Initial Context
 
@@ -26,6 +26,9 @@ The current ZIP confirms the following phase baseline:
 - Phase 9.2.2 completed as Billing state surface normalization
 - Phase 9.2.3 completed as Dashboard state presentation normalization
 - Phase 9.2.4 completed as Auth interaction feedback normalization
+- Phase 9.3 opened as cross-feature UX consistency consolidation
+- Phase 9.3.1 defined as cross-feature UX consistency inventory
+- Phase 9.3.2 defined as copy / action / feedback consolidation
 
 ## Problem Statement
 
@@ -34,6 +37,7 @@ The documentation index must clearly distinguish between:
 - closed structural work
 - closed runtime hardening work
 - active product-surface consistency work
+- the currently defined Phase 9.3 cross-feature UX consistency continuation
 - whatever future phase comes next after those completed and active baselines
 
 If that distinction is lost, future work can incorrectly reopen Phase 7 or Phase 8 concerns implicitly, or treat Phase 9 as a redesign phase instead of a controlled UX-hardening phase.
@@ -57,7 +61,22 @@ That means the documentation index must mirror the real repository state.
 
 The current ZIP shows that the structural consolidation baseline and the runtime hardening baseline are already closed, while product-surface consistency work is now the active justified next phase.
 
-The index must therefore stop presenting Phase 8 as an active working phase and must present Phase 9 as the active UI/UX consistency phase without implying redesign of architecture or runtime ownership.
+Phase 9.2 already normalized the three critical surfaces independently:
+
+- Billing
+- Dashboard
+- Auth
+
+That leaves a new justified continuation inside Phase 9:
+
+- cross-feature UX consistency consolidation
+
+The index must therefore stop presenting Phase 8 as an active working phase, must present Phase 9 as the active UI/UX consistency phase, and must distinguish between:
+
+- Phase 9.2 completed surface-by-surface normalization
+- Phase 9.3 documented cross-feature consolidation work
+
+without implying redesign of architecture or runtime ownership.
 
 ## Files Affected
 
@@ -84,6 +103,8 @@ Primary entry documents include:
 - `docs/phase9_product_surface_consistency_ux_hardening_9_2_2_billing_state_surface_normalization.md`
 - `docs/phase9_product_surface_consistency_ux_hardening_9_2_3_dashboard_state_presentation_normalization.md`
 - `docs/phase9_product_surface_consistency_ux_hardening_9_2_4_auth_interaction_feedback_normalization.md`
+- `docs/phase9_product_surface_consistency_ux_hardening_9_3_1_cross_feature_ux_consistency_inventory.md`
+- `docs/phase9_product_surface_consistency_ux_hardening_9_3_2_copy_action_feedback_consolidation.md`
 
 ## Implementation Characteristics
 
@@ -202,6 +223,12 @@ Primary entry documents include:
 ##### Phase 9.2.4
 - `docs/phase9_product_surface_consistency_ux_hardening_9_2_4_auth_interaction_feedback_normalization.md`
 
+##### Phase 9.3.1
+- `docs/phase9_product_surface_consistency_ux_hardening_9_3_1_cross_feature_ux_consistency_inventory.md`
+
+##### Phase 9.3.2
+- `docs/phase9_product_surface_consistency_ux_hardening_9_3_2_copy_action_feedback_consolidation.md`
+
 ## Validation
 
 Recommended current reading order:
@@ -224,6 +251,8 @@ Recommended current reading order:
 16. `docs/phase9_product_surface_consistency_ux_hardening_9_2_2_billing_state_surface_normalization.md`
 17. `docs/phase9_product_surface_consistency_ux_hardening_9_2_3_dashboard_state_presentation_normalization.md`
 18. `docs/phase9_product_surface_consistency_ux_hardening_9_2_4_auth_interaction_feedback_normalization.md`
+19. `docs/phase9_product_surface_consistency_ux_hardening_9_3_1_cross_feature_ux_consistency_inventory.md`
+20. `docs/phase9_product_surface_consistency_ux_hardening_9_3_2_copy_action_feedback_consolidation.md`
 
 ## Release Impact
 
@@ -235,6 +264,7 @@ It keeps the documentation aligned with the current repository baseline and make
 - Phase 8 is closed
 - Phase 9 is now the active product-surface consistency phase
 - Billing, Dashboard, and Auth are now normalized adopters of the shared consistency baseline
+- Phase 9.3 is now the active documented cross-feature consistency continuation
 
 ## Risks
 
@@ -253,7 +283,7 @@ This index does not itself:
 - add new diagnostics
 - harden retry / reboot / reconnect further
 - redesign the application surface
-- implement the remaining Phase 9 work beyond Auth normalization
+- implement the remaining Phase 9 work beyond Auth normalization and documented cross-feature consolidation planning
 
 It only reflects the correct current documentary baseline.
 
@@ -270,5 +300,8 @@ The current project baseline is:
 - Phase 9.2.2 completed as Billing normalization
 - Phase 9.2.3 completed as Dashboard normalization
 - Phase 9.2.4 completed as Auth normalization
+- Phase 9.3 opened as cross-feature UX consistency consolidation
+- Phase 9.3.1 documented as inventory baseline
+- Phase 9.3.2 documented as consolidation contract baseline
 
 That is now the correct documentation entry point for Mi IP·RED.

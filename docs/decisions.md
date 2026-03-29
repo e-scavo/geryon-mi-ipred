@@ -22,6 +22,9 @@ The current ZIP confirms:
 - Phase 9.2.2 applies that shared contract concretely to Billing
 - Phase 9.2.3 applies that shared contract concretely to Dashboard
 - Phase 9.2.4 applies consistent interaction feedback normalization to Auth
+- Phase 9.3 opens cross-feature UX consistency consolidation
+- Phase 9.3.1 defines the cross-feature UX consistency inventory
+- Phase 9.3.2 defines the copy / action / feedback consolidation contract
 
 ## Problem Statement
 
@@ -44,6 +47,7 @@ These decisions govern:
 - retained interpretation of trigger-aware recovery execution
 - retained interpretation of runtime observability
 - allowed interpretation of Phase 9 UX consistency work
+- documented interpretation of Phase 9.3 cross-feature consolidation work
 - sequencing expectations for future work
 - what remains explicitly out of scope
 
@@ -95,6 +99,8 @@ These decisions directly govern interpretation of:
 - `docs/phase9_product_surface_consistency_ux_hardening_9_2_2_billing_state_surface_normalization.md`
 - `docs/phase9_product_surface_consistency_ux_hardening_9_2_3_dashboard_state_presentation_normalization.md`
 - `docs/phase9_product_surface_consistency_ux_hardening_9_2_4_auth_interaction_feedback_normalization.md`
+- `docs/phase9_product_surface_consistency_ux_hardening_9_3_1_cross_feature_ux_consistency_inventory.md`
+- `docs/phase9_product_surface_consistency_ux_hardening_9_3_2_copy_action_feedback_consolidation.md`
 
 ## Implementation Characteristics
 
@@ -298,7 +304,43 @@ Auth retry is not introduced as a separate feature flow.
 
 It remains centered on the existing main submit action, which is the correct product behavior for login.
 
-### Decision 20 — Future larger work must open a new explicit phase
+### Decision 20 — Phase 9.3 is justified as cross-feature consolidation, not redesign
+
+After Phase 9.2 completed feature-by-feature normalization of Billing, Dashboard, and Auth, the next justified concern is no longer an isolated feature surface.
+
+It is the consistency between those already-hardened surfaces.
+
+That justifies Phase 9.3 specifically as:
+
+- copy consistency
+- action-label consistency
+- loading / error / retry wording consistency
+- feedback hierarchy consistency
+- cross-feature product coherence
+
+It does not justify architecture changes, runtime changes, or broad visual redesign.
+
+### Decision 21 — Phase 9.3 documentation must precede any broader visual adjustment
+
+Before broader visual or spacing adjustments are proposed, the repository should first record:
+
+- what inconsistency exists across features
+- what wording and interaction rules should be treated as baseline
+- what remains deliberately out of scope
+
+This preserves traceability and prevents ad hoc UI changes.
+
+### Decision 22 — Copy / action / feedback normalization must remain surface-local in implementation
+
+Even when Phase 9.3 later applies visible wording improvements in code, ownership must remain unchanged:
+
+- controllers still own state meaning
+- widgets still render feature-local visible branches
+- `ServiceProvider` still owns runtime lifecycle
+
+Cross-feature consistency does not authorize ownership drift.
+
+### Decision 23 — Future larger work must open a new explicit phase
 
 Neither Phase 7 nor Phase 8 should be reopened informally.
 
@@ -360,5 +402,6 @@ The repository now has these explicit baseline truths:
 - Phase 8 closed
 - Phase 9 active only as controlled product-surface consistency work
 - Billing, Dashboard, and Auth are now concrete adopters of the shared consistency standard in production code
+- Phase 9.3 is now the documented cross-feature consistency continuation
 
 Those decisions now govern how Mi IP·RED should evolve from this point forward.

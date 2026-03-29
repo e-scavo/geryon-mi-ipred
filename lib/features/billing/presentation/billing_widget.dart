@@ -273,7 +273,7 @@ Error: ${e.toString()}
             billingType: widget.pType,
             state: _billingState,
           ),
-          retryLabel: 'Reintentar',
+          retryLabel: 'Volver a intentar',
           onRetry: _requestBillingReload,
         );
       }
@@ -286,7 +286,7 @@ Error: ${e.toString()}
           message: _controller.resolveBillingEmptyMessage(
             billingType: widget.pType,
           ),
-          actionLabel: 'Actualizar',
+          actionLabel: 'Actualizar listado',
           onAction: _requestBillingReload,
         );
       }
@@ -329,6 +329,7 @@ Error: ${e.toString()}
       case "CreditosVT":
         wTitle = 'NOTAS DE CRÉDITO';
         wColor = Colors.blueAccent.shade400;
+        break;
       default:
     }
 

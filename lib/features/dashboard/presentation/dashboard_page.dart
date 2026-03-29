@@ -95,7 +95,7 @@ class DashboardPage extends ConsumerWidget {
               ),
             ),
             const SizedBox(width: 8),
-            const Text("Panel de Usuario"),
+            const Text("Panel de cliente"),
           ],
         ),
       ],
@@ -121,7 +121,7 @@ class DashboardPage extends ConsumerWidget {
               ),
             ),
             const SizedBox(width: 8),
-            const Text("Panel de Usuario"),
+            const Text("Panel de cliente"),
           ],
         ),
         Row(
@@ -131,8 +131,8 @@ class DashboardPage extends ConsumerWidget {
             PopupMenuButton<int>(
               enabled: selectorEnabled,
               tooltip: selectorEnabled
-                  ? "Seleccionar Cliente"
-                  : "No hay más clientes disponibles",
+                  ? "Cambiar cliente"
+                  : "No hay otros clientes disponibles",
               onSelected: (int result) async {
                 await _controller.selectClient(
                   ref: ref,
@@ -197,8 +197,8 @@ class DashboardPage extends ConsumerWidget {
       PopupMenuButton<int>(
         enabled: selectorEnabled,
         tooltip: selectorEnabled
-            ? "Seleccionar Cliente"
-            : "No hay más clientes disponibles",
+            ? "Cambiar cliente"
+            : "No hay otros clientes disponibles",
         onSelected: (int result) async {
           await _controller.selectClient(
             ref: ref,
@@ -265,7 +265,7 @@ class _DashboardContent extends StatelessWidget {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text("Métodos de pago"),
+          title: const Text("Medios de pago"),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -363,7 +363,7 @@ class _DashboardContent extends StatelessWidget {
                   InfoCard(
                     title: "Saldo",
                     value: data.saldoActual.asStringWithPrecSpanish(2),
-                    actionLabel: "Mostrar cómo pagar",
+                    actionLabel: "Ver medios de pago",
                     onAction: () => _showPaymentDialog(context, data),
                   ),
                   InfoCard(

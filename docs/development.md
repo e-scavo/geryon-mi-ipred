@@ -22,13 +22,16 @@ The current ZIP confirms this baseline:
 - Phase 9.2.2 completed as Billing state surface normalization
 - Phase 9.2.3 completed as Dashboard state presentation normalization
 - Phase 9.2.4 completed as Auth interaction feedback normalization
+- Phase 9.3 opened as cross-feature UX consistency consolidation
+- Phase 9.3.1 defined as cross-feature UX consistency inventory
+- Phase 9.3.2 defined as copy / action / feedback consolidation
 
 That means the repository is no longer in either:
 
 - a structural extraction phase, or
 - an active runtime hardening phase
 
-It is now in a controlled product-surface consistency phase.
+It is now in a controlled product-surface consistency phase, with Phase 9.3 defined as the next cross-feature consolidation step after the independent normalization of Billing, Dashboard, and Auth.
 
 ## Problem Statement
 
@@ -39,6 +42,7 @@ Without clear development rules after the closure of Phase 8 and the opening of 
 - disguise redesign as UX-hardening work
 - blur the difference between product-surface consistency and feature expansion
 - add inconsistent UI state handling while claiming to improve consistency
+- skip cross-feature consolidation rules after independent feature normalization
 
 ## Scope
 
@@ -55,6 +59,7 @@ These rules apply to work touching:
 - `lib/features/contracts/**`
 - `lib/shared/**`
 - current Phase 7, Phase 8, and Phase 9 documents
+- the new Phase 9.3 inventory and consolidation-contract documents
 
 These rules do not authorize by default:
 
@@ -87,6 +92,7 @@ That means Phase 9 must improve:
 - empty states
 - retry affordances
 - feature-to-feature UX consistency
+- cross-feature copy / action / feedback consolidation
 
 without disturbing the retained structural and runtime baselines.
 
@@ -229,7 +235,36 @@ That means future feature adoption should follow the same discipline:
 - loading meanings remain explicit rather than generic
 - retry stays natural to the feature context
 
-### 9. Closed phases must not be reopened informally
+### 9. Phase 9.3 is allowed to define cross-feature UX rules before broader visual changes
+
+Phase 9.3 may define and document shared UX rules for:
+
+- copy tone
+- action labels
+- loading wording
+- recoverable error wording
+- retry labels
+- feedback hierarchy
+
+That documentation work must remain:
+
+- incremental
+- reversible
+- aligned with the current ZIP
+- narrower than a redesign
+
+### 10. Cross-feature consistency does not authorize global redesign
+
+Phase 9.3 may consolidate visible semantics across Auth, Dashboard, and Billing.
+
+It must not use consistency language to justify:
+
+- brand redesign
+- navigation redesign
+- dense global restyling
+- speculative design-system expansion
+
+### 11. Closed phases must not be reopened informally
 
 This remains a mandatory rule.
 
@@ -240,7 +275,7 @@ Future work must not continue as:
 
 If future work truly requires a new scope, that scope must be opened explicitly as a justified new phase.
 
-### 10. Narrow maintenance remains allowed
+### 12. Narrow maintenance remains allowed
 
 Closing Phase 8 does not prohibit all changes.
 
@@ -252,7 +287,7 @@ It allows:
 - documentation alignment
 - product-surface consistency work inside the explicit Phase 9 scope
 
-### 11. No hidden redesign under the label of UX hardening
+### 13. No hidden redesign under the label of UX hardening
 
 The following remain explicitly disallowed unless the ZIP later proves a narrowly justified need:
 
@@ -319,6 +354,8 @@ The active development baseline is now:
 - Phase 9.2.2 established Billing normalization
 - Phase 9.2.3 established Dashboard normalization
 - Phase 9.2.4 established Auth normalization
+- Phase 9.3.1 documented the cross-feature inventory baseline
+- Phase 9.3.2 documented the copy / action / feedback consolidation baseline
 - future work required to respect retained baselines without reopening them informally
 
 Any future larger scope beyond this must still begin as a new explicitly justified phase.

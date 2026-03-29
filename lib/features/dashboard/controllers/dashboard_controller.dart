@@ -64,17 +64,17 @@ class DashboardResolvedState {
   bool get isReadySurface =>
       surfaceStateType == DashboardSurfaceStateType.ready;
 
-  String get loadingTitle => 'Cargando panel...';
+  String get loadingTitle => 'Preparando tu panel...';
 
-  String get emptyTitle => 'No hay clientes disponibles';
+  String get emptyTitle => 'No encontramos clientes disponibles';
 
   String get emptyMessage =>
-      'Tu sesión está iniciada, pero no encontramos clientes disponibles para mostrar en este momento.';
+      'Tu sesión está iniciada, pero no encontramos clientes disponibles para mostrar en este momento. Volvé a intentarlo en unos instantes.';
 
   String get invalidContextTitle => 'No pudimos resolver el cliente activo';
 
   String get invalidContextMessage =>
-      'La sesión está iniciada, pero no se pudo determinar un cliente activo válido para mostrar el panel.';
+      'La sesión está iniciada, pero no pudimos determinar un cliente activo válido para mostrar el panel. Volvé a intentarlo.';
 }
 
 class DashboardController {

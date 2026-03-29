@@ -145,7 +145,7 @@ class _LoginPageWidgetState extends ConsumerState<LoginPageWidget> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Accedé a tu panel de cliente y a tus comprobantes disponibles.',
+                    'Accedé a tu panel de cliente y consultá tus comprobantes disponibles.',
                     textAlign: TextAlign.center,
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: theme.textTheme.bodyMedium?.color?.withValues(
@@ -157,7 +157,7 @@ class _LoginPageWidgetState extends ConsumerState<LoginPageWidget> {
                   ShakeTextField(
                     key: _shakeKey,
                     controller: _dniController,
-                    hintText: 'Ingrese DNI/CUIT',
+                    hintText: 'Ingresá tu DNI o CUIT',
                   ),
                   const SizedBox(height: 16),
                   Row(
@@ -221,7 +221,7 @@ class _LoginPageWidgetState extends ConsumerState<LoginPageWidget> {
                   if (_loginState.hasRecoverableError) ...[
                     const SizedBox(height: 10),
                     Text(
-                      'Revisá el dato ingresado o reintentá nuevamente.',
+                      'Revisá el dato ingresado y volvé a intentarlo.',
                       textAlign: TextAlign.center,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.textTheme.bodySmall?.color?.withValues(
