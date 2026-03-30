@@ -18,15 +18,19 @@ class InfoCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final bool hasAction = onAction != null && actionLabel != null;
+    final double screenWidth = MediaQuery.of(context).size.width;
+
+    final double cardWidth = screenWidth < 600 ? double.infinity : 250;
+    final double minHeight = hasAction ? 122 : 110;
 
     return Card(
       elevation: 2,
       surfaceTintColor: theme.colorScheme.surface,
       child: SizedBox(
-        width: 250,
+        width: cardWidth,
         child: ConstrainedBox(
-          constraints: const BoxConstraints(
-            minHeight: 122,
+          constraints: BoxConstraints(
+            minHeight: minHeight,
           ),
           child: Padding(
             padding: const EdgeInsets.symmetric(

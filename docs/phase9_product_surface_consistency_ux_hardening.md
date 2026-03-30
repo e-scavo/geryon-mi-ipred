@@ -261,3 +261,96 @@ At the current repository state, the truthful cumulative reading is:
 - local visual consistency work is completed through 9.3.3
 - both are now part of the retained product baseline
 - the next justified continuation must build on that closure rather than reopen it
+
+---
+
+## Phase 9.3.4 — Web / Android Consistency Review
+
+After the formal closure of Phase 9.3.3, the repository confirms that the next justified problem is no longer local visual inconsistency, but cross-context behavior.
+
+### Context
+
+The system now shows differences depending on:
+
+- viewport width
+- constrained vs wide layouts
+- rendering context (Web vs mobile)
+
+This establishes 9.3.4 as a continuation layer focused on cross-context consistency.
+
+---
+
+### Phase 9.3.4.1 — Wide Viewport Focus Review
+
+Problem:
+
+- loss of visual focus in wide screens
+- excessive horizontal dispersion
+
+Implementation:
+
+- reduction of effective maxWidth
+- reinforcement of centered layout
+
+Result:
+
+- improved focal clarity
+- stronger dashboard composition
+
+---
+
+### Phase 9.3.4.2 — Responsive Surface Width Normalization
+
+Problem:
+
+- `FrameWithScroll` retained legacy structure
+- unnecessary horizontal behavior
+
+Implementation:
+
+- simplification of wrapper
+- removal of default horizontal scroll
+- alignment with vertical-first layout
+
+Result:
+
+- predictable layout
+- cleaner container behavior
+
+---
+
+### Phase 9.3.4.3 — Web / Android Surface Fit Validation
+
+Problems:
+
+- AppBar overflow in constrained width
+- Billing vertical overflow
+- InfoCard rigidity
+
+Implementation:
+
+- width-driven header behavior
+- adaptive InfoCard sizing
+- billing height correction
+- compact padding adjustments
+
+Result:
+
+- full overflow elimination
+- stable rendering across all contexts
+
+---
+
+### Phase 9.3.4.4 — Formal Closure
+
+Validation confirms:
+
+- no overflow conditions remain
+- layout stability across viewport sizes
+- no reopening of 9.3.3 baseline
+
+Final state:
+
+- semantic baseline preserved
+- local visual baseline preserved
+- responsive consistency established

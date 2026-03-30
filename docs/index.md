@@ -1,3 +1,4 @@
+
 # 📚 Documentation Index
 
 ## Objective
@@ -265,6 +266,35 @@ Master:
 - `docs/phase9_product_surface_consistency_ux_hardening_9_3_3_4_billing_embedded_surface_fit.md`
 - `docs/phase9_product_surface_consistency_ux_hardening_9_3_3_5_formal_closure.md`
 
+---
+
+## Phase 9.3.4 — Web / Android Consistency Review
+
+The repository now formally introduces the next justified layer after the closure of 9.3.3.
+
+This layer addresses cross-context behavior:
+
+- viewport width differences
+- constrained vs wide layout rendering
+- Web vs mobile behavior
+
+### Included Documents
+
+- `docs/phase9_product_surface_consistency_ux_hardening.md` (extended)
+- responsive behavior adjustments implemented in:
+  - dashboard
+  - shared widgets
+  - billing surfaces
+
+### Subphases
+
+- 9.3.4.1 — Wide viewport focus normalization
+- 9.3.4.2 — Responsive container normalization
+- 9.3.4.3 — Cross-context surface fit validation
+- 9.3.4.4 — Formal closure
+
+---
+
 ## Validation
 
 This index is aligned only if all of the following are true:
@@ -318,4 +348,5 @@ The correct documentary reading of the repository is now:
 - Phase 9.2 closed semantic consistency across critical surfaces
 - Phase 9.3.3 completed local density / layout consistency work
 - formal closure of 9.3.3 is now part of the truthful baseline
+- Phase 9.3.4 established as cross-context consistency layer
 - the next justified concern begins after that closure, not inside it

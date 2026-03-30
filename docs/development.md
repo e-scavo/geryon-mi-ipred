@@ -1,4 +1,5 @@
-# 🛠️ Development Guidelines
+
+# 🧠 Development Guidelines
 
 ## Objective
 
@@ -60,236 +61,197 @@ The current baseline is mature enough that the next work must be more tightly bo
 
 ## Scope
 
-These guidelines govern work touching:
+### Included
+
+- development rules governing Phase 9 continuation
+- constraints derived from already-closed baselines
+- explicit guardrails preventing implicit reopening of 9.3.3 concerns
+
+### Excluded
+
+- architecture redesign
+- runtime ownership changes
+- semantic system redesign
+- design system replacement
+- speculative global UI refactor
+
+## Root Cause Analysis
+
+The need for this document emerges from a transition point in the project:
+
+- Phase 9.2 resolved semantic inconsistency
+- Phase 9.3.2 resolved cross-feature wording inconsistency
+- Phase 9.3.3 resolved local visual density/layout inconsistency
+
+At this point, the project risk shifts from:
+
+“inconsistency across layers”
+
+to:
+
+“uncontrolled continuation without clear boundaries”
+
+Without explicit development rules:
+
+- local UI tweaks could continue indefinitely without phase justification
+- responsive/platform concerns could be incorrectly mixed with already-closed local concerns
+- developers could accidentally reopen closed work under the same phase name
+
+## Files Affected
+
+This document governs how future changes interact with:
 
 - `lib/features/auth/**`
 - `lib/features/dashboard/**`
 - `lib/features/billing/**`
 - `lib/shared/widgets/**`
 - `lib/shared/window/**`
-- current Phase 9 docs
-- later responsive/platform review work
-- any future UI consistency adjustments proposed after 9.3.3 closure
 
-These rules do not authorize by default:
-
-- architecture redesign
-- runtime redesign
-- backend flow redesign
-- broad theme redesign
-- design-system replacement
-- undocumented reopening of already-closed local visual work
-
-## Root Cause Analysis
-
-The project advanced through distinct layers for good reason:
-
-### First layer — structure
-Structure had to be clarified and stabilized before visible behavior could be treated coherently.
-
-### Second layer — runtime semantics
-Once structure stabilized, runtime failure boundaries, recovery policy, and observability had to be hardened before product polish could be trusted.
-
-### Third layer — semantic product-surface consistency
-Only then did it make sense to normalize:
-
-- state meaning
-- copy
-- actions
-- retry
-- feedback
-
-across Billing, Dashboard, and Auth.
-
-### Fourth layer — local density/layout consistency
-Once semantics were aligned, the product still showed visible mismatch in:
-
-- shared surface breathing
-- dashboard rhythm
-- auth compactness
-- billing embedded composition
-
-Phase 9.3.3 solved that local visual layer.
-
-Because those layers were solved in order, future work must respect that sequence and not collapse them back together.
-
-## Files Affected
-
-The retained baseline now directly governs interpretation of:
-
-- `lib/shared/widgets/feature_error_state.dart`
-- `lib/shared/widgets/feature_empty_state.dart`
-- `lib/shared/widgets/info_card.dart`
-- `lib/features/dashboard/presentation/dashboard_page.dart`
-- `lib/features/auth/presentation/login_widget.dart`
-- `lib/features/billing/presentation/billing_widget.dart`
-- `lib/shared/window/window_widget.dart`
-
-The documentary baseline also directly governs:
-
-- `docs/index.md`
-- `docs/development.md`
-- `docs/decisions.md`
-- `docs/phase9_product_surface_consistency_ux_hardening.md`
-- all `docs/phase9_product_surface_consistency_ux_hardening_9_3_*` files
+No direct code changes are introduced by this document.
 
 ## Implementation Characteristics
 
-### 1. Architecture remains frozen
+### Rule 1 — Do not reopen 9.3.3 implicitly
 
-All future work must preserve:
+No change should:
 
-- `presentation → controller → ServiceProvider`
+- alter card density
+- rework spacing cadence
+- re-tune dashboard rhythm
+- adjust auth compactness
+- re-fit billing embedding
 
-Widgets remain presentation surfaces.
-Controllers remain feature meaning/orchestration owners.
-`ServiceProvider` remains runtime owner.
+unless a **new explicit phase** justifies it.
 
-### 2. Phase 8 runtime hardening remains retained baseline
+### Rule 2 — Separate problem classes
 
-Nothing in later UI/product work authorizes bypassing or weakening:
+Future changes must distinguish between:
 
-- failure-boundary semantics
-- recovery-trigger semantics
-- runtime diagnostic behavior
-- startup/runtime continuation ownership
+- local visual problems (already solved)
+- cross-context problems (new phase)
 
-Those remain frozen baseline assumptions.
+They must not be merged.
 
-### 3. Phase 9.2 semantic consolidation remains retained baseline
+### Rule 3 — Respect retained baselines
 
-The semantic rules established in 9.2 and reinforced through 9.3.2 remain active:
+All work must assume:
 
-- copy consistency
-- action-label consistency
-- retry wording consistency
-- feedback hierarchy consistency
-- clearer distinction between local feature surfaces and broader failures
+- semantic baseline is stable
+- wording baseline is stable
+- local visual baseline is stable
 
-Future work must not casually undo those gains.
+### Rule 4 — Explicit phase progression only
 
-### 4. Phase 9.3.3 local visual consolidation remains retained baseline
+Any new work must:
 
-The following now represent the retained local visual baseline:
-
-- shared state surfaces have aligned density
-- dashboard has normalized section rhythm
-- auth is no longer visually isolated from the product baseline
-- billing embedded composition is more integrated and no longer ignores header rendering
-- billing title-bar color is aligned to theme rather than per-type strong category colors
-- the embedded billing height reservation was corrected to absorb the new internal structure
-
-These are no longer experimental changes. They are part of the current repository baseline.
-
-### 5. 9.3.3 must not be reopened casually
-
-From this point forward, future work must not continue making small local density/layout adjustments as if 9.3.3 were still open.
-
-Minor bug fixes are allowed.
-Informal continuation is not.
-
-### 6. The next concern must be treated as a different problem class
-
-The remaining concerns after 9.3.3 closure are no longer primarily about local widget/panel/card density.
-
-They are about:
-
-- wide-screen composition
-- viewport focus
-- Web vs Android layout parity
-- responsive behavior on large browser windows
-
-Those concerns must be treated as a separate subphase concern, not as leftovers hidden inside 9.3.3.
-
-### 7. Shared widgets remain narrow and presentation-only
-
-The shared surfaces introduced or adjusted through Phase 9 remain legitimate only while they stay:
-
-- presentation-only
-- narrow in purpose
-- feature-agnostic in logic
-- reversible
-
-They must not drift into:
-- state ownership
-- orchestration
-- cross-feature business logic
-- new hidden framework behavior
-
-### 8. Billing embedded fit is a retained composition contract
-
-The billing panel is no longer treated as a legacy surface accidentally dropped into the dashboard.
-
-The current retained contract now includes:
-
-- rendered header support when provided
-- a more integrated header/body composition
-- theme-aligned title bar treatment
-- correct reserved height in dashboard for the additional header structure
-
-Future work must preserve that unless a later justified phase explicitly changes it.
-
-### 9. No hidden redesign under consistency language
-
-Even after this visual consolidation, the following remain explicitly disallowed unless the ZIP later justifies a new phase:
-
-- broad responsive framework introduction
-- navigation redesign
-- theme overhaul
-- design-system replacement
-- runtime engine redesign
-- ownership drift from controller/service layers into widgets
+- declare its phase
+- justify why it is not reopening previous work
+- remain consistent with documented progression
 
 ## Validation
 
-Future work remains aligned only if all of the following stay true:
+Correct application of this document means:
 
-- architecture remains unchanged
-- `ServiceProvider` remains runtime owner
-- semantic surface contracts remain respected
-- 9.3.3 local visual baseline is treated as closed and retained
-- later changes are justified under a new explicit concern rather than under leftover local tweaking
-- no broad redesign is smuggled in as UX-hardening work
+- no regressions in 9.3.3 surfaces
+- no “invisible” layout drift
+- no mixing of concerns between local UI and responsive behavior
+- new work appears as clearly defined phase extensions
 
 ## Release Impact
 
-These guidelines do not themselves change runtime behavior.
+This document stabilizes:
 
-They protect:
+- development direction
+- phase boundaries
+- future decision clarity
 
-- code/docs alignment
-- phase traceability
-- already-achieved UX consistency
-- the clarity of the next step after 9.3.3
+It reduces:
+
+- accidental regressions
+- undocumented UI drift
+- misclassification of work
 
 ## Risks
 
-If these rules are ignored, future work may:
+If this document is ignored:
 
-- reopen 9.3.3 informally
-- reintroduce local inconsistency by small undocumented tweaks
-- mix responsive issues into old visual substeps
-- weaken the current coherence gains
-- blur the transition to the next justified phase
+- 9.3.3 may be silently reopened
+- responsive issues may be incorrectly patched as local fixes
+- UI may drift without documentation
+- phase traceability will degrade
 
 ## What it does NOT solve
 
-This document does not itself:
+This document does not:
 
-- implement the next responsive/platform review
-- solve wide viewport focus
-- redesign dashboard for every screen class
-- guarantee total Web/Android parity by itself
+- define responsive rules
+- define cross-platform layout behavior
+- define future UX improvements
 
-It only defines the rules for development after the closure of 9.3.3.
+It only protects the already-established baseline.
 
 ## Conclusion
 
-The active development baseline is now:
+At this point, development must transition from:
 
-- Phase 7 closed
-- Phase 8 closed
-- Phase 9 semantic consistency baseline retained
-- Phase 9.3.3 local visual consistency baseline retained
-- local density/layout work no longer open
-- the next justified concern shifted beyond local panel rhythm and into the next explicit review layer
+“fixing inconsistencies”
+
+to:
+
+“protecting baselines and advancing in controlled phases”
+
+The next justified layer must be explicitly defined rather than implicitly continued.
+
+---
+
+## Phase 9.3.4 — Development Extension
+
+After the formal closure of Phase 9.3.3, the repository confirms a shift in the nature of the remaining problem space.
+
+### Problem Class Shift
+
+The system is no longer primarily affected by:
+
+- local surface density
+- panel spacing
+- component-level layout rhythm
+
+Instead, the remaining inconsistencies are now driven by:
+
+- viewport width variation
+- cross-context rendering behavior (Web vs mobile)
+- container vs constrained content interaction
+
+### Development Rule Extension
+
+From this point forward:
+
+- responsive behavior must be treated as a separate concern
+- width must be treated as a primary driver of layout decisions
+- platform detection alone is insufficient
+
+### Implementation Constraints (Extended)
+
+The following remain enforced:
+
+- no global responsive framework introduction
+- no architectural changes
+- no reopening of 9.3.3 local adjustments
+
+### Allowed Adjustments
+
+Only the following are justified under this extension:
+
+- width-aware layout behavior
+- adaptive container constraints
+- surface fit corrections under constrained viewport
+- overflow elimination
+
+### Resulting Baseline
+
+The repository now establishes:
+
+- stable local visual baseline (9.3.3)
+- stable cross-context behavior baseline (9.3.4)
+
+Future work must build on this without collapsing both layers.

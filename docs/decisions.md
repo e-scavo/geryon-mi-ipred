@@ -448,6 +448,62 @@ And now, after 9.3.3 closure, the repository must not keep using 9.3.3 as an imp
 
 If future work requires more than narrow retained-baseline bug fixing, it must open or continue under the next explicitly justified phase.
 
+
+## Decision 31 — Phase 9.3.4 is established as cross-context consistency layer
+
+### Context
+
+After the formal closure of Phase 9.3.3, the repository confirms that the dominant remaining inconsistency is no longer local to surfaces.
+
+Instead, it appears across:
+
+- viewport widths
+- constrained vs wide layouts
+- Web vs mobile rendering contexts
+
+### Problem
+
+The system shows divergent behavior depending on rendering context, including:
+
+- overflow conditions under constrained width
+- loss of focus in wide viewport
+- layout rigidity across different environments
+
+These problems are not part of the already-closed local density/layout layer.
+
+### Decision
+
+Establish Phase 9.3.4 as a distinct and explicit concern layer focused on:
+
+- cross-context consistency
+- responsive behavior driven by width
+- separation from local visual baseline work
+
+### Impact
+
+- responsive behavior becomes width-driven (constraints-based)
+- AppBar, InfoCard and Billing surfaces adapt to viewport conditions
+- overflow elimination becomes a required baseline guarantee
+
+### Constraints
+
+- 9.3.3 baseline must not be reopened
+- no architectural changes allowed
+- no global responsive framework introduction
+- no redesign justified under this phase
+
+### Result
+
+- stable behavior across viewport sizes
+- elimination of overflow conditions
+- clear separation between:
+  - retained local visual baseline (9.3.3)
+  - new cross-context consistency layer (9.3.4)
+
+### Status
+
+✔ Applied and validated in Phase 9.3.4
+
 ## Validation
 
 These decisions are valid only if the current ZIP still confirms all of the following:

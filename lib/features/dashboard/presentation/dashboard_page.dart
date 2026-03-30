@@ -31,23 +31,27 @@ class DashboardPage extends ConsumerWidget {
     );
     final userData = dashboardState.activeClient;
 
-    final dashboardTitle = Utils.isPlatform == 'Web'
-        ? _buildDashboardWebTitle()
-        : _buildDashboardMobileTitle(
-            context: context,
-            ref: ref,
-            dashboardState: dashboardState,
-          );
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final bool isCompactSurface = screenWidth < 700;
+    final bool useCompactHeader = Utils.isPlatform != 'Web' || isCompactSurface;
 
-    final dashboardActions = Utils.isPlatform == 'Web'
-        ? _buildDashboardWebActions(
+    final dashboardTitle = useCompactHeader
+        ? _buildDashboardCompactTitle(
             context: context,
             ref: ref,
             dashboardState: dashboardState,
           )
-        : _buildDashboardMobileActions(
+        : _buildDashboardWebTitle();
+
+    final dashboardActions = useCompactHeader
+        ? _buildDashboardCompactActions(
             context: context,
             ref: ref,
+          )
+        : _buildDashboardWebActions(
+            context: context,
+            ref: ref,
+            dashboardState: dashboardState,
           );
 
     Widget body;
@@ -74,7 +78,8 @@ class DashboardPage extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        toolbarHeight: kToolbarHeight * 1.25,
+        toolbarHeight:
+            useCompactHeader ? kToolbarHeight : kToolbarHeight * 1.25,
         title: dashboardTitle,
         actions: dashboardActions,
       ),
@@ -83,104 +88,71 @@ class DashboardPage extends ConsumerWidget {
   }
 
   Widget _buildDashboardWebTitle() {
-    return Column(
+    return Row(
       children: [
-        Row(
-          children: [
-            Flexible(
-              child: Image.asset(
-                'assets/logo-white.png',
-                fit: BoxFit.contain,
-                height: kToolbarHeight * 0.8,
-              ),
-            ),
-            const SizedBox(width: 8),
-            const Text("Panel de cliente"),
-          ],
+        Flexible(
+          child: Image.asset(
+            'assets/logo-white.png',
+            fit: BoxFit.contain,
+            height: kToolbarHeight * 0.8,
+          ),
         ),
+        const SizedBox(width: 8),
+        const Text("Panel de cliente"),
       ],
     );
   }
 
-  Widget _buildDashboardMobileTitle({
+  Widget _buildDashboardCompactTitle({
     required BuildContext context,
     required WidgetRef ref,
     required DashboardResolvedState dashboardState,
   }) {
     final bool selectorEnabled = dashboardState.canSelectClient;
 
-    return Column(
+    return Row(
       children: [
-        Row(
-          children: [
-            Flexible(
-              child: Image.asset(
-                'assets/logo-white.png',
-                fit: BoxFit.contain,
-                height: kToolbarHeight * 0.8,
-              ),
-            ),
-            const SizedBox(width: 8),
-            const Text("Panel de cliente"),
-          ],
+        Flexible(
+          child: Image.asset(
+            'assets/logo-white.png',
+            fit: BoxFit.contain,
+            height: kToolbarHeight * 0.7,
+          ),
         ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            PopupMenuButton<int>(
-              enabled: selectorEnabled,
-              tooltip: selectorEnabled
-                  ? "Cambiar cliente"
-                  : "No hay otros clientes disponibles",
-              onSelected: (int result) async {
-                await _controller.selectClient(
-                  ref: ref,
-                  clientIndex: result,
-                );
-              },
-              itemBuilder: (BuildContext context) {
-                return dashboardState.clientOptions
-                    .map(
-                      (option) => PopupMenuItem<int>(
-                        value: option.index,
-                        child: Text(
-                          option.label,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
-                      ),
-                    )
-                    .toList();
-              },
-              child: Row(
-                children: [
-                  Text(
-                    _controller.resolveSelectorLabel(
-                      state: dashboardState,
-                    ),
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400,
-                      color: selectorEnabled
-                          ? Colors.white
-                          : Colors.white.withValues(alpha: 0.75),
-                    ),
+        const SizedBox(width: 8),
+        const Expanded(
+          child: Text(
+            "Panel de cliente",
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        PopupMenuButton<int>(
+          enabled: selectorEnabled,
+          tooltip: selectorEnabled
+              ? "Cambiar cliente"
+              : "No hay otros clientes disponibles",
+          onSelected: (int result) async {
+            await _controller.selectClient(
+              ref: ref,
+              clientIndex: result,
+            );
+          },
+          itemBuilder: (BuildContext context) {
+            return dashboardState.clientOptions
+                .map(
+                  (option) => PopupMenuItem<int>(
+                    value: option.index,
+                    child: Text(option.label),
                   ),
-                  const SizedBox(width: 10),
-                  Icon(
-                    Icons.person,
-                    size: 20,
-                    color: selectorEnabled
-                        ? Colors.white
-                        : Colors.white.withValues(alpha: 0.75),
-                  ),
-                ],
-              ),
-            ),
-          ],
+                )
+                .toList();
+          },
+          icon: Icon(
+            Icons.person,
+            color: selectorEnabled
+                ? Colors.white
+                : Colors.white.withValues(alpha: 0.75),
+          ),
         ),
       ],
     );
@@ -217,9 +189,13 @@ class DashboardPage extends ConsumerWidget {
         },
         child: Row(
           children: [
-            Text(
-              _controller.resolveSelectorLabel(
-                state: dashboardState,
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 240),
+              child: Text(
+                _controller.resolveSelectorLabel(
+                  state: dashboardState,
+                ),
+                overflow: TextOverflow.ellipsis,
               ),
             ),
             const SizedBox(width: 6),
@@ -236,7 +212,7 @@ class DashboardPage extends ConsumerWidget {
     ];
   }
 
-  List<Widget> _buildDashboardMobileActions({
+  List<Widget> _buildDashboardCompactActions({
     required BuildContext context,
     required WidgetRef ref,
   }) {
@@ -323,9 +299,12 @@ class _DashboardContent extends StatelessWidget {
     required BoxConstraints constraints,
     required String type,
   }) {
+    final bool isCompact = constraints.maxWidth < 700;
+    final double billingHeight = isCompact ? 560 : 472;
+
     return SizedBox(
       width: double.infinity,
-      height: 472,
+      height: billingHeight,
       child: BillingWidget(
         constraints: constraints,
         pType: type,
@@ -337,6 +316,7 @@ class _DashboardContent extends StatelessWidget {
   Widget build(BuildContext context) {
     String functionName = '_DashboardContent.build';
     String logFunctionName = '.::$functionName::.';
+    final theme = Theme.of(context);
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -346,6 +326,13 @@ class _DashboardContent extends StatelessWidget {
             'maxWidth: ${constraints.maxWidth}, maxHeight: ${constraints.maxHeight}',
           );
         }
+
+        final bool isCompact = constraints.maxWidth < 700;
+        final double contentMaxWidth = isCompact ? 640 : 1080;
+        final double horizontalPadding = isCompact ? 16 : 24;
+        final double verticalPadding = isCompact ? 16 : 24;
+        final double contentInsetX = isCompact ? 0 : 8;
+        final double contentInsetY = isCompact ? 0 : 4;
 
         String myDNI = "-";
         switch (data.codCatIVA) {
@@ -359,55 +346,63 @@ class _DashboardContent extends StatelessWidget {
             break;
         }
 
+        final Widget content = Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "Bienvenido, ${data.razonSocial}",
+              style: theme.textTheme.headlineSmall,
+            ),
+            const SizedBox(height: 28),
+            Wrap(
+              spacing: 18,
+              runSpacing: 18,
+              children: [
+                InfoCard(title: "Documento", value: myDNI),
+                InfoCard(
+                  title: "Saldo",
+                  value: data.saldoActual.asStringWithPrecSpanish(2),
+                  actionLabel: "Ver medios de pago",
+                  onAction: () => _showPaymentDialog(context, data),
+                ),
+                InfoCard(
+                  title: "Último pago",
+                  value: data.ultFechaPago.toES(),
+                ),
+                InfoCard(title: "Estado", value: data.estado),
+              ],
+            ),
+            const SizedBox(height: 28),
+            _buildBillingSection(
+              constraints: constraints,
+              type: "FacturasVT",
+            ),
+            const SizedBox(height: 22),
+            _buildBillingSection(
+              constraints: constraints,
+              type: "RecibosVT",
+            ),
+            const SizedBox(height: 12),
+          ],
+        );
+
         final Widget rbody = Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 24,
-            vertical: 20,
+          padding: EdgeInsets.symmetric(
+            horizontal: horizontalPadding,
+            vertical: verticalPadding,
           ),
-          child: Align(
-            alignment: Alignment.topCenter,
+          child: Center(
             child: ConstrainedBox(
-              constraints: const BoxConstraints(
-                maxWidth: 1180,
+              constraints: BoxConstraints(
+                maxWidth: contentMaxWidth,
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Bienvenido, ${data.razonSocial}",
-                    style: Theme.of(context).textTheme.headlineSmall,
-                  ),
-                  const SizedBox(height: 28),
-                  Wrap(
-                    spacing: 18,
-                    runSpacing: 18,
-                    children: [
-                      InfoCard(title: "Documento", value: myDNI),
-                      InfoCard(
-                        title: "Saldo",
-                        value: data.saldoActual.asStringWithPrecSpanish(2),
-                        actionLabel: "Ver medios de pago",
-                        onAction: () => _showPaymentDialog(context, data),
-                      ),
-                      InfoCard(
-                        title: "Último pago",
-                        value: data.ultFechaPago.toES(),
-                      ),
-                      InfoCard(title: "Estado", value: data.estado),
-                    ],
-                  ),
-                  const SizedBox(height: 28),
-                  _buildBillingSection(
-                    constraints: constraints,
-                    type: "FacturasVT",
-                  ),
-                  const SizedBox(height: 22),
-                  _buildBillingSection(
-                    constraints: constraints,
-                    type: "RecibosVT",
-                  ),
-                  const SizedBox(height: 12),
-                ],
+              child: Container(
+                width: double.infinity,
+                padding: EdgeInsets.symmetric(
+                  horizontal: contentInsetX,
+                  vertical: contentInsetY,
+                ),
+                child: content,
               ),
             ),
           ),
