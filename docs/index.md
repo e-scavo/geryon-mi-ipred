@@ -1,4 +1,3 @@
-
 # 📚 Documentation Index
 
 ## Objective
@@ -295,6 +294,52 @@ This layer addresses cross-context behavior:
 
 ---
 
+## Phase 10 — Product Capability Completion
+
+The repository now moves beyond the consistency-hardening layer and into the next justified concern.
+
+This concern is no longer centered on:
+
+- structure
+- runtime semantics
+- wording consistency
+- local visual density
+- cross-context layout behavior
+
+Instead, it is centered on the gap between:
+
+- capabilities already implemented in code
+- capabilities actually exposed in the product surface
+
+### Phase 10.1 — Financial Capability Inventory & Exposure Baseline
+
+This subphase establishes the first justified step of Phase 10.
+
+Its purpose is to document and classify the real billing capability surface before any exposure expansion is implemented.
+
+### Included Concerns
+
+- inventory of currently supported billing/comprobante capability classes
+- validation of where each capability is already represented in code
+- classification of exposure state across product surface entry points
+- preparation of a controlled implementation handoff into the next subphase
+
+### Expected Outputs
+
+- capability matrix
+- exposure gap report
+- integration strategy without implementation
+
+### Constraints
+
+- no reopening of Phase 9 baselines
+- no layout redesign
+- no responsive rework
+- no runtime ownership changes
+- no speculative feature expansion beyond what the ZIP already supports
+
+---
+
 ## Validation
 
 This index is aligned only if all of the following are true:
@@ -304,6 +349,8 @@ This index is aligned only if all of the following are true:
 - it preserves the distinction between semantic consistency and local visual consistency
 - it reflects the fact that 9.3.3 is now implemented and formally closable
 - it leaves the next justified concern outside the local density/layout layer
+- it reflects the closure of 9.3.4 as cross-context consistency work
+- it establishes Phase 10 as capability-completion work rather than as redesign
 
 The current ZIP supports that reading.
 
@@ -326,6 +373,7 @@ If this document remains partial or over-compressed, future work may:
 - reopen local layout tuning without phase control
 - misread Phase 9 as still centered only on wording/copy
 - lose continuity between code and documentation
+- skip capability classification and move straight into uncontrolled exposure changes
 
 ## What it does NOT solve
 
@@ -335,6 +383,7 @@ This index does not itself:
 - solve Android vs Web parity
 - redesign screens
 - modify any widget or controller
+- expose new billing capability entry points by itself
 
 It only preserves the correct documentary map.
 
@@ -349,4 +398,5 @@ The correct documentary reading of the repository is now:
 - Phase 9.3.3 completed local density / layout consistency work
 - formal closure of 9.3.3 is now part of the truthful baseline
 - Phase 9.3.4 established as cross-context consistency layer
+- Phase 10 established as product capability completion layer
 - the next justified concern begins after that closure, not inside it

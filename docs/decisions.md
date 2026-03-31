@@ -504,6 +504,97 @@ Establish Phase 9.3.4 as a distinct and explicit concern layer focused on:
 
 ✔ Applied and validated in Phase 9.3.4
 
+## Decision 32 — Phase 10 is established as capability-completion layer
+
+### Context
+
+After the formal closure of Phase 9.3.4, the repository confirms that the dominant remaining concern is no longer:
+
+- structure
+- runtime semantics
+- semantic wording consistency
+- local visual density / layout consistency
+- cross-context layout / responsive consistency
+
+Instead, the next unresolved concern is the mismatch between:
+
+- capabilities already implemented in code
+- capabilities actually exposed in the product surface
+
+### Problem
+
+The system may already contain product-relevant capabilities that are:
+
+- defined in domain or UI-support structures
+- partially wired into feature logic
+- not yet exposed coherently through primary product entry points
+
+That creates a different kind of inconsistency than the ones resolved in Phase 9.
+
+It is no longer a consistency-hardening problem.
+
+It is now a capability-completion problem.
+
+### Decision
+
+Establish Phase 10 as a distinct and explicit concern layer focused on:
+
+- identifying implemented capabilities
+- classifying their exposure state
+- preparing controlled product-surface expansion without reopening already-closed baselines
+
+### Constraints
+
+- Phase 7 remains closed
+- Phase 8 remains closed
+- Phase 9 remains closed as a consistency-hardening baseline
+- no architecture redesign is justified under Phase 10
+- no runtime-ownership changes are justified under Phase 10
+- capability expansion must remain anchored to the real ZIP, not to speculative feature ideation
+
+### Result
+
+- phase progression remains explicit
+- product-surface expansion becomes capability-driven rather than ad hoc
+- future implementation can remain controlled and traceable
+
+## Decision 33 — Phase 10.1 is mandatory before exposure implementation
+
+### Context
+
+Once capability-completion becomes the new concern class, the repository must not jump directly into visible product-surface changes.
+
+Without a formal inventory step, development could:
+
+- assume support where support is incomplete
+- expose partial capability paths inconsistently
+- reopen earlier UX baselines by improvisation
+
+### Decision
+
+Define Phase 10.1 as a required pre-implementation inventory layer.
+
+This layer must:
+
+- identify the real billing/comprobante capability classes present in the ZIP
+- map where each capability is already represented
+- classify each capability according to exposure state
+- produce the explicit documentary handoff required for the next implementation phase
+
+### Constraints
+
+Phase 10.2 or any later exposure work must not begin unless Phase 10.1 has first established:
+
+- capability inventory
+- exposure-state classification
+- implementation handoff boundaries
+
+### Result
+
+- development remains evidence-based
+- capability exposure is controlled
+- already-closed baselines are protected from uncontrolled expansion
+
 ## Validation
 
 These decisions are valid only if the current ZIP still confirms all of the following:
@@ -516,6 +607,8 @@ These decisions are valid only if the current ZIP still confirms all of the foll
 - the retained runtime observability model exists in code
 - Phase 9 work remains surface-oriented and minimal
 - the 9.3.3 local visual adjustments are materially present in the repository
+- the 9.3.4 cross-context baseline is materially present in the repository
+- Phase 10 is interpreted as capability-completion work rather than as redesign
 
 The current ZIP confirms those conditions.
 
@@ -529,6 +622,8 @@ They protect the interpretation of the repository and ensure that:
 - the runtime-hardening baseline remains frozen
 - Phase 9 remains constrained to justified product-surface consistency work
 - the completed 9.3.3 local visual layer is treated as retained baseline rather than as ongoing undocumented tweaking
+- the completed 9.3.4 cross-context layer is treated as retained baseline rather than as ongoing undocumented responsive tweaking
+- Phase 10 begins as controlled capability-completion work
 
 ## Risks
 
@@ -542,6 +637,7 @@ If these decisions are ignored, future work may:
 - accumulate shared UI abstractions without discipline
 - reopen already-completed local visual consolidation work by ambiguity
 - blur the boundary between retained local baseline and future responsive/platform review work
+- jump into capability exposure without inventory or classification
 
 ## What it does NOT solve
 
@@ -552,6 +648,7 @@ This document does not itself:
 - redesign the application
 - define the entire later Phase 9 sequence in implementation detail
 - solve wide-screen Web / Android parity by itself
+- expose new billing capability paths by itself
 
 It only records the governing decisions.
 
@@ -565,6 +662,8 @@ The repository now has these explicit baseline truths:
 - Billing, Dashboard, and Auth are concrete adopters of the shared consistency standard in production code
 - Phase 9.3 first established cross-feature semantic consistency and then completed the local density / layout consistency layer through 9.3.3
 - the 9.3.3 local visual series is now retained baseline rather than active open work
+- Phase 9.3.4 established the cross-context consistency layer
+- Phase 10 begins as capability-completion work grounded in repository evidence
 - the next justified concern begins after that closure, not inside it
 
 Those decisions now govern how Mi IP·RED should evolve from this point forward.

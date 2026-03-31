@@ -1,4 +1,3 @@
-
 # 🧠 Development Guidelines
 
 ## Objective
@@ -255,3 +254,63 @@ The repository now establishes:
 - stable cross-context behavior baseline (9.3.4)
 
 Future work must build on this without collapsing both layers.
+
+---
+
+## Phase 10.1 — Development Extension
+
+After the formal closure of Phase 9.3.4, the repository confirms another shift in the dominant remaining problem class.
+
+### Problem Class Shift
+
+The system is no longer primarily affected by:
+
+- local surface density
+- panel spacing
+- component-level layout rhythm
+- viewport width variation
+- cross-context rendering behavior
+- container vs constrained content interaction
+
+Instead, the remaining inconsistency is now driven by:
+
+- implemented capabilities that are not yet exposed coherently through the product surface
+
+### Development Rule Extension
+
+From this point forward:
+
+- capability exposure must be treated as a separate concern from UX hardening
+- no capability should be surfaced without first being inventoried against the real repository state
+- phase progression must distinguish between:
+  - consistency work already closed
+  - capability-completion work now beginning
+
+### Implementation Constraints (Extended)
+
+The following remain enforced:
+
+- no reopening of 9.3.3 local adjustments
+- no reopening of 9.3.4 responsive / cross-context adjustments
+- no architectural changes
+- no runtime ownership changes
+- no speculative feature introduction beyond what is already supported in the ZIP
+
+### Allowed Adjustments
+
+Only the following are justified under this extension:
+
+- capability inventory
+- exposure-state classification
+- gap identification between implemented support and visible product entry points
+- definition of a controlled implementation handoff into the next subphase
+
+### Resulting Baseline
+
+The repository now establishes:
+
+- stable local visual baseline (9.3.3)
+- stable cross-context behavior baseline (9.3.4)
+- stable capability-inventory baseline (10.1)
+
+Future work must build on this without skipping capability classification or collapsing capability expansion into prior UX-hardening phases.
