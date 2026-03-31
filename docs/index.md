@@ -340,6 +340,38 @@ Its purpose is to document and classify the real billing capability surface befo
 
 ---
 
+### Phase 10.2 — Financial Capability Exposure Implementation
+
+This subphase completes the controlled exposure of billing capabilities already supported by the system.
+
+### Implemented Exposure
+
+The dashboard now exposes:
+
+- FacturasVT
+- RecibosVT
+- DebitosVT
+- CreditosVT
+
+### Interpretation
+
+The system transitions from a partially exposed billing surface to a complete and aligned financial capability surface.
+
+### Constraints Respected
+
+- no reopening of Phase 7 architecture
+- no reopening of Phase 8 runtime baseline
+- no reopening of Phase 9 UX or responsive baselines
+- no introduction of new abstraction layers
+
+### Result
+
+- dashboard becomes a faithful representation of billing capabilities
+- exposure is aligned with real system support
+- no ownership boundaries are altered
+
+---
+
 ## Validation
 
 This index is aligned only if all of the following are true:
@@ -351,6 +383,7 @@ This index is aligned only if all of the following are true:
 - it leaves the next justified concern outside the local density/layout layer
 - it reflects the closure of 9.3.4 as cross-context consistency work
 - it establishes Phase 10 as capability-completion work rather than as redesign
+- it reflects Phase 10.2 as controlled exposure of already-supported billing capabilities rather than as new feature invention
 
 The current ZIP supports that reading.
 
@@ -374,6 +407,7 @@ If this document remains partial or over-compressed, future work may:
 - misread Phase 9 as still centered only on wording/copy
 - lose continuity between code and documentation
 - skip capability classification and move straight into uncontrolled exposure changes
+- misread 10.2 as permission for broader redesign instead of narrow capability exposure
 
 ## What it does NOT solve
 
@@ -383,7 +417,7 @@ This index does not itself:
 - solve Android vs Web parity
 - redesign screens
 - modify any widget or controller
-- expose new billing capability entry points by itself
+- expose new billing capability entry points beyond those already implemented in the current ZIP
 
 It only preserves the correct documentary map.
 
@@ -399,4 +433,5 @@ The correct documentary reading of the repository is now:
 - formal closure of 9.3.3 is now part of the truthful baseline
 - Phase 9.3.4 established as cross-context consistency layer
 - Phase 10 established as product capability completion layer
+- Phase 10.2 completed the controlled exposure of the supported billing capability surface
 - the next justified concern begins after that closure, not inside it

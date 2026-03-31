@@ -595,6 +595,41 @@ Phase 10.2 or any later exposure work must not begin unless Phase 10.1 has first
 - capability exposure is controlled
 - already-closed baselines are protected from uncontrolled expansion
 
+## Decision 34 — Phase 10.2 completes capability exposure without altering ownership
+
+### Context
+
+After Phase 10.1 established the capability inventory baseline, the repository required a controlled exposure step.
+
+### Problem
+
+Billing capabilities already existed in the system but were not fully exposed through the primary product surface.
+
+### Decision
+
+Expose all supported billing capabilities through the dashboard using existing structures:
+
+- BillingWidget remains the rendering surface
+- Dashboard acts as exposure orchestrator
+- no new abstraction layers are introduced
+
+### Constraints
+
+- no controller refactor
+- no runtime modification
+- no UI redesign
+- no architectural changes
+
+### Result
+
+- dashboard now reflects the full billing capability set
+- exposure aligns with real system support
+- ownership boundaries remain intact
+
+### Status
+
+✔ Implemented and validated in Phase 10.2
+
 ## Validation
 
 These decisions are valid only if the current ZIP still confirms all of the following:
@@ -609,6 +644,7 @@ These decisions are valid only if the current ZIP still confirms all of the foll
 - the 9.3.3 local visual adjustments are materially present in the repository
 - the 9.3.4 cross-context baseline is materially present in the repository
 - Phase 10 is interpreted as capability-completion work rather than as redesign
+- Phase 10.2 is implemented as controlled exposure of existing billing capability support rather than as a new ownership or architecture layer
 
 The current ZIP confirms those conditions.
 
@@ -624,6 +660,7 @@ They protect the interpretation of the repository and ensure that:
 - the completed 9.3.3 local visual layer is treated as retained baseline rather than as ongoing undocumented tweaking
 - the completed 9.3.4 cross-context layer is treated as retained baseline rather than as ongoing undocumented responsive tweaking
 - Phase 10 begins as controlled capability-completion work
+- Phase 10.2 remains a narrow exposure step that preserves existing ownership boundaries
 
 ## Risks
 
@@ -638,6 +675,7 @@ If these decisions are ignored, future work may:
 - reopen already-completed local visual consolidation work by ambiguity
 - blur the boundary between retained local baseline and future responsive/platform review work
 - jump into capability exposure without inventory or classification
+- reinterpret 10.2 as permission to move billing ownership away from its current feature/controller surfaces
 
 ## What it does NOT solve
 
@@ -648,7 +686,7 @@ This document does not itself:
 - redesign the application
 - define the entire later Phase 9 sequence in implementation detail
 - solve wide-screen Web / Android parity by itself
-- expose new billing capability paths by itself
+- expose billing capabilities beyond the supported set already present in the current ZIP
 
 It only records the governing decisions.
 
@@ -664,6 +702,7 @@ The repository now has these explicit baseline truths:
 - the 9.3.3 local visual series is now retained baseline rather than active open work
 - Phase 9.3.4 established the cross-context consistency layer
 - Phase 10 begins as capability-completion work grounded in repository evidence
+- Phase 10.2 completes controlled billing capability exposure without changing ownership
 - the next justified concern begins after that closure, not inside it
 
 Those decisions now govern how Mi IP·RED should evolve from this point forward.

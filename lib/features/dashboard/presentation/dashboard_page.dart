@@ -232,6 +232,16 @@ class _DashboardContent extends StatelessWidget {
 
   const _DashboardContent({required this.data});
 
+  // Phase 10.2:
+  // Surface oficial de comprobantes visibles en dashboard.
+  // La exposición se apoya en capabilities ya soportadas por BillingWidget.
+  static const List<String> _visibleBillingTypes = [
+    "FacturasVT",
+    "RecibosVT",
+    "DebitosVT",
+    "CreditosVT",
+  ];
+
   void _showPaymentDialog(
     BuildContext context,
     ServiceProviderLoginDataUserMessageModel userData,
@@ -312,6 +322,27 @@ class _DashboardContent extends StatelessWidget {
     );
   }
 
+  List<Widget> _buildBillingSections({
+    required BoxConstraints constraints,
+  }) {
+    final List<Widget> widgets = [];
+
+    for (int i = 0; i < _visibleBillingTypes.length; i++) {
+      widgets.add(
+        _buildBillingSection(
+          constraints: constraints,
+          type: _visibleBillingTypes[i],
+        ),
+      );
+
+      if (i < _visibleBillingTypes.length - 1) {
+        widgets.add(const SizedBox(height: 22));
+      }
+    }
+
+    return widgets;
+  }
+
   @override
   Widget build(BuildContext context) {
     String functionName = '_DashboardContent.build';
@@ -373,14 +404,8 @@ class _DashboardContent extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 28),
-            _buildBillingSection(
+            ..._buildBillingSections(
               constraints: constraints,
-              type: "FacturasVT",
-            ),
-            const SizedBox(height: 22),
-            _buildBillingSection(
-              constraints: constraints,
-              type: "RecibosVT",
             ),
             const SizedBox(height: 12),
           ],

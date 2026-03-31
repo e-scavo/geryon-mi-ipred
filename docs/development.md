@@ -314,3 +314,54 @@ The repository now establishes:
 - stable capability-inventory baseline (10.1)
 
 Future work must build on this without skipping capability classification or collapsing capability expansion into prior UX-hardening phases.
+
+---
+
+## Phase 10.2 — Development Extension
+
+After Phase 10.1 completed the capability inventory, the repository now moves into controlled capability exposure.
+
+### Problem Class Shift
+
+The system is no longer constrained by:
+
+- missing capability definition
+- inconsistent UX behavior
+- incomplete responsive handling
+
+It is now constrained by:
+
+- incomplete exposure of already-supported billing capabilities
+
+### Development Rule Extension
+
+From this point forward:
+
+- capability exposure must reuse existing feature surfaces
+- dashboard acts only as exposure orchestrator
+- no duplication of billing logic is allowed
+- no new UI abstraction layers should be introduced
+
+### Implementation Constraints
+
+- no modification of BillingController ownership
+- no modification of ServiceProvider responsibilities
+- no layout redesign
+- no responsive baseline changes
+
+### Allowed Adjustments
+
+- extension of dashboard billing sections
+- reuse of BillingWidget
+- controlled expansion of visible capability surface
+
+### Resulting Baseline
+
+The repository now establishes:
+
+- stable UX baseline (Phase 9)
+- stable responsive baseline (Phase 9.3.4)
+- stable capability inventory baseline (10.1)
+- stable capability exposure baseline (10.2)
+
+Future work must build on this without reintroducing partial exposure states.
