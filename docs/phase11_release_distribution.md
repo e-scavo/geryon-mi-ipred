@@ -92,14 +92,34 @@ Focus:
 - remove outdated fixed-branch assumptions from release automation
 - align version metadata branding
 
+### Phase 11.2 — Packaging & Artifact Structuring
+
+Second release baseline.
+
+Focus:
+- copy generated artifacts into a stable dist root
+- rename Android artifacts using product-aware versioned names
+- preserve a versioned Web output folder
+- generate release manifests for the produced artifact set
+
+### Phase 11.3 — Distribution Readiness & Publication Surface Validation
+
+Third release baseline.
+
+Focus:
+- align public Web metadata with Mi IP·RED branding
+- validate structured release outputs against application and signing expectations
+- document the local Android signing contract for reproducible operator setup
+- prepare store-facing metadata handoff without publishing yet
+
 ### Expected Later Subphases
 
 The repository may continue later with justified release/distribution steps such as:
 
-- packaging validation
-- Play Store readiness
 - deployment pipeline formalization
+- store submission execution
 - release verification matrix
+- smoke-test and approval workflow
 
 Those later steps must remain incremental and evidence-based.
 

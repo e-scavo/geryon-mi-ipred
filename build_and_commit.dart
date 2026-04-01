@@ -19,7 +19,21 @@ Future<void> main(List<String> args) async {
   final gitCommitRequested = args.contains('--git-commit');
   final gitPushRequested = args.contains('--git-push');
   final cleanDistRequested = args.contains('--clean-dist');
+  final skipValidationRequested = args.contains('--skip-release-validation');
+  final validationOnlyRequested = args.contains('--validate-release-only');
   final distRoot = _readOption(args, '--dist-root') ?? _defaultDistRoot;
+
+  if (validationOnlyRequested) {
+    stdout
+        .writeln('🔎 Ejecutando solo validación de release sobre $distRoot...');
+    await _runCommand([
+      'dart',
+      'run',
+      'validate_release.dart',
+      '--dist-root=$distRoot',
+    ]);
+    return;
+  }
 
   if (gitPushRequested && !gitCommitRequested) {
     stderr.writeln('❌ --git-push requiere también --git-commit');
@@ -83,6 +97,19 @@ Future<void> main(List<String> args) async {
     cleanDistRequested: cleanDistRequested,
   );
 
+  if (!skipValidationRequested) {
+    stdout.writeln('🔎 Ejecutando validación de release...');
+    await _runCommand([
+      'dart',
+      'run',
+      'validate_release.dart',
+      '--dist-root=$distRoot',
+    ]);
+  } else {
+    stdout.writeln(
+        '⚠️ Validación de release omitida por --skip-release-validation.');
+  }
+
   if (gitCommitRequested) {
     final branch = await _readCurrentGitBranch();
 
@@ -92,7 +119,7 @@ Future<void> main(List<String> args) async {
       'git',
       'commit',
       '-m',
-      'Phase 11.2 packaging baseline - ${version.asPubspecVersion}',
+      'Phase 11.3 distribution readiness baseline - ${version.asPubspecVersion}',
     ]);
 
     if (gitPushRequested) {
@@ -171,6 +198,8 @@ Versionado:
 Packaging / dist:
   --clean-dist             Limpia solo los artefactos de la versión actual antes de copiar
   --dist-root=RUTA         Cambia la carpeta destino (por defecto: dist)
+  --skip-release-validation Omite la validación automática de release al final
+  --validate-release-only  Solo valida una salida ya generada sin compilar
 
 Git:
   --git-commit             Hace git add + git commit al final

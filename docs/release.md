@@ -69,10 +69,11 @@ This is the concern shift introduced by:
 - `docs/phase11_release_distribution.md`
 - `docs/phase11_release_distribution_11_1_build_versioning_standardization.md`
 - `docs/phase11_release_distribution_11_2_packaging_artifact_structuring.md`
+- `docs/phase11_release_distribution_11_3_distribution_readiness_validation.md`
 
 ## Phase 11 release baseline
 
-Phase 11.1 established the version/build baseline and Phase 11.2 now formalizes how those generated outputs are packaged for distribution use.
+Phase 11.1 established the version/build baseline, Phase 11.2 formalized how generated outputs are packaged, and Phase 11.3 now validates that packaged release set against the repository's real publication surfaces.
 
 ### Problem solved by 11.1
 
@@ -126,6 +127,30 @@ The repository now standardizes:
 - optional `--clean-dist` cleanup for the current version
 - optional `--dist-root=...` override for alternate packaging roots
 
+
+### Problem solved by 11.3
+
+Before this subphase, the ZIP still carried a last-mile distribution gap:
+
+- `web/manifest.json` still exposed generic technical metadata
+- `web/index.html` still contained generic publication description values
+- the Cupertino font warning remained justified by a missing dependency declaration
+- the repository had no dedicated release-validation command to verify the structured dist output and local signing contract together
+- there was no tracked operator-facing Play Store metadata scaffold
+
+### Standardized result after 11.3
+
+The repository now standardizes:
+
+- branded Web publication metadata in `web/index.html` and `web/manifest.json`
+- explicit `cupertino_icons` dependency declaration to match the runtime surface already in use
+- `android/key.properties.example` as the tracked local signing contract template
+- `validate_release.dart` as the canonical post-build validation command
+- JSON release validation reports at:
+  - `dist/release_validation_<version>.json`
+  - `dist/release_validation_latest.json`
+- tracked Play Store metadata scaffolding under `distribution/play_store/`
+
 ## Canonical release commands
 
 ### Bump build only
@@ -160,6 +185,14 @@ The repository now standardizes:
 
     dart run build_and_commit.dart --web --aab --dist-root=release
 
+### Validate a generated release set
+
+    dart run validate_release.dart
+
+### Validate a custom distribution root
+
+    dart run validate_release.dart --dist-root=release
+
 ### Build and commit on the current branch
 
     dart run build_and_commit.dart --web --aab --git-commit
@@ -180,6 +213,8 @@ Phase 11.2 now defines the structured release artifacts expected after build com
 ### Release manifest
 - `dist/release_manifest_<version>.json`
 - `dist/release_manifest_latest.json`
+- `dist/release_validation_<version>.json`
+- `dist/release_validation_latest.json`
 
 ## Release validation expectations
 
@@ -192,15 +227,16 @@ Every release execution under this baseline should validate at least:
 - no manual branch-name assumption exists in the automation
 - structured artifacts are copied to the configured dist root
 - the manifest truthfully reflects the generated version and targets
+- release validation passes against web metadata, Android application id, local signing contract, and structured artifacts
 
 ## What this phase does not yet solve
 
-Phase 11.1 does not yet complete:
+Phase 11.3 still does not yet complete:
 
-- Play Console publication metadata
-- signing-material hygiene cleanup
+- actual Play Console publication execution
+- signing-material hygiene cleanup from historical local repositories
 - CI/CD remote pipeline orchestration
-- store listing assets
+- screenshot/image asset production for store listing
 - post-build smoke test matrix
 - release candidate approval workflow
 - signed artifact verification policy

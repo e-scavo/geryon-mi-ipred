@@ -1,0 +1,5 @@
+Versión con baseline de distribución validado.
+- versionado sincronizado
+- artefactos estructurados
+- validación de release
+- metadatos públicos alineados con Mi IP·RED

@@ -1,0 +1,6 @@
+# Copiar este archivo a android/key.properties y completar con tus valores locales.
+# No subir credenciales reales al repositorio.
+storePassword=CAMBIAR_STORE_PASSWORD
+keyPassword=CAMBIAR_KEY_PASSWORD
+keyAlias=CAMBIAR_KEY_ALIAS
+storeFile=../../keys/mi-ipred-release.jks

@@ -154,6 +154,7 @@ See:
 - `docs/phase11_release_distribution.md`
 - `docs/phase11_release_distribution_11_1_build_versioning_standardization.md`
 - `docs/phase11_release_distribution_11_2_packaging_artifact_structuring.md`
+- `docs/phase11_release_distribution_11_3_distribution_readiness_validation.md`
 
 ---
 
@@ -176,7 +177,8 @@ The active roadmap layer is now:
 10. Release & distribution readiness
 11. Build and versioning standardization
 12. Packaging and artifact structuring
-13. Distribution and deployment validation
+13. Distribution readiness & publication surface validation
+14. Distribution and deployment validation
 
 ---
 
@@ -213,6 +215,10 @@ APK only with artifact structuring cleanup for the current version:
 Custom dist root:
 
     dart run build_and_commit.dart --web --aab --dist-root=release
+
+Validar una salida ya generada:
+
+    dart run validate_release.dart
 
 ---
 
@@ -271,3 +277,11 @@ Additionally, Phase 11.2 confirms that release packaging must now produce struct
 - `dist/android/apk/mi-ipred-android-apk-<version>.apk`
 - `dist/android/aab/mi-ipred-android-aab-<version>.aab`
 - `dist/release_manifest_<version>.json`
+
+
+Additionally, Phase 11.3 confirms that distribution readiness now requires:
+
+- branded publication metadata in `web/index.html` and `web/manifest.json`
+- a local `android/key.properties` contract documented by `android/key.properties.example`
+- a repeatable release validation step through `validate_release.dart`
+- store-facing metadata scaffolding under `distribution/play_store/`

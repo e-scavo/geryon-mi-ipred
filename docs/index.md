@@ -404,6 +404,10 @@ This subphase formalizes how generated release artifacts are copied, renamed, or
 
 Its purpose is to move the repository from reproducible builds into reproducible delivery outputs without changing product behavior.
 
+### Phase 11.3 — Distribution Readiness & Publication Surface Validation
+
+This subphase hardens the final pre-publication layer by validating the generated release set, aligning public-facing web metadata with Mi IP·RED branding, and documenting the local Android signing contract without changing product runtime behavior.
+
 ### Included Concerns
 
 - synchronization of `pubspec.yaml` and `lib/config/version.dart`
@@ -414,6 +418,9 @@ Its purpose is to move the repository from reproducible builds into reproducible
 - structured artifact copying into `dist/`
 - versioned artifact naming conventions for Web / APK / AAB
 - release manifest generation for the structured outputs
+- branded public metadata alignment for web publication surfaces
+- local signing-contract documentation for Android release work
+- repeatable release validation reporting through `validate_release.dart`
 
 ### Expected Outputs
 
@@ -422,6 +429,7 @@ Its purpose is to move the repository from reproducible builds into reproducible
 - Android App Bundle treated as first-class release artifact
 - structured `dist/` tree for release outputs
 - release manifest per version and rolling latest manifest
+- release validation report per version and rolling latest report
 - documentary handoff toward later distribution work
 
 ### Constraints
@@ -495,3 +503,4 @@ The correct documentary reading of the repository is now:
 - Phase 10 established as product capability completion layer
 - Phase 10.2 completed the controlled exposure of the supported billing capability surface
 - the next justified concern begins after that closure, not inside it
+- Phase 11.3 now closes the immediate distribution-readiness gap before later deployment workflow work

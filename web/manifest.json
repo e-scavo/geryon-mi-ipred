@@ -1,11 +1,11 @@
 {
-    "name": "geryon_web_app_ws_v2",
-    "short_name": "geryon_web_app_ws_v2",
+    "name": "Mi IP·RED",
+    "short_name": "Mi IP·RED",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "Portal de clientes Mi IP·RED para consultar facturas, recibos, débitos y créditos.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

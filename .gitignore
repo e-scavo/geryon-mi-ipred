@@ -117,3 +117,5 @@ linux/.flutter-plugins-dependencies
 # /android/app/debug
 # /android/app/profile
 # /android/app/release
+keys
+android/key.properties

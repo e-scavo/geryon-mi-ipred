@@ -1,0 +1,10 @@
+Mi IP·RED es el portal de clientes de IP·RED para consultar la información principal de tu cuenta desde Android.
+
+Con Mi IP·RED podés:
+- consultar facturas emitidas
+- revisar recibos registrados
+- visualizar débitos disponibles
+- visualizar créditos disponibles
+- acceder a la información principal de tu servicio desde una superficie consistente y validada
+
+La aplicación está alineada con la experiencia actual del portal del cliente y prioriza una operación estable, clara y directa para el uso diario.

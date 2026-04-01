@@ -844,3 +844,47 @@ This layer must:
 - release outputs become easier to inspect and hand off
 - later distribution-readiness work gets a stable operator-facing artifact contract
 - packaging concerns remain incremental and bounded
+
+
+## Decision 38 — Phase 11.3 must close the immediate distribution-readiness gap
+
+### Context
+
+After Phase 11.2 structured the generated Web/APK/AAB outputs, the repository still retained a final release gap between packaged artifacts and publication readiness.
+
+### Problem
+
+Without a dedicated distribution-readiness step, the project would still carry:
+
+- generic public metadata on Web publication surfaces
+- a justified Cupertino icon packaging warning
+- no first-class validation command for the structured release set
+- no tracked template describing the local Android signing contract
+- no operator-facing metadata scaffold for Play Store handoff
+
+### Decision
+
+Define Phase 11.3 as the required third implementation step of Phase 11.
+
+This layer must:
+
+- align `web/index.html` and `web/manifest.json` with Mi IP·RED publication branding
+- declare `cupertino_icons` explicitly in `pubspec.yaml` to match current icon usage
+- introduce `validate_release.dart` as the canonical release-validation command
+- generate validation reports beside the existing release manifests
+- document the local Android signing contract through `android/key.properties.example`
+- provide tracked Play Store metadata scaffolding for operator handoff
+
+### Constraints
+
+- no backend protocol changes
+- no business logic changes
+- no UI or responsive redesign
+- no removal of the user's existing local signing flow under the label of hygiene
+
+### Result
+
+- the packaged release set becomes verifiable rather than only structured
+- public-facing metadata better matches the real product name
+- Android signing expectations become easier to reproduce on new environments
+- later deployment workflow work can build on a validated release package baseline
