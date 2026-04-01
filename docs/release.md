@@ -73,7 +73,7 @@ This is the concern shift introduced by:
 
 ## Phase 11 release baseline
 
-Phase 11.1 established the version/build baseline, Phase 11.2 formalized how generated outputs are packaged, and Phase 11.3 now validates that packaged release set against the repository's real publication surfaces.
+Phase 11.1 established the version/build baseline, Phase 11.2 formalized how generated outputs are packaged, Phase 11.3 validated that packaged release set against the repository's real publication surfaces, and Phase 11.4 closed the final local/manual submission handoff.
 
 ### Problem solved by 11.1
 
@@ -151,6 +151,8 @@ The repository now standardizes:
   - `dist/release_validation_latest.json`
 - `distribution/submissions/<version>/submission_bundle_<version>.json`
 - `distribution/submissions/<version>/submission_summary.md`
+- `distribution/play_store/releases/<version>/publication_surface_<version>.json`
+- `distribution/play_store/releases/<version>/publication_summary.md`
 - tracked Play Store metadata scaffolding under `distribution/play_store/`
 
 ## Canonical release commands
@@ -195,6 +197,14 @@ The repository now standardizes:
 
     dart run validate_release.dart --dist-root=release
 
+### Prepare the final submission bundle
+
+    dart run prepare_submission_bundle.dart
+
+### Prepare the versioned store publication surface
+
+    dart run prepare_store_publication.dart
+
 ### Build and commit on the current branch
 
     dart run build_and_commit.dart --web --aab --git-commit
@@ -233,6 +243,7 @@ Every release execution under this baseline should validate at least:
 - the manifest truthfully reflects the generated version and targets
 - release validation passes against web metadata, Android application id, local signing contract, and structured artifacts
 - final operator handoff can be materialized as a versioned submission bundle
+- the same validated version can be expanded into a structured store-publication surface
 
 ## What this phase does not yet solve
 
@@ -249,6 +260,8 @@ Phase 11.3 still does not yet complete:
 Those remain justified follow-up concerns only if they justify automation beyond the now-complete local/manual release baseline.
 
 Phase 11.4 closes the current local/manual release track by introducing a final submission bundle that snapshots the validated release, metadata, and checklist into one versioned handoff root.
+
+Phase 12.1 begins the next justified release-adjacent layer by structuring the publication surface itself under `distribution/play_store/releases/<version>/`, linking the validated submission bundle with track-specific rollout notes and store-asset directories.
 
 ## Conclusion
 
@@ -280,3 +293,60 @@ This command is expected to:
 - snapshot release reports beside the copied artifacts
 - snapshot Play Store metadata/checklist files for the same version
 - preserve the final handoff as an immutable operator bundle
+
+
+## Phase 12 publication baseline
+
+Phase 12 no longer changes how Mi IP·RED is built or validated locally.
+
+It standardizes how the already validated release is prepared for real publication work.
+
+### Problem solved by 12.1
+
+Before this subphase, the ZIP already contained:
+
+- structured release artifacts in `dist/`
+- validation reports for the current release
+- versioned submission bundles under `distribution/submissions/<version>/`
+- Play Store metadata text and operator checklists under `distribution/play_store/`
+
+However, the publication surface itself was still implicit.
+
+There was no canonical versioned location for:
+
+- phone screenshots
+- 7-inch screenshots
+- 10-inch screenshots
+- feature graphic material
+- track-specific rollout notes
+- publication summary/evidence for the exact validated version
+
+### Standardized result after 12.1
+
+The repository now standardizes:
+
+- `prepare_store_publication.dart` as the canonical publication-surface generator
+- versioned publication surfaces under `distribution/play_store/releases/<version>/`
+- copied metadata/checklist/policy files aligned with the active validated version
+- Android asset directories for:
+  - `phone_screenshots`
+  - `seven_inch_screenshots`
+  - `ten_inch_screenshots`
+  - `feature_graphic`
+- rollout note roots for:
+  - `internal`
+  - `closed`
+  - `production`
+- JSON publication manifest plus Markdown summary for operator handoff
+
+### What this phase still does not solve
+
+Phase 12.1 still does not yet complete:
+
+- direct Play Console publication execution
+- automatic screenshot capture
+- CI/CD publication credentials
+- store-review outcome tracking
+- post-release telemetry decisions
+
+Those remain justified follow-up concerns only if they are supported by later evidence.

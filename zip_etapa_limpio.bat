@@ -15,7 +15,7 @@ echo.
 echo Preparando copia temporal...
 mkdir "%TEMP_DIR%"
 
-robocopy "%PROJECT_DIR%" "%TEMP_DIR%" /E /XD .dist .git .dart_tool build .idea .vscode >nul
+robocopy "%PROJECT_DIR%" "%TEMP_DIR%" /E /XD distribution/submissions dist .git .dart_tool build .idea .vscode >nul
 
 if errorlevel 8 (
     echo ERROR: fallo robocopy.

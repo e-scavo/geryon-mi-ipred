@@ -27,6 +27,7 @@ build/
 dist/
 release/
 distribution/submissions/
+distribution/play_store/releases/
 **/doc/api/
 **/ios/Flutter/.last_build_id
 

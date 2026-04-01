@@ -141,11 +141,18 @@ The repository has completed the following baselines:
 - Phase 9 — Product Surface Consistency & UX Hardening
 - Phase 10 — Product Capability Completion
 
-The repository is now entering:
+The repository has now completed:
 
 - Phase 11 — Release & Distribution
 - Phase 11.1 — Build & Versioning Standardization
 - Phase 11.2 — Packaging & Artifact Structuring
+- Phase 11.3 — Distribution Readiness & Publication Surface Validation
+- Phase 11.4 — Final Release Operations & Submission Checklist
+
+The repository is now entering:
+
+- Phase 12 — Store Publication Assets & Operational Rollout
+- Phase 12.1 — Store Asset Baseline & Publication Surface Structuring
 
 See:
 
@@ -155,6 +162,9 @@ See:
 - `docs/phase11_release_distribution_11_1_build_versioning_standardization.md`
 - `docs/phase11_release_distribution_11_2_packaging_artifact_structuring.md`
 - `docs/phase11_release_distribution_11_3_distribution_readiness_validation.md`
+- `docs/phase11_release_distribution_11_4_final_release_operations_submission_checklist.md`
+- `docs/phase12_store_publication_assets_operational_rollout.md`
+- `docs/phase12_store_publication_assets_operational_rollout_12_1_store_asset_baseline_publication_surface_structuring.md`
 
 ---
 
@@ -174,11 +184,11 @@ The current roadmap completed these major layers:
 
 The active roadmap layer is now:
 
-10. Release & distribution readiness
-11. Build and versioning standardization
-12. Packaging and artifact structuring
-13. Distribution readiness & publication surface validation
-14. Distribution and deployment validation
+10. Store publication assets & operational rollout
+11. Store asset baseline & publication surface structuring
+12. Track rollout operational checklist
+13. Publication evidence & post-upload validation
+14. Optional automation boundaries
 
 ---
 
@@ -219,6 +229,10 @@ Custom dist root:
 Validar una salida ya generada:
 
     dart run validate_release.dart
+
+Preparar el surface operativo de publicación para la versión actual validada:
+
+    dart run prepare_store_publication.dart
 
 ---
 
@@ -293,3 +307,11 @@ Additionally, Phase 11.4 confirms that final release operations now require:
 - versioned immutable bundles under `distribution/submissions/<version>/`
 - explicit Play Store asset requirements tracked in `distribution/play_store/asset_requirements.md`
 - keystore-path validation against the local environment before final handoff
+
+
+Additionally, Phase 12.1 confirms that publication-readiness now also requires:
+
+- a versioned publication surface generated through `prepare_store_publication.dart`
+- normalized store asset directories under `distribution/play_store/releases/<version>/`
+- explicit rollout notes per active Play track
+- alignment between the validated submission bundle and the store-facing asset set

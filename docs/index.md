@@ -440,6 +440,61 @@ This subphase hardens the final pre-publication layer by validating the generate
 - no reopening of Phase 10 capability-completion baseline
 - no business logic changes under the label of release work
 
+
+
+---
+
+## Phase 12 — Store Publication Assets & Operational Rollout
+
+The repository now moves beyond local/manual release readiness and into the next justified concern layer.
+
+This concern is no longer centered on:
+
+- architecture
+- runtime semantics
+- UX consistency
+- responsive fit
+- feature exposure
+- release build reproducibility
+- submission-bundle generation
+
+Instead, it is centered on the remaining gap between:
+
+- a validated local/manual release package
+- a publication surface that is structurally ready for real Play Console rollout
+
+### Phase 12.1 — Store Asset Baseline & Publication Surface Structuring
+
+This subphase establishes the first justified implementation step of Phase 12.
+
+Its purpose is to convert the already validated submission baseline into a versioned publication surface that organizes store assets, track notes, metadata copies, and rollout evidence without changing application behavior.
+
+### Included Concerns
+
+- versioned publication surfaces under `distribution/play_store/releases/<version>/`
+- canonical generation through `prepare_store_publication.dart`
+- alignment between `distribution/submissions/<version>/` and the store-facing surface for the same version
+- normalized Android store asset directories for phone, 7-inch, 10-inch, and feature-graphic material
+- track-specific rollout notes for `internal`, `closed`, and `production`
+- publication summary and manifest files for the generated surface
+
+### Expected Outputs
+
+- structured publication surface per version
+- copied metadata/checklist baseline for the same version
+- operator-facing asset directory contracts
+- explicit rollout notes per Play track
+- documentary handoff toward later upload/evidence work
+
+### Constraints
+
+- no reopening of Phase 7 architecture
+- no reopening of Phase 8 runtime baseline
+- no reopening of Phase 9 UX/responsive baselines
+- no reopening of Phase 10 capability-completion baseline
+- no reopening of Phase 11 release/distribution readiness baseline
+- no business logic changes under the label of publication work
+
 ## Validation
 
 This index is aligned only if all of the following are true:
@@ -504,3 +559,6 @@ The correct documentary reading of the repository is now:
 - Phase 10.2 completed the controlled exposure of the supported billing capability surface
 - the next justified concern begins after that closure, not inside it
 - Phase 11.3 now closes the immediate distribution-readiness gap before later deployment workflow work
+- Phase 11.4 completes the final local/manual submission handoff baseline
+- Phase 12 now becomes the justified next layer because the remaining gap is publication-surface organization rather than release reproducibility
+- Phase 12.1 establishes store asset and rollout structure without reopening product behavior

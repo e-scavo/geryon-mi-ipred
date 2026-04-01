@@ -36,6 +36,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/
+    - assets/images/
 dev_dependencies:
   flutter_lints: ^5.0.0
 
