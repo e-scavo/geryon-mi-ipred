@@ -93,12 +93,22 @@ Focus:
 - preserve the operator audit trail after the upload actually happens
 - keep all publication evidence tied to the exact version and active track already prepared for rollout
 
+### Phase 12.4 — Optional Automation Boundaries
+
+Implemented.
+
+Focus:
+- define the safe automation boundary for repository-side publication support
+- make explicit which steps are automatic, assisted, and manual-required
+- prevent future tooling from being interpreted as permission to publish or promote automatically
+- keep Play Console control under explicit human approval
+
 ## Expected Later Subphases
 
-After 12.3, later work should stay narrow and automation-oriented, such as:
+After 12.4, later work should remain optional and external to the current repository baseline, such as:
 
-- optional automation boundaries for publication support
 - external publication notifications or dashboards
+- organization-specific reporting integrations
 
 ## Constraints
 
@@ -119,7 +129,8 @@ Positive impact of Phase 12 as currently implemented:
 - store assets stop being an implicit external concern
 - rollout preparation is now versioned both by asset surface and by track contract
 - post-upload validation now has a canonical repository-side audit trail
-- later publication automation work can start from a stable operator baseline
+- automation boundaries are now explicit, so future scripts cannot reasonably overstep into live publication control
+- later publication-support work can start from a stable operator baseline
 
 Risk if this layer were skipped:
 

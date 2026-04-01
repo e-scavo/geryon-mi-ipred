@@ -155,6 +155,7 @@ Future<PublicationSurfaceResult> _prepareStorePublicationSurface({
   final copiedFiles = <Map<String, Object?>>[];
   final generatedRolloutFiles = <Map<String, Object?>>[];
   final generatedEvidenceFiles = <Map<String, Object?>>[];
+  final generatedAutomationFiles = <Map<String, Object?>>[];
 
   Future<void> copyFileIntoSurface({
     required File source,
@@ -194,6 +195,20 @@ Future<PublicationSurfaceResult> _prepareStorePublicationSurface({
     await destination.parent.create(recursive: true);
     await destination.writeAsString(content);
     generatedEvidenceFiles.add({
+      'publicationPath': destination.path,
+      'sizeBytes': await destination.length(),
+    });
+  }
+
+  Future<void> writeGeneratedAutomationFile({
+    required String relativeDestination,
+    required String content,
+  }) async {
+    final destination =
+        File(_joinPath(publicationRoot.path, relativeDestination));
+    await destination.parent.create(recursive: true);
+    await destination.writeAsString(content);
+    generatedAutomationFiles.add({
       'publicationPath': destination.path,
       'sizeBytes': await destination.length(),
     });
@@ -415,6 +430,36 @@ Future<PublicationSurfaceResult> _prepareStorePublicationSurface({
     ),
   );
 
+  final automationContracts = {
+    'matrix': _joinPath(
+        publicationRoot.path, 'automation', 'automation_boundary_matrix.md'),
+    'assistedSteps':
+        _joinPath(publicationRoot.path, 'automation', 'assisted_steps.md'),
+    'manualRequiredSteps': _joinPath(
+        publicationRoot.path, 'automation', 'manual_required_steps.md'),
+    'changeGuardrails':
+        _joinPath(publicationRoot.path, 'automation', 'change_guardrails.md'),
+  };
+
+  await writeGeneratedAutomationFile(
+    relativeDestination:
+        _joinPath('automation', 'automation_boundary_matrix.md'),
+    content: _buildAutomationBoundaryMatrix(version: versionSuffix),
+  );
+  await writeGeneratedAutomationFile(
+    relativeDestination: _joinPath('automation', 'assisted_steps.md'),
+    content:
+        _buildAssistedSteps(version: versionSuffix, releaseTrack: releaseTrack),
+  );
+  await writeGeneratedAutomationFile(
+    relativeDestination: _joinPath('automation', 'manual_required_steps.md'),
+    content: _buildManualRequiredSteps(version: versionSuffix),
+  );
+  await writeGeneratedAutomationFile(
+    relativeDestination: _joinPath('automation', 'change_guardrails.md'),
+    content: _buildChangeGuardrails(version: versionSuffix),
+  );
+
   final summaryFile =
       File(_joinPath(publicationRoot.path, 'publication_summary.md'));
   await summaryFile.writeAsString(
@@ -426,6 +471,7 @@ Future<PublicationSurfaceResult> _prepareStorePublicationSurface({
       copiedFiles: copiedFiles,
       generatedRolloutFiles: generatedRolloutFiles,
       generatedEvidenceFiles: generatedEvidenceFiles,
+      generatedAutomationFiles: generatedAutomationFiles,
     ),
   );
 
@@ -446,6 +492,7 @@ Future<PublicationSurfaceResult> _prepareStorePublicationSurface({
     'policyRoot': _joinPath(publicationRoot.path, 'policy'),
     'rolloutRoot': _joinPath(publicationRoot.path, 'rollout'),
     'evidenceRoot': _joinPath(publicationRoot.path, 'evidence'),
+    'automationRoot': _joinPath(publicationRoot.path, 'automation'),
     'publicationLedgerFile':
         _joinPath(publicationRoot.path, 'publication_ledger.md'),
     'activeTrackFile':
@@ -454,8 +501,10 @@ Future<PublicationSurfaceResult> _prepareStorePublicationSurface({
         _joinPath(publicationRoot.path, 'rollout', 'track_matrix.md'),
     'generatedRolloutFiles': generatedRolloutFiles,
     'generatedEvidenceFiles': generatedEvidenceFiles,
+    'generatedAutomationFiles': generatedAutomationFiles,
     'trackContracts': trackContracts,
     'trackEvidenceContracts': trackEvidenceContracts,
+    'automationContracts': automationContracts,
   };
   await manifestFile.writeAsString(
     const JsonEncoder.withIndent('  ').convert(payload),
@@ -821,6 +870,7 @@ String _buildPublicationSummary({
   required List<Map<String, Object?>> copiedFiles,
   required List<Map<String, Object?>> generatedRolloutFiles,
   required List<Map<String, Object?>> generatedEvidenceFiles,
+  required List<Map<String, Object?>> generatedAutomationFiles,
 }) {
   final buffer = StringBuffer()
     ..writeln('# Publication Summary — Mi IP·RED')
@@ -849,6 +899,7 @@ String _buildPublicationSummary({
     ..writeln('- `evidence/internal/`')
     ..writeln('- `evidence/closed/`')
     ..writeln('- `evidence/production/`')
+    ..writeln('- `automation/`')
     ..writeln()
     ..writeln('## Contrato operativo de rollout generado');
 
@@ -864,7 +915,107 @@ String _buildPublicationSummary({
     buffer.writeln('- `${file['publicationPath']}`');
   }
 
+  buffer
+    ..writeln()
+    ..writeln('## Boundary de automatización generado');
+
+  for (final file in generatedAutomationFiles) {
+    buffer.writeln('- `${file['publicationPath']}`');
+  }
+
   return buffer.toString();
+}
+
+String _buildAutomationBoundaryMatrix({
+  required String version,
+}) {
+  return '''# Automation Boundary Matrix — Mi IP·RED
+
+Versión objetivo: `$version`
+
+## Clasificación
+
+### Automatic
+- Validación local de versión y artefactos (`validate_release.dart`)
+- Generación del submission bundle (`prepare_submission_bundle.dart`)
+- Generación del publication surface (`prepare_store_publication.dart`)
+- Generación de scaffolding de rollout, evidencia y ledger
+
+### Assisted
+- Preparación de metadata y assets dentro del surface versionado
+- Registro manual sobre plantillas ya generadas por track
+- Consolidación del handoff operativo por versión
+
+### Manual-required
+- Upload real a Play Console
+- Selección de audiencia/testers
+- Revisión visual de listing y assets
+- Promoción entre tracks
+- Aprobación final para production
+
+## Regla principal
+La automatización del repositorio puede preparar, validar y documentar.
+No puede decidir ni ejecutar por sí sola la publicación real.
+''';
+}
+
+String _buildAssistedSteps({
+  required String version,
+  required String releaseTrack,
+}) {
+  return '''# Assisted Steps — Mi IP·RED
+
+Versión objetivo: `$version`
+Track inicialmente sugerido: `$releaseTrack`
+
+## Uso esperado
+- Generar el surface versionado para esta release.
+- Completar metadata, assets y evidencia dentro de los archivos generados.
+- Usar el checklist y la matriz de tracks como soporte operativo.
+- Mantener la decisión final de upload y promoción bajo control humano.
+
+## Señal de uso correcto
+Los scripts dejan la versión mejor preparada y mejor documentada.
+Los scripts no cambian por sí mismos el estado remoto del release en Play Console.
+''';
+}
+
+String _buildManualRequiredSteps({
+  required String version,
+}) {
+  return '''# Manual Required Steps — Mi IP·RED
+
+Versión objetivo: `$version`
+
+## Acciones que deben seguir siendo manuales
+- Ingresar a Play Console con la cuenta correcta
+- Cargar el AAB en el track correspondiente
+- Verificar screenshots, feature graphic, descripción y política visibles
+- Confirmar audiencia del track
+- Decidir promoción a `closed` o `production`
+- Autorizar el go/no-go productivo
+
+## Prohibición operativa
+No asumir que un manifest, summary o ledger generado equivale a aprobación de publicación.
+''';
+}
+
+String _buildChangeGuardrails({
+  required String version,
+}) {
+  return '''# Change Guardrails — Mi IP·RED
+
+Versión objetivo: `$version`
+
+## Guardrails
+- No agregar automatización que requiera credenciales remotas de publicación sin una fase nueva explícita.
+- No automatizar promociones entre tracks usando solo evidencia local.
+- No automatizar publicación a production usando únicamente validaciones del repositorio.
+- No modificar el comportamiento funcional de la app como parte de tooling de publicación.
+
+## Criterio de evolución
+Cualquier automatización futura debe seguir siendo repository-assisted hasta que exista una fase dedicada que redefina de forma segura ese límite.
+''';
 }
 
 String _joinPath(

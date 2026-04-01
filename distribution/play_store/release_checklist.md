@@ -35,6 +35,10 @@
 - `distribution/play_store/releases/<version>/rollout/active_track.md`
 - `distribution/play_store/releases/<version>/rollout/track_matrix.md`
 - `distribution/play_store/releases/<version>/publication_ledger.md`
+- `distribution/play_store/releases/<version>/automation/automation_boundary_matrix.md`
+- `distribution/play_store/releases/<version>/automation/assisted_steps.md`
+- `distribution/play_store/releases/<version>/automation/manual_required_steps.md`
+- `distribution/play_store/releases/<version>/automation/change_guardrails.md`
 - `distribution/play_store/releases/<version>/evidence/<track>/upload_receipt.md`
 - `distribution/play_store/releases/<version>/evidence/<track>/post_upload_validation.md`
 - `distribution/play_store/releases/<version>/evidence/<track>/promotion_decision.md`
@@ -79,3 +83,9 @@
 - Completar `publication_ledger.md` con el resumen final de la versión
 - No modificar a mano los artefactos ya copiados dentro del bundle final
 - Usar los archivos de `rollout/` y `evidence/` como contrato documental mínimo antes de mover la versión al siguiente track
+
+
+## Automation boundary
+- Consider `distribution/play_store/releases/<version>/automation/automation_boundary_matrix.md` the source of truth for what is automatic, assisted, or manual-required
+- Do not treat generated files as permission to upload, promote, or publish automatically
+- Preserve explicit human approval for Play Console upload, track promotion, and production go/no-go

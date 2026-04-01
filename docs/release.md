@@ -413,3 +413,27 @@ Phase 12.3 still does not complete:
 - review scraping from Google Play
 - policy or rollout strategy automation
 - external notification pipelines
+
+
+## Phase 12.4 — Optional Automation Boundaries
+
+The repository now also formalizes which publication steps are safe to automate and which must remain human-controlled.
+
+Safe repository-side automation includes:
+
+- version synchronization validation
+- release artifact validation
+- submission bundle preparation
+- publication-surface preparation
+- rollout scaffolding generation
+- evidence and ledger template generation
+
+Manual-required work remains explicit for:
+
+- final Play Console upload
+- store listing visual review
+- tester/audience selection
+- rollout percentage and promotion decisions
+- production go/no-go approval
+
+This boundary is deliberate. It keeps the repository operationally strong without allowing tooling to silently publish or promote a release.

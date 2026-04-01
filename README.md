@@ -155,6 +155,7 @@ The repository has now opened and implemented:
 - Phase 12.1 — Store Asset Baseline & Publication Surface Structuring
 - Phase 12.2 — Track Rollout Operational Checklist
 - Phase 12.3 — Publication Evidence & Post-Upload Validation
+- Phase 12.4 — Optional Automation Boundaries
 
 See:
 
@@ -194,8 +195,8 @@ The active roadmap layer is now:
 13. Publication evidence & post-upload validation
 14. Optional automation boundaries
 
-The current repository baseline has already implemented items 10 through 13.
-The next justified concern remains item 14, without reopening application behavior.
+The current repository baseline has already implemented items 10 through 14.
+The publication rollout layer is now formally bounded so future automation remains safe and does not overstep into real Play Console control.
 
 ---
 

@@ -579,3 +579,37 @@ The correct documentary reading of the repository is now:
 - Phase 12 now becomes the justified next layer because the remaining gap is publication-surface organization rather than release reproducibility
 - Phase 12.1 establishes store asset and rollout structure without reopening product behavior
 - Phase 12.2 formalizes track rollout criteria and operator evidence without reopening product behavior
+
+### Phase 11 — Release & Distribution
+
+Master:
+- `docs/phase11_release_distribution.md`
+
+Subphases:
+- `docs/phase11_release_distribution_11_1_build_versioning_standardization.md`
+- `docs/phase11_release_distribution_11_2_packaging_artifact_structuring.md`
+- `docs/phase11_release_distribution_11_3_distribution_readiness_validation.md`
+- `docs/phase11_release_distribution_11_4_final_release_operations_submission_checklist.md`
+
+### Phase 12 — Store Publication Assets & Operational Rollout
+
+Master:
+- `docs/phase12_store_publication_assets_operational_rollout.md`
+
+Subphases:
+- `docs/phase12_store_publication_assets_operational_rollout_12_1_store_asset_baseline_publication_surface_structuring.md`
+- `docs/phase12_store_publication_assets_operational_rollout_12_2_track_rollout_operational_checklist.md`
+- `docs/phase12_store_publication_assets_operational_rollout_12_3_publication_evidence_post_upload_validation.md`
+- `docs/phase12_store_publication_assets_operational_rollout_12_4_optional_automation_boundaries.md`
+
+## Current documentary state
+
+The current ZIP confirms that the release/publication baseline is now closed through:
+
+- Phase 11.4
+- Phase 12.1
+- Phase 12.2
+- Phase 12.3
+- Phase 12.4
+
+The next justified step, if any, should remain outside application behavior and should not reopen architecture, runtime, UX, navigation, Riverpod, backend communication, or existing features.
