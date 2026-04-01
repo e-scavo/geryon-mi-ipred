@@ -149,13 +149,18 @@ The repository has now completed:
 - Phase 11.3 — Distribution Readiness & Publication Surface Validation
 - Phase 11.4 — Final Release Operations & Submission Checklist
 
-The repository has now opened and implemented:
+The repository has now completed:
 
 - Phase 12 — Store Publication Assets & Operational Rollout
 - Phase 12.1 — Store Asset Baseline & Publication Surface Structuring
 - Phase 12.2 — Track Rollout Operational Checklist
 - Phase 12.3 — Publication Evidence & Post-Upload Validation
 - Phase 12.4 — Optional Automation Boundaries
+
+The repository has now opened and implemented:
+
+- Phase 13 — Store Execution Integrity & Market Presence Hardening
+- Phase 13.1 — Store Asset Readiness Baseline
 
 See:
 
@@ -170,6 +175,9 @@ See:
 - `docs/phase12_store_publication_assets_operational_rollout_12_1_store_asset_baseline_publication_surface_structuring.md`
 - `docs/phase12_store_publication_assets_operational_rollout_12_2_track_rollout_operational_checklist.md`
 - `docs/phase12_store_publication_assets_operational_rollout_12_3_publication_evidence_post_upload_validation.md`
+- `docs/phase12_store_publication_assets_operational_rollout_12_4_optional_automation_boundaries.md`
+- `docs/phase13_store_execution_integrity_market_presence_hardening.md`
+- `docs/phase13_store_execution_integrity_market_presence_hardening_13_1_store_asset_readiness_baseline.md`
 
 ---
 
@@ -189,14 +197,11 @@ The current roadmap completed these major layers:
 
 The active roadmap layer is now:
 
-10. Store publication assets & operational rollout
-11. Store asset baseline & publication surface structuring
-12. Track rollout operational checklist
-13. Publication evidence & post-upload validation
-14. Optional automation boundaries
+10. Store execution integrity & market presence hardening
+11. Store asset readiness baseline
 
-The current repository baseline has already implemented items 10 through 14.
-The publication rollout layer is now formally bounded so future automation remains safe and does not overstep into real Play Console control.
+The current repository baseline has already implemented the full publication rollout layer and has now opened the post-12.4 store-readiness layer.
+This new layer does not change product behavior. It verifies that the versioned Play Store surface contains the minimum real visual material required for a safe publication handoff.
 
 ---
 
@@ -217,6 +222,14 @@ The publication rollout layer is now formally bounded so future automation remai
 Version bump only:
 
     dart run update_version.dart --build
+
+Release validation:
+
+    dart run validate_release.dart
+
+Store asset readiness validation:
+
+    dart run validate_store_assets.dart
 
 Web + APK + AAB release build with the current synchronized version:
 

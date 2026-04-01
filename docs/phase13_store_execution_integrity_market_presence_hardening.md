@@ -1,0 +1,124 @@
+# Phase 13 — Store Execution Integrity & Market Presence Hardening
+
+## Objective
+
+Formalize the post-12.4 store-execution layer so Mi IP·RED can verify the real readiness of its versioned Play Store material without changing product behavior, rollout control, or automation boundaries.
+
+## Initial Context
+
+The current ZIP already confirms the closure of the publication rollout baseline introduced in Phase 12:
+
+- versioned publication surfaces under `distribution/play_store/releases/<version>/`
+- track-specific rollout contracts for `internal`, `closed`, and `production`
+- versioned post-upload evidence and publication ledger files
+- explicit automation boundaries that keep Play Console control under human approval
+
+That means the next justified gap is no longer structural publication organization.
+It is the integrity of the actual visual material placed into the generated publication surface.
+
+## Problem Statement
+
+After Phase 12.4, the repository already knows where screenshots and feature-graphic material belong.
+What it still cannot do by itself is verify whether those directories contain the minimum real assets required for a safe publication handoff.
+
+Without that readiness layer:
+
+- a versioned publication surface can look complete while still containing only README guidance files
+- a required feature graphic can be missing for the exact version being prepared
+- operators can reach upload time without a stored local readiness result for the visual surface
+- market presence can drift away from the validated release even when the technical build remains correct
+
+## Scope
+
+Phase 13 covers:
+
+- store-execution integrity on top of the already generated publication surface
+- local validation of visual asset readiness per version
+- machine-readable and operator-readable readiness reports
+- documentary alignment for the new readiness baseline
+
+Phase 13 does not cover:
+
+- product/runtime/UI changes
+- backend protocol changes
+- Play Console API publication
+- automatic screenshot generation
+- automatic visual-review scoring
+- production rollout approval automation
+
+## Root Cause Analysis
+
+Phase 12 intentionally focused on:
+
+- publication-surface structure
+- rollout contracts
+- post-upload evidence
+- automation boundaries
+
+That solved the publication scaffolding problem.
+It did not solve the visual-readiness problem because those rules only become justified once the publication surface already exists and is versioned.
+
+## Implemented Subphases
+
+### Phase 13.1 — Store Asset Readiness Baseline
+
+Implemented.
+
+Focus:
+- validate the versioned publication surface against minimum local readiness rules
+- require real images for `phone_screenshots` and `feature_graphic`
+- report optional tablet groups without blocking the baseline
+- generate a versioned readiness manifest and summary tied to the active release version
+
+## Expected Later Subphases
+
+After 13.1, later work should remain incremental and still outside product behavior, such as:
+
+- stricter visual consistency contracts if the asset workflow proves stable
+- optional dimension/aspect-ratio enforcement if the team needs it later
+- a final publication-readiness gate that stays repository-assisted but human-approved
+
+## Constraints
+
+The following constraints remain mandatory under all Phase 13 work:
+
+- do not reopen Phase 7 architecture
+- do not reopen Phase 8 runtime semantics
+- do not reopen Phase 9 layout/responsive baselines
+- do not reopen Phase 10 product behavior
+- do not reopen Phase 11 release reproducibility and submission readiness baselines
+- do not reopen Phase 12 publication rollout and automation-boundary baselines
+- do not treat store-readiness validation as permission to publish automatically
+
+## Impact
+
+Positive impact of Phase 13 as currently implemented:
+
+- the repository now distinguishes between a generated publication surface and a visually ready publication surface
+- operators now have a deterministic local check before real Play Console upload
+- the same versioned release root can carry both rollout documents and asset-readiness evidence
+- future hardening can build on a stable readiness contract instead of ad hoc manual review
+
+Risk if this layer were skipped:
+
+- README-only directories can pass unnoticed until late in the release workflow
+- screenshots and feature graphics can remain implicit rather than auditable
+- market-presence quality can drift independently from the technical release baseline
+
+## Validation
+
+Phase 13 is correctly documented only if the current ZIP supports all of the following:
+
+- Phase 12 is operationally complete
+- the remaining justified gap is asset readiness rather than publication scaffolding
+- the repository now contains a dedicated validator for the versioned store surface
+- readiness reports are tied to the same `<version>` root already used by submission and publication work
+
+The current ZIP supports that reading.
+
+## Conclusion
+
+Phase 13 is the correct next store-facing layer for Mi IP·RED after Phase 12.
+
+It does not reopen application behavior.
+It hardens the integrity of the market-facing material attached to the already validated release and already prepared publication surface.

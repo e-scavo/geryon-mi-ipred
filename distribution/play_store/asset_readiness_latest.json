@@ -1,0 +1,132 @@
+{
+  "appName": "Mi IP·RED",
+  "generatedAt": "2026-04-01T10:07:39.604388",
+  "version": {
+    "major": 1,
+    "minor": 0,
+    "patch": 0,
+    "build": 83,
+    "codeName": "gorrión",
+    "pubspecVersion": "1.0.0+83"
+  },
+  "playStoreRoot": "distribution/play_store",
+  "publicationRoot": "distribution/play_store\\releases\\1.0.0+83",
+  "status": "warning",
+  "requiredGroupsPassed": true,
+  "optionalGroupsPassed": false,
+  "allowMissingOptional": false,
+  "groups": [
+    {
+      "name": "phone_screenshots",
+      "relativePath": "android\\phone_screenshots",
+      "required": true,
+      "minimumRequired": 2,
+      "allowedExtensions": [
+        ".png",
+        ".jpg",
+        ".jpeg"
+      ],
+      "foundFiles": [
+        "phone_01_login.png",
+        "phone_02_dashboard.png"
+      ],
+      "ignoredFiles": [
+        "README.md"
+      ],
+      "invalidFiles": [],
+      "count": 2,
+      "passed": true,
+      "issues": [],
+      "warnings": [],
+      "recommendedExample": "phone_01_dashboard.png"
+    },
+    {
+      "name": "feature_graphic",
+      "relativePath": "android\\feature_graphic",
+      "required": true,
+      "minimumRequired": 1,
+      "allowedExtensions": [
+        ".png",
+        ".jpg",
+        ".jpeg"
+      ],
+      "foundFiles": [
+        "feature_graphic.png"
+      ],
+      "ignoredFiles": [
+        "README.md"
+      ],
+      "invalidFiles": [],
+      "count": 1,
+      "passed": true,
+      "issues": [],
+      "warnings": [],
+      "recommendedExample": "feature_graphic.png"
+    },
+    {
+      "name": "seven_inch_screenshots",
+      "relativePath": "android\\seven_inch_screenshots",
+      "required": false,
+      "minimumRequired": 0,
+      "allowedExtensions": [
+        ".png",
+        ".jpg",
+        ".jpeg"
+      ],
+      "foundFiles": [],
+      "ignoredFiles": [
+        "README.md"
+      ],
+      "invalidFiles": [],
+      "count": 0,
+      "passed": true,
+      "issues": [],
+      "warnings": [
+        "seven_inch_screenshots: todavía no contiene imágenes válidas."
+      ],
+      "recommendedExample": "tablet7_01_dashboard.png"
+    },
+    {
+      "name": "ten_inch_screenshots",
+      "relativePath": "android\\ten_inch_screenshots",
+      "required": false,
+      "minimumRequired": 0,
+      "allowedExtensions": [
+        ".png",
+        ".jpg",
+        ".jpeg"
+      ],
+      "foundFiles": [],
+      "ignoredFiles": [
+        "README.md"
+      ],
+      "invalidFiles": [],
+      "count": 0,
+      "passed": true,
+      "issues": [],
+      "warnings": [
+        "ten_inch_screenshots: todavía no contiene imágenes válidas."
+      ],
+      "recommendedExample": "tablet10_01_dashboard.png"
+    }
+  ],
+  "summary": {
+    "requiredFailures": [],
+    "warnings": [
+      "seven_inch_screenshots: todavía no contiene imágenes válidas.",
+      "ten_inch_screenshots: todavía no contiene imágenes válidas."
+    ],
+    "detectedValidAssets": [
+      "android\\phone_screenshots\\phone_01_login.png",
+      "android\\phone_screenshots\\phone_02_dashboard.png",
+      "android\\feature_graphic\\feature_graphic.png"
+    ],
+    "ignoredFiles": [
+      "android\\phone_screenshots\\README.md",
+      "android\\feature_graphic\\README.md",
+      "android\\seven_inch_screenshots\\README.md",
+      "android\\ten_inch_screenshots\\README.md"
+    ],
+    "invalidFiles": []
+  }
+}

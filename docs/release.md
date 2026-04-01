@@ -2,17 +2,19 @@
 
 ## Objective
 
-Define the current release baseline for Mi IP·RED using the real repository state after the completion of Phase 10.2 and the implementation of Phase 11.2.
+Define the current release and publication baseline for Mi IP·RED using the real repository state after the completion of Phase 12.4 and the implementation of Phase 13.1.
 
 This document is no longer limited to structural refactor aftermath.
 
-The ZIP now confirms that the product is functionally complete for the current customer-facing scope and that the dominant remaining concern is release readiness:
+The ZIP now confirms that the product is functionally complete for the current customer-facing scope and that the dominant remaining concern is release/publication execution integrity:
 
 - synchronized versioning
 - reproducible builds
 - Android release artifacts
 - Web release artifacts
 - controlled distribution preparation
+- versioned publication surfaces
+- store-asset readiness validation
 
 ## Current release state
 
@@ -36,7 +38,9 @@ Current product state:
 - functional
 - production in use
 - capability-complete for the current billing/dashboard surface after Phase 10.2
-- entering release/distribution hardening through Phase 11
+- release/distribution baseline completed through Phase 11
+- store-publication baseline completed through Phase 12
+- store-readiness hardening opened through Phase 13.1
 
 ## Closed baseline before release work
 
@@ -59,10 +63,10 @@ That means release work must not be used as an excuse to reopen:
 
 The current focus is now explicitly:
 
-- prepare consistent release versioning
-- produce reproducible release artifacts
-- align Web and Android build commands with the same version source
-- reduce manual release mistakes before packaging/distribution work continues
+- preserve the closed release/distribution baseline
+- preserve the closed publication rollout baseline
+- validate the versioned store asset surface against minimum readiness rules
+- reduce manual Play Store asset mistakes before real upload or promotion
 
 This is the concern shift introduced by:
 
@@ -437,3 +441,57 @@ Manual-required work remains explicit for:
 - production go/no-go approval
 
 This boundary is deliberate. It keeps the repository operationally strong without allowing tooling to silently publish or promote a release.
+
+
+## Phase 13 — Store execution integrity baseline
+
+Phase 13 begins after the repository already knows how to:
+
+- build and validate release artifacts
+- assemble a submission bundle
+- prepare a versioned publication surface
+- organize rollout notes, evidence, and automation boundaries by track
+
+At this point, the missing concern is no longer publication scaffolding.
+It is the integrity of the actual visual material placed inside that scaffolding.
+
+### Problem solved by 13.1
+
+Before this subphase, the versioned publication surface already provided the correct directories for:
+
+- phone screenshots
+- 7-inch screenshots
+- 10-inch screenshots
+- feature graphic material
+
+However, the repository still could not answer locally and deterministically:
+
+- whether the required screenshots were really present
+- whether the feature graphic had been added for the exact version
+- whether the surface contained only guides/README files instead of real images
+- whether the operator had a stored readiness result for that version
+
+### Standardized result after 13.1
+
+The repository now standardizes:
+
+- `validate_store_assets.dart` as the canonical local asset-readiness validator
+- `distribution/play_store/releases/<version>/asset_readiness_manifest_<version>.json` as the versioned machine-readable report
+- `distribution/play_store/releases/<version>/asset_readiness_summary.md` as the operator-facing summary
+- `distribution/play_store/asset_readiness_latest.json` as the rolling latest readiness state
+- minimum required readiness rules for:
+  - `android/phone_screenshots/`
+  - `android/feature_graphic/`
+- warning-only handling for optional tablet screenshot groups
+
+### What this phase still does not solve
+
+Phase 13.1 still does not yet complete:
+
+- automatic screenshot generation
+- image-dimension or aspect-ratio enforcement
+- Play Console API publishing
+- visual-content review inside each image
+- automatic production approval
+
+That remains intentionally outside the current repository boundary.
