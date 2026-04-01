@@ -706,3 +706,98 @@ The repository now has these explicit baseline truths:
 - the next justified concern begins after that closure, not inside it
 
 Those decisions now govern how Mi IP·RED should evolve from this point forward.
+
+## Decision 35 — Phase 11 is established as release/distribution layer
+
+### Context
+
+After Phase 10.2 completed the controlled exposure of the supported billing capability surface, the repository confirms that the dominant remaining concern is no longer:
+
+- architecture
+- runtime semantics
+- product-surface consistency
+- responsive parity
+- capability exposure completeness
+
+Instead, the next unresolved concern is release readiness.
+
+### Problem
+
+The product is functional and already in use, but the repository still required a formal release/distribution layer to reduce version drift and build inconsistency risk.
+
+### Decision
+
+Establish Phase 11 as a distinct and explicit concern layer focused on:
+
+- release/versioning standardization
+- reproducible build generation
+- preparation for packaging/distribution work
+
+### Constraints
+
+- Phase 7 remains closed
+- Phase 8 remains closed
+- Phase 9 remains closed as UX/responsive baseline
+- Phase 10 remains closed as capability-completion baseline
+- Phase 11 must not be used to introduce product redesign
+
+### Result
+
+- phase progression remains truthful to the ZIP
+- release work becomes explicit and bounded
+- later packaging/distribution steps gain a stable foundation
+
+## Decision 36 — Phase 11.1 is mandatory as the first release baseline
+
+### Context
+
+Once release/distribution becomes the new concern class, the repository must not jump directly into store or deployment work without first standardizing versioning and build commands.
+
+### Problem
+
+Without a dedicated first release baseline, later distribution work would inherit:
+
+- version drift risk
+- inconsistent artifact generation
+- outdated git automation assumptions
+- unclear release documentation
+
+### Decision
+
+Define Phase 11.1 as the required first implementation step of Phase 11.
+
+This layer must:
+
+- synchronize `pubspec.yaml` and `lib/config/version.dart`
+- standardize build targets for Web, APK and AAB
+- make git mutation opt-in instead of implicit
+- align version metadata branding with Mi IP·RED
+
+### Constraints
+
+Later Phase 11 work must not begin by bypassing these normalization steps.
+
+### Result
+
+- release commands become reproducible
+- artifact generation becomes clearer
+- later distribution work can remain incremental rather than ad hoc
+
+## Validation Extension
+
+These additional decisions are valid only if the current ZIP still confirms all of the following:
+
+- Phase 10.2 is complete
+- the repository contains active build/versioning utility files
+- the release concern is now more justified than another product-behavior concern
+- the implemented changes remain scoped to release/versioning normalization
+
+The current ZIP confirms those conditions.
+
+## Conclusion Extension
+
+The repository now has these additional baseline truths:
+
+- Phase 11 begins as release/distribution work grounded in repository evidence
+- Phase 11.1 is the mandatory first normalization step of that layer
+- build/versioning standardization is now the active implementation baseline after Phase 10.2

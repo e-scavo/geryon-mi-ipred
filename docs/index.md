@@ -372,6 +372,55 @@ The system transitions from a partially exposed billing surface to a complete an
 
 ---
 
+
+---
+
+## Phase 11 — Release & Distribution
+
+The repository now moves beyond capability completion and into the next justified concern layer.
+
+This concern is no longer centered on:
+
+- architecture
+- runtime semantics
+- UX consistency
+- responsive fit
+- billing capability exposure completeness
+
+Instead, it is centered on the gap between:
+
+- a functionally complete product surface
+- a reproducible and distribution-ready release process
+
+### Phase 11.1 — Build & Versioning Standardization
+
+This subphase establishes the first justified implementation step of Phase 11.
+
+Its purpose is to normalize and synchronize the active release/versioning surface already present in the ZIP.
+
+### Included Concerns
+
+- synchronization of `pubspec.yaml` and `lib/config/version.dart`
+- standardization of Web / APK / AAB release targets
+- explicit release forwarding of build-name/build-number
+- removal of outdated fixed-branch assumptions from release automation
+- alignment of version metadata branding with Mi IP·RED
+
+### Expected Outputs
+
+- synchronized version baseline
+- reproducible release command baseline
+- Android App Bundle treated as first-class release artifact
+- documentary handoff toward later packaging/distribution work
+
+### Constraints
+
+- no reopening of Phase 7 architecture
+- no reopening of Phase 8 runtime baseline
+- no reopening of Phase 9 UX/responsive baselines
+- no reopening of Phase 10 capability-completion baseline
+- no business logic changes under the label of release work
+
 ## Validation
 
 This index is aligned only if all of the following are true:

@@ -134,25 +134,46 @@ The project already uses conditional imports for:
 - file saving
 
 ### 4. Current documentation stage
-This repository has completed the initial ServiceProvider decomposition phase.
+The repository has completed the following baselines:
+
+- Phase 7 — Application Layer Consolidation
+- Phase 8 — Runtime Reliability & Failure Semantics
+- Phase 9 — Product Surface Consistency & UX Hardening
+- Phase 10 — Product Capability Completion
+
+The repository is now entering:
+
+- Phase 11 — Release & Distribution
+- Phase 11.1 — Build & Versioning Standardization
 
 See:
 
 - `docs/index.md`
-- `docs/phase5_service_provider_decomposition.md`
+- `docs/release.md`
+- `docs/phase11_release_distribution.md`
+- `docs/phase11_release_distribution_11_1_build_versioning_standardization.md`
 
 ---
 
 ## Development goals
 
-The current roadmap is:
+The current roadmap completed these major layers:
 
 1. Full codebase audit
 2. Baseline documentation
 3. Safe refactor plan
 4. Incremental structural cleanup
 5. ServiceProvider internal decomposition
-6. Continued feature-oriented cleanup
+6. Application-layer consolidation
+7. Runtime reliability hardening
+8. Product-surface consistency hardening
+9. Product capability completion
+
+The active roadmap layer is now:
+
+10. Release & distribution readiness
+11. Build and versioning standardization
+12. Packaging and deployment validation
 
 ---
 
@@ -167,6 +188,20 @@ The current roadmap is:
 
     flutter pub get
     flutter run -d android
+
+### Standardized release build flow
+
+Version bump only:
+
+    dart run update_version.dart --build
+
+Web + APK + AAB release build with the current synchronized version:
+
+    dart run build_and_commit.dart
+
+Web + AAB release build with version bump:
+
+    dart run build_and_commit.dart --web --aab --bump --build
 
 ---
 
@@ -211,3 +246,9 @@ Future shared project packages should avoid including:
 - unnecessary caches
 
 These are not required for source-level analysis and should be treated as sensitive.
+
+Additionally, Phase 11.1 confirms that release versioning must remain synchronized between:
+
+- `pubspec.yaml`
+- `lib/config/version.dart`
+- release commands executed through `build_and_commit.dart`

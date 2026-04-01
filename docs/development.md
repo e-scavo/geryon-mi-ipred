@@ -365,3 +365,61 @@ The repository now establishes:
 - stable capability exposure baseline (10.2)
 
 Future work must build on this without reintroducing partial exposure states.
+
+---
+
+## Phase 11.1 — Development Extension
+
+After Phase 10.2 completed the controlled exposure of the supported financial capability surface, the repository confirms another problem-class shift.
+
+### Problem Class Shift
+
+The system is no longer primarily constrained by:
+
+- missing capability exposure
+- inconsistent UX behavior
+- responsive surface drift
+- runtime ownership ambiguity
+
+It is now constrained by:
+
+- release version drift risk
+- partially manual release generation
+- missing standardization across Web / APK / AAB outputs
+
+### Development Rule Extension
+
+From this point forward:
+
+- release engineering must be treated as a distinct concern layer
+- version data must remain synchronized across all active release sources
+- build tooling must preserve product behavior while reducing release variability
+- Android distribution readiness must treat App Bundle output as first-class build output
+
+### Implementation Constraints
+
+- no business logic changes
+- no controller ownership changes
+- no layout or responsive changes
+- no backend protocol changes
+- no reopening of Phase 7, 8, 9, or 10 baselines
+
+### Allowed Adjustments
+
+Only the following are justified under this extension:
+
+- versioning synchronization logic
+- build target standardization
+- release-script safety improvements
+- documentation alignment for release/distribution work
+- branding correction inside version metadata surfaces
+
+### Resulting Baseline
+
+The repository now establishes:
+
+- stable capability exposure baseline (10.2)
+- stable release/distribution opening baseline (11)
+- stable build/versioning baseline (11.1)
+
+Future work must build on this without using release work as a pretext for product redesign.
