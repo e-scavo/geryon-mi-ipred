@@ -24,6 +24,8 @@ migrate_working_dir/
 .pub-cache/
 .pub/
 build/
+dist/
+release/
 **/doc/api/
 **/ios/Flutter/.last_build_id
 

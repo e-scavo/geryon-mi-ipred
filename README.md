@@ -145,6 +145,7 @@ The repository is now entering:
 
 - Phase 11 — Release & Distribution
 - Phase 11.1 — Build & Versioning Standardization
+- Phase 11.2 — Packaging & Artifact Structuring
 
 See:
 
@@ -152,6 +153,7 @@ See:
 - `docs/release.md`
 - `docs/phase11_release_distribution.md`
 - `docs/phase11_release_distribution_11_1_build_versioning_standardization.md`
+- `docs/phase11_release_distribution_11_2_packaging_artifact_structuring.md`
 
 ---
 
@@ -173,7 +175,8 @@ The active roadmap layer is now:
 
 10. Release & distribution readiness
 11. Build and versioning standardization
-12. Packaging and deployment validation
+12. Packaging and artifact structuring
+13. Distribution and deployment validation
 
 ---
 
@@ -202,6 +205,14 @@ Web + APK + AAB release build with the current synchronized version:
 Web + AAB release build with version bump:
 
     dart run build_and_commit.dart --web --aab --bump --build
+
+APK only with artifact structuring cleanup for the current version:
+
+    dart run build_and_commit.dart --apk --clean-dist
+
+Custom dist root:
+
+    dart run build_and_commit.dart --web --aab --dist-root=release
 
 ---
 
@@ -252,3 +263,11 @@ Additionally, Phase 11.1 confirms that release versioning must remain synchroniz
 - `pubspec.yaml`
 - `lib/config/version.dart`
 - release commands executed through `build_and_commit.dart`
+
+
+Additionally, Phase 11.2 confirms that release packaging must now produce structured artifacts under a stable distribution root:
+
+- `dist/web/mi-ipred-web-<version>/`
+- `dist/android/apk/mi-ipred-android-apk-<version>.apk`
+- `dist/android/aab/mi-ipred-android-aab-<version>.aab`
+- `dist/release_manifest_<version>.json`

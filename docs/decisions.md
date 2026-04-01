@@ -800,4 +800,47 @@ The repository now has these additional baseline truths:
 
 - Phase 11 begins as release/distribution work grounded in repository evidence
 - Phase 11.1 is the mandatory first normalization step of that layer
-- build/versioning standardization is now the active implementation baseline after Phase 10.2
+- Phase 11.2 is the mandatory packaging/artifact-structuring step before distribution readiness
+- build/versioning standardization is now retained baseline after Phase 10.2
+- packaging/artifact structuring is now the active implementation baseline
+
+
+## Decision 37 — Phase 11.2 is mandatory before distribution readiness
+
+### Context
+
+Once Phase 11.1 standardized synchronized versioning and reproducible build commands, the repository still left operators depending on native Flutter/Gradle output paths for actual artifact handoff.
+
+### Problem
+
+Without a structured packaging layer, release generation would remain technically reproducible but operationally fragile because:
+
+- Web output would stay mixed with raw build folders
+- APK and AAB names would remain generic
+- operators would still need to manually identify the correct files
+- there would be no authoritative manifest for a generated release set
+
+### Decision
+
+Define Phase 11.2 as the required second implementation step of Phase 11.
+
+This layer must:
+
+- copy build outputs into a stable `dist/` root (or configured override)
+- rename Android artifacts using versioned product-aware names
+- preserve a versioned Web folder under `dist/web/`
+- generate release manifests that describe the produced artifacts
+- keep all changes scoped to packaging rather than product behavior
+
+### Constraints
+
+- no business logic changes
+- no UI/layout/responsive changes
+- no backend protocol changes
+- no secret/signing policy redesign under the label of packaging
+
+### Result
+
+- release outputs become easier to inspect and hand off
+- later distribution-readiness work gets a stable operator-facing artifact contract
+- packaging concerns remain incremental and bounded

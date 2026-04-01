@@ -1,6 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
 
+const String _appName = 'Mi IP·RED';
+const String _artifactSlug = 'mi-ipred';
+const String _defaultDistRoot = 'dist';
+
 Future<void> main(List<String> args) async {
   if (args.contains('--help') || args.contains('-h')) {
     _printHelp();
@@ -14,6 +18,8 @@ Future<void> main(List<String> args) async {
   final bumpRequested = args.contains('--bump');
   final gitCommitRequested = args.contains('--git-commit');
   final gitPushRequested = args.contains('--git-push');
+  final cleanDistRequested = args.contains('--clean-dist');
+  final distRoot = _readOption(args, '--dist-root') ?? _defaultDistRoot;
 
   if (gitPushRequested && !gitCommitRequested) {
     stderr.writeln('❌ --git-push requiere también --git-commit');
@@ -68,6 +74,15 @@ Future<void> main(List<String> args) async {
     ]);
   }
 
+  final releaseResult = await _prepareDistArtifacts(
+    version: version,
+    buildWeb: buildWeb,
+    buildApk: buildApk,
+    buildAab: buildAab,
+    distRoot: distRoot,
+    cleanDistRequested: cleanDistRequested,
+  );
+
   if (gitCommitRequested) {
     final branch = await _readCurrentGitBranch();
 
@@ -77,7 +92,7 @@ Future<void> main(List<String> args) async {
       'git',
       'commit',
       '-m',
-      'Phase 11.1 release baseline - ${version.asPubspecVersion}',
+      'Phase 11.2 packaging baseline - ${version.asPubspecVersion}',
     ]);
 
     if (gitPushRequested) {
@@ -87,11 +102,22 @@ Future<void> main(List<String> args) async {
     stdout.writeln('📝 Build finalizado sin commit automático.');
   }
 
+  stdout.writeln('📁 Dist principal: ${releaseResult.distRoot.path}');
+  stdout.writeln('📄 Manifest: ${releaseResult.manifestFile.path}');
   stdout.writeln('✅ Proceso finalizado para ${version.asPubspecVersion}');
 }
 
 bool _isTargetFlag(String arg) =>
     arg == '--web' || arg == '--apk' || arg == '--aab';
+
+String? _readOption(List<String> args, String option) {
+  for (final arg in args) {
+    if (arg.startsWith('$option=')) {
+      return arg.substring(option.length + 1).trim();
+    }
+  }
+  return null;
+}
 
 List<String> _collectUpdateVersionArgs(List<String> args) {
   final passthrough = <String>[];
@@ -127,28 +153,201 @@ Uso:
   dart run build_and_commit.dart [opciones]
 
 Targets:
-  --web                 Compila Web
-  --apk                 Compila Android APK release
-  --aab                 Compila Android App Bundle release
+  --web                    Compila Web
+  --apk                    Compila Android APK release
+  --aab                    Compila Android App Bundle release
 
 Si no indicás targets, compila: Web + APK + AAB.
 
 Versionado:
-  --bump                Ejecuta update_version.dart antes de compilar
-  --build               Incrementa solo build (por defecto si usás --bump)
-  --patch               Incrementa patch y reinicia build a 1
-  --minor               Incrementa minor y reinicia patch/build
-  --major               Incrementa major y reinicia minor/patch/build
-  --set-version=X.Y.Z+B Fija versión exacta
-  --code-name=NOMBRE    Actualiza el code name
+  --bump                   Ejecuta update_version.dart antes de compilar
+  --build                  Incrementa solo build (por defecto si usás --bump)
+  --patch                  Incrementa patch y reinicia build a 1
+  --minor                  Incrementa minor y reinicia patch/build
+  --major                  Incrementa major y reinicia minor/patch/build
+  --set-version=X.Y.Z+B    Fija versión exacta
+  --code-name=NOMBRE       Actualiza el code name
+
+Packaging / dist:
+  --clean-dist             Limpia solo los artefactos de la versión actual antes de copiar
+  --dist-root=RUTA         Cambia la carpeta destino (por defecto: dist)
 
 Git:
-  --git-commit          Hace git add + git commit al final
-  --git-push            Hace git push al branch actual (requiere --git-commit)
+  --git-commit             Hace git add + git commit al final
+  --git-push               Hace git push al branch actual (requiere --git-commit)
 
 Ayuda:
-  --help, -h            Muestra esta ayuda
+  --help, -h               Muestra esta ayuda
 ''');
+}
+
+Future<ReleaseResult> _prepareDistArtifacts({
+  required VersionInfo version,
+  required bool buildWeb,
+  required bool buildApk,
+  required bool buildAab,
+  required String distRoot,
+  required bool cleanDistRequested,
+}) async {
+  final root = Directory(distRoot);
+  await root.create(recursive: true);
+
+  final releaseWebDir = Directory(
+    _joinPath(
+        distRoot, 'web', '$_artifactSlug-web-${version.asPubspecVersion}'),
+  );
+  final releaseApkDir = Directory(_joinPath(distRoot, 'android', 'apk'));
+  final releaseAabDir = Directory(_joinPath(distRoot, 'android', 'aab'));
+
+  final createdArtifacts = <Map<String, Object?>>[];
+
+  if (buildWeb) {
+    final sourceWebDir = Directory(_joinPath('build', 'web'));
+    if (!await sourceWebDir.exists()) {
+      stderr.writeln('❌ No se encontró build/web para estructurar artefactos.');
+      exit(1);
+    }
+
+    if (cleanDistRequested && await releaseWebDir.exists()) {
+      await releaseWebDir.delete(recursive: true);
+    }
+
+    // Se copia la web ya compilada a una carpeta versionada y predecible.
+    await _copyDirectory(sourceWebDir, releaseWebDir,
+        deleteDestinationFirst: true);
+    createdArtifacts.add({
+      'target': 'web',
+      'type': 'directory',
+      'path': releaseWebDir.path,
+    });
+    stdout.writeln('📦 Web estructurada en: ${releaseWebDir.path}');
+  }
+
+  if (buildApk) {
+    final sourceApk = File(
+      _joinPath('build', 'app', 'outputs', 'flutter-apk', 'app-release.apk'),
+    );
+    if (!await sourceApk.exists()) {
+      stderr.writeln('❌ No se encontró el APK release generado.');
+      exit(1);
+    }
+
+    await releaseApkDir.create(recursive: true);
+    final distApk = File(
+      _joinPath(
+        releaseApkDir.path,
+        '$_artifactSlug-android-apk-${version.asPubspecVersion}.apk',
+      ),
+    );
+    if (cleanDistRequested && await distApk.exists()) {
+      await distApk.delete();
+    }
+    await sourceApk.copy(distApk.path);
+    createdArtifacts.add({
+      'target': 'apk',
+      'type': 'file',
+      'path': distApk.path,
+      'sizeBytes': await distApk.length(),
+    });
+    stdout.writeln('📦 APK estructurado en: ${distApk.path}');
+  }
+
+  if (buildAab) {
+    final sourceAab = File(
+      _joinPath(
+          'build', 'app', 'outputs', 'bundle', 'release', 'app-release.aab'),
+    );
+    if (!await sourceAab.exists()) {
+      stderr.writeln('❌ No se encontró el App Bundle release generado.');
+      exit(1);
+    }
+
+    await releaseAabDir.create(recursive: true);
+    final distAab = File(
+      _joinPath(
+        releaseAabDir.path,
+        '$_artifactSlug-android-aab-${version.asPubspecVersion}.aab',
+      ),
+    );
+    if (cleanDistRequested && await distAab.exists()) {
+      await distAab.delete();
+    }
+    await sourceAab.copy(distAab.path);
+    createdArtifacts.add({
+      'target': 'aab',
+      'type': 'file',
+      'path': distAab.path,
+      'sizeBytes': await distAab.length(),
+    });
+    stdout.writeln('📦 AAB estructurado en: ${distAab.path}');
+  }
+
+  final manifestPayload = {
+    'appName': _appName,
+    'artifactSlug': _artifactSlug,
+    'version': version.toJson(),
+    'generatedAt': DateTime.now().toIso8601String(),
+    'distRoot': root.path,
+    'artifacts': createdArtifacts,
+  };
+
+  final manifestFile = File(
+    _joinPath(distRoot, 'release_manifest_${version.asPubspecVersion}.json'),
+  );
+  await manifestFile.writeAsString(
+    const JsonEncoder.withIndent('  ').convert(manifestPayload),
+  );
+
+  final latestManifestFile =
+      File(_joinPath(distRoot, 'release_manifest_latest.json'));
+  await latestManifestFile.writeAsString(
+    const JsonEncoder.withIndent('  ').convert(manifestPayload),
+  );
+
+  return ReleaseResult(distRoot: root, manifestFile: manifestFile);
+}
+
+Future<void> _copyDirectory(
+  Directory source,
+  Directory destination, {
+  bool deleteDestinationFirst = false,
+}) async {
+  if (deleteDestinationFirst && await destination.exists()) {
+    await destination.delete(recursive: true);
+  }
+
+  await destination.create(recursive: true);
+
+  await for (final entity in source.list(recursive: false)) {
+    final newPath = _joinPath(destination.path, _basename(entity.path));
+    if (entity is Directory) {
+      await _copyDirectory(entity, Directory(newPath));
+    } else if (entity is File) {
+      await File(newPath).create(recursive: true);
+      await entity.copy(newPath);
+    }
+  }
+}
+
+String _joinPath(
+  String part1, [
+  String? part2,
+  String? part3,
+  String? part4,
+  String? part5,
+  String? part6,
+]) {
+  final parts = [part1, part2, part3, part4, part5, part6]
+      .whereType<String>()
+      .where((part) => part.isNotEmpty)
+      .toList();
+  return parts.join(Platform.pathSeparator);
+}
+
+String _basename(String path) {
+  final normalized = path.replaceAll('\\', '/');
+  final parts = normalized.split('/');
+  return parts.isEmpty ? path : parts.last;
 }
 
 Future<VersionInfo> _readVersion() async {
@@ -262,6 +461,16 @@ Future<void> _runCommand(List<String> cmd) async {
     stderr.writeln('❌ Error ejecutando: ${cmd.join(' ')}');
     exit(exitCode);
   }
+}
+
+class ReleaseResult {
+  final Directory distRoot;
+  final File manifestFile;
+
+  const ReleaseResult({
+    required this.distRoot,
+    required this.manifestFile,
+  });
 }
 
 class VersionInfo {

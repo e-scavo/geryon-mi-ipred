@@ -2,7 +2,7 @@
 
 ## Objective
 
-Define the current release baseline for Mi IP·RED using the real repository state after the completion of Phase 10.2 and the opening of Phase 11.1.
+Define the current release baseline for Mi IP·RED using the real repository state after the completion of Phase 10.2 and the implementation of Phase 11.2.
 
 This document is no longer limited to structural refactor aftermath.
 
@@ -68,10 +68,11 @@ This is the concern shift introduced by:
 
 - `docs/phase11_release_distribution.md`
 - `docs/phase11_release_distribution_11_1_build_versioning_standardization.md`
+- `docs/phase11_release_distribution_11_2_packaging_artifact_structuring.md`
 
-## Phase 11.1 release baseline
+## Phase 11 release baseline
 
-Phase 11.1 establishes the first release/distribution step.
+Phase 11.1 established the version/build baseline and Phase 11.2 now formalizes how those generated outputs are packaged for distribution use.
 
 ### Problem solved by 11.1
 
@@ -100,6 +101,31 @@ The repository now standardizes:
 - optional git commit / push behavior instead of implicit history mutation
 - branding alignment in version metadata with **Mi IP·RED** instead of the retained old generic label
 
+
+### Problem solved by 11.2
+
+Before this subphase, the ZIP still left release outputs dispersed in native Flutter/Gradle folders:
+
+- `build/web/`
+- `build/app/outputs/flutter-apk/`
+- `build/app/outputs/bundle/release/`
+
+That meant builds were reproducible, but the delivery outputs were not yet normalized for handoff, upload, or operator review.
+
+### Standardized result after 11.2
+
+The repository now standardizes:
+
+- a stable `dist/` root for structured release outputs
+- versioned Web output copied to `dist/web/mi-ipred-web-<version>/`
+- renamed APK output copied to `dist/android/apk/mi-ipred-android-apk-<version>.apk`
+- renamed AAB output copied to `dist/android/aab/mi-ipred-android-aab-<version>.aab`
+- JSON release manifests at:
+  - `dist/release_manifest_<version>.json`
+  - `dist/release_manifest_latest.json`
+- optional `--clean-dist` cleanup for the current version
+- optional `--dist-root=...` override for alternate packaging roots
+
 ## Canonical release commands
 
 ### Bump build only
@@ -114,7 +140,7 @@ The repository now standardizes:
 
     dart run update_version.dart --set-version=1.0.0+82
 
-### Build Web + APK + AAB with current synchronized version
+### Build Web + APK + AAB with current synchronized version and structured dist output
 
     dart run build_and_commit.dart
 
@@ -126,22 +152,34 @@ The repository now standardizes:
 
     dart run build_and_commit.dart --apk
 
+### Build APK only and clean the current version under dist first
+
+    dart run build_and_commit.dart --apk --clean-dist
+
+### Build using a custom packaging root
+
+    dart run build_and_commit.dart --web --aab --dist-root=release
+
 ### Build and commit on the current branch
 
     dart run build_and_commit.dart --web --aab --git-commit
 
 ## Output expectations
 
-Phase 11.1 does not yet define the full deployment pipeline, but it does define the expected release artifacts:
+Phase 11.2 now defines the structured release artifacts expected after build completion:
 
 ### Web
-- `build/web/`
+- `dist/web/mi-ipred-web-<version>/`
 
 ### Android APK
-- Flutter release APK output under `build/app/outputs/flutter-apk/`
+- `dist/android/apk/mi-ipred-android-apk-<version>.apk`
 
 ### Android App Bundle
-- Flutter release AAB output under `build/app/outputs/bundle/release/`
+- `dist/android/aab/mi-ipred-android-aab-<version>.aab`
+
+### Release manifest
+- `dist/release_manifest_<version>.json`
+- `dist/release_manifest_latest.json`
 
 ## Release validation expectations
 
@@ -152,6 +190,8 @@ Every release execution under this baseline should validate at least:
 - APK build succeeds
 - AAB build succeeds when Play-distribution preparation is required
 - no manual branch-name assumption exists in the automation
+- structured artifacts are copied to the configured dist root
+- the manifest truthfully reflects the generated version and targets
 
 ## What this phase does not yet solve
 
@@ -163,6 +203,7 @@ Phase 11.1 does not yet complete:
 - store listing assets
 - post-build smoke test matrix
 - release candidate approval workflow
+- signed artifact verification policy
 
 Those remain justified follow-up concerns for later Phase 11 subphases.
 
@@ -172,10 +213,12 @@ The repository is no longer blocked by functional incompleteness.
 
 The real remaining release concern is consistency and reproducibility.
 
-Phase 11.1 therefore establishes the correct current release baseline:
+Phase 11 therefore establishes the correct current release baseline:
 
 - versioning is synchronized
 - release commands are explicit
 - Web/APK/AAB output is standardized
+- structured artifacts are copied into a stable dist tree
+- release manifests are generated for operator handoff
 - release automation no longer depends on an implicit outdated branch assumption
 - branding/version metadata is aligned with Mi IP·RED

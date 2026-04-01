@@ -368,7 +368,7 @@ Future work must build on this without reintroducing partial exposure states.
 
 ---
 
-## Phase 11.1 — Development Extension
+## Phase 11 — Development Extension
 
 After Phase 10.2 completed the controlled exposure of the supported financial capability surface, the repository confirms another problem-class shift.
 
@@ -386,6 +386,7 @@ It is now constrained by:
 - release version drift risk
 - partially manual release generation
 - missing standardization across Web / APK / AAB outputs
+- missing packaging structure for generated artifacts
 
 ### Development Rule Extension
 
@@ -395,6 +396,7 @@ From this point forward:
 - version data must remain synchronized across all active release sources
 - build tooling must preserve product behavior while reducing release variability
 - Android distribution readiness must treat App Bundle output as first-class build output
+- generated artifacts must be copied into a stable operator-facing distribution tree
 
 ### Implementation Constraints
 
@@ -413,6 +415,7 @@ Only the following are justified under this extension:
 - release-script safety improvements
 - documentation alignment for release/distribution work
 - branding correction inside version metadata surfaces
+- artifact structuring and manifest generation inside the release script
 
 ### Resulting Baseline
 
@@ -421,5 +424,6 @@ The repository now establishes:
 - stable capability exposure baseline (10.2)
 - stable release/distribution opening baseline (11)
 - stable build/versioning baseline (11.1)
+- stable packaging/artifact-structuring baseline (11.2)
 
 Future work must build on this without using release work as a pretext for product redesign.

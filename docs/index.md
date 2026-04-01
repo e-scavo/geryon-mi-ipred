@@ -398,6 +398,12 @@ This subphase establishes the first justified implementation step of Phase 11.
 
 Its purpose is to normalize and synchronize the active release/versioning surface already present in the ZIP.
 
+### Phase 11.2 — Packaging & Artifact Structuring
+
+This subphase formalizes how generated release artifacts are copied, renamed, organized, and described after build completion.
+
+Its purpose is to move the repository from reproducible builds into reproducible delivery outputs without changing product behavior.
+
 ### Included Concerns
 
 - synchronization of `pubspec.yaml` and `lib/config/version.dart`
@@ -405,13 +411,18 @@ Its purpose is to normalize and synchronize the active release/versioning surfac
 - explicit release forwarding of build-name/build-number
 - removal of outdated fixed-branch assumptions from release automation
 - alignment of version metadata branding with Mi IP·RED
+- structured artifact copying into `dist/`
+- versioned artifact naming conventions for Web / APK / AAB
+- release manifest generation for the structured outputs
 
 ### Expected Outputs
 
 - synchronized version baseline
 - reproducible release command baseline
 - Android App Bundle treated as first-class release artifact
-- documentary handoff toward later packaging/distribution work
+- structured `dist/` tree for release outputs
+- release manifest per version and rolling latest manifest
+- documentary handoff toward later distribution work
 
 ### Constraints
 
