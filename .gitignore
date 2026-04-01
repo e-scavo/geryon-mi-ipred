@@ -26,6 +26,7 @@ migrate_working_dir/
 build/
 dist/
 release/
+distribution/submissions/
 **/doc/api/
 **/ios/Flutter/.last_build_id
 

@@ -161,6 +161,70 @@ Future<ValidationResult> _validateReleaseReadiness({
     failureDetail: 'Falta la plantilla local de key.properties.',
   );
 
+  await addCheck(
+    'android/key.properties referencia un keystore local existente',
+    () async {
+      final file = File(_joinPath('android', 'key.properties'));
+      if (!await file.exists()) return false;
+
+      final lines = await file.readAsLines();
+      final data = <String, String>{};
+      for (final raw in lines) {
+        final line = raw.trim();
+        if (line.isEmpty || line.startsWith('#') || !line.contains('=')) {
+          continue;
+        }
+        final index = line.indexOf('=');
+        data[line.substring(0, index).trim()] =
+            line.substring(index + 1).trim();
+      }
+
+      final storeFileValue = data['storeFile']?.trim() ?? '';
+      if (storeFileValue.isEmpty) return false;
+
+      final resolvedCandidates = _resolveKeystoreCandidates(
+        keyPropertiesFile: file,
+        storeFileValue: storeFileValue,
+      );
+
+      for (final candidate in resolvedCandidates) {
+        if (await File(candidate).exists()) {
+          return true;
+        }
+      }
+
+      return false;
+    },
+    successDetail: 'keystore local resoluble y presente',
+    failureDetail:
+        'android/key.properties apunta a un keystore inexistente para el entorno actual.',
+  );
+
+  await addCheck(
+    'distribution/play_store mantiene metadata y checklist mínimos',
+    () async {
+      final requiredFiles = [
+        File(_joinPath('distribution', 'play_store', 'release_checklist.md')),
+        File(_joinPath('distribution', 'play_store', 'asset_requirements.md')),
+        File(_joinPath('distribution', 'play_store', 'metadata', 'es-AR',
+            'short_description.txt')),
+        File(_joinPath('distribution', 'play_store', 'metadata', 'es-AR',
+            'full_description.txt')),
+        File(_joinPath('distribution', 'play_store', 'metadata', 'es-AR',
+            'release_notes.txt')),
+      ];
+      for (final file in requiredFiles) {
+        if (!await file.exists()) {
+          return false;
+        }
+      }
+      return true;
+    },
+    successDetail: 'checklist, asset requirements y metadata presentes',
+    failureDetail:
+        'Falta parte del baseline mínimo de publicación en distribution/play_store.',
+  );
+
   final releaseDistRoot = Directory(distRoot);
   await addCheck(
     'la raíz dist/release configurada existe',
@@ -324,6 +388,14 @@ String _readRequiredString(String content, String pattern) {
   return match.group(1)!;
 }
 
+String _resolveRelativeTo(File referenceFile, String candidatePath) {
+  final file = File(candidatePath);
+  if (file.isAbsolute) {
+    return file.path;
+  }
+  return referenceFile.parent.uri.resolve(candidatePath).toFilePath();
+}
+
 class ValidationResult {
   final Directory distRoot;
   final File reportFile;
@@ -360,4 +432,31 @@ class VersionInfo {
         'codeName': codeName,
         'pubspecVersion': asPubspecVersion,
       };
+}
+
+List<String> _resolveKeystoreCandidates({
+  required File keyPropertiesFile,
+  required String storeFileValue,
+}) {
+  final directFile = File(storeFileValue);
+  if (directFile.isAbsolute) {
+    return [directFile.path];
+  }
+
+  final candidates = <String>{
+    _normalizePath(_resolveRelativeTo(keyPropertiesFile, storeFileValue)),
+    _normalizePath(
+      _resolveRelativeTo(
+        File(_joinPath('android', 'app', 'build.gradle.kts')),
+        storeFileValue,
+      ),
+    ),
+    _normalizePath(File(storeFileValue).absolute.path),
+  };
+
+  return candidates.toList();
+}
+
+String _normalizePath(String path) {
+  return File(path).absolute.path;
 }

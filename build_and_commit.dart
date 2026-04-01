@@ -21,7 +21,19 @@ Future<void> main(List<String> args) async {
   final cleanDistRequested = args.contains('--clean-dist');
   final skipValidationRequested = args.contains('--skip-release-validation');
   final validationOnlyRequested = args.contains('--validate-release-only');
+  final prepareSubmissionRequested =
+      args.contains('--prepare-submission-bundle');
+  final prepareSubmissionOnlyRequested =
+      args.contains('--prepare-submission-only');
+  final submissionRoot =
+      _readOption(args, '--submission-root') ?? 'distribution/submissions';
   final distRoot = _readOption(args, '--dist-root') ?? _defaultDistRoot;
+
+  if (prepareSubmissionOnlyRequested && validationOnlyRequested) {
+    stderr.writeln(
+        '❌ --prepare-submission-only no puede combinarse con --validate-release-only');
+    exit(1);
+  }
 
   if (validationOnlyRequested) {
     stdout
@@ -31,6 +43,19 @@ Future<void> main(List<String> args) async {
       'run',
       'validate_release.dart',
       '--dist-root=$distRoot',
+    ]);
+    return;
+  }
+
+  if (prepareSubmissionOnlyRequested) {
+    stdout
+        .writeln('📦 Preparando solo el submission bundle sobre $distRoot...');
+    await _runCommand([
+      'dart',
+      'run',
+      'prepare_submission_bundle.dart',
+      '--dist-root=$distRoot',
+      '--submission-root=$submissionRoot',
     ]);
     return;
   }
@@ -110,6 +135,17 @@ Future<void> main(List<String> args) async {
         '⚠️ Validación de release omitida por --skip-release-validation.');
   }
 
+  if (prepareSubmissionRequested) {
+    stdout.writeln('📦 Preparando submission bundle...');
+    await _runCommand([
+      'dart',
+      'run',
+      'prepare_submission_bundle.dart',
+      '--dist-root=$distRoot',
+      '--submission-root=$submissionRoot',
+    ]);
+  }
+
   if (gitCommitRequested) {
     final branch = await _readCurrentGitBranch();
 
@@ -119,7 +155,7 @@ Future<void> main(List<String> args) async {
       'git',
       'commit',
       '-m',
-      'Phase 11.3 distribution readiness baseline - ${version.asPubspecVersion}',
+      'Phase 11.4 final release operations baseline - ${version.asPubspecVersion}',
     ]);
 
     if (gitPushRequested) {
@@ -200,6 +236,9 @@ Packaging / dist:
   --dist-root=RUTA         Cambia la carpeta destino (por defecto: dist)
   --skip-release-validation Omite la validación automática de release al final
   --validate-release-only  Solo valida una salida ya generada sin compilar
+  --prepare-submission-bundle Prepara el handoff final al terminar el build
+  --prepare-submission-only Solo arma el handoff final desde un dist ya validado
+  --submission-root=RUTA   Cambia la carpeta de bundles finales (por defecto: distribution/submissions)
 
 Git:
   --git-commit             Hace git add + git commit al final

@@ -888,3 +888,48 @@ This layer must:
 - public-facing metadata better matches the real product name
 - Android signing expectations become easier to reproduce on new environments
 - later deployment workflow work can build on a validated release package baseline
+
+
+## Decision 39 — Phase 11.4 must close the final local/operator release handoff gap
+
+### Context
+
+After Phase 11.3, the repository could already build, package, and validate a release, but the final handoff to the publishing operator was still fragmented across `dist/` and `distribution/play_store/`.
+
+### Problem
+
+Without a final handoff layer, the operator would still need to manually gather:
+
+- the AAB/APK/Web outputs
+- the release manifest and validation reports
+- the release checklist
+- the Play Store metadata text
+- the remaining visual-asset requirements
+
+That would leave the release technically valid but operationally weak.
+
+### Decision
+
+Define Phase 11.4 as the required fourth implementation step of Phase 11.
+
+This layer must:
+
+- introduce `prepare_submission_bundle.dart` as the canonical final handoff command
+- create versioned bundles under `distribution/submissions/`
+- copy the validated artifacts and reports into that bundle
+- snapshot Play Store metadata/checklist files into the same versioned handoff root
+- tighten validation so the locally referenced keystore path must actually resolve to a file
+- document the remaining visual-asset expectations explicitly
+
+### Constraints
+
+- no backend protocol changes
+- no UI/runtime/business-logic changes
+- no direct Play Console publication automation
+- no storage of the keystore itself inside the repository
+
+### Result
+
+- the repository now produces an operator-facing final handoff, not only raw validated artifacts
+- manual release execution becomes less error-prone
+- Phase 11 becomes locally/manual operationally complete

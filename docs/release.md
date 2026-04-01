@@ -149,6 +149,8 @@ The repository now standardizes:
 - JSON release validation reports at:
   - `dist/release_validation_<version>.json`
   - `dist/release_validation_latest.json`
+- `distribution/submissions/<version>/submission_bundle_<version>.json`
+- `distribution/submissions/<version>/submission_summary.md`
 - tracked Play Store metadata scaffolding under `distribution/play_store/`
 
 ## Canonical release commands
@@ -215,6 +217,8 @@ Phase 11.2 now defines the structured release artifacts expected after build com
 - `dist/release_manifest_latest.json`
 - `dist/release_validation_<version>.json`
 - `dist/release_validation_latest.json`
+- `distribution/submissions/<version>/submission_bundle_<version>.json`
+- `distribution/submissions/<version>/submission_summary.md`
 
 ## Release validation expectations
 
@@ -228,6 +232,7 @@ Every release execution under this baseline should validate at least:
 - structured artifacts are copied to the configured dist root
 - the manifest truthfully reflects the generated version and targets
 - release validation passes against web metadata, Android application id, local signing contract, and structured artifacts
+- final operator handoff can be materialized as a versioned submission bundle
 
 ## What this phase does not yet solve
 
@@ -241,7 +246,9 @@ Phase 11.3 still does not yet complete:
 - release candidate approval workflow
 - signed artifact verification policy
 
-Those remain justified follow-up concerns for later Phase 11 subphases.
+Those remain justified follow-up concerns only if they justify automation beyond the now-complete local/manual release baseline.
+
+Phase 11.4 closes the current local/manual release track by introducing a final submission bundle that snapshots the validated release, metadata, and checklist into one versioned handoff root.
 
 ## Conclusion
 
@@ -258,3 +265,18 @@ Phase 11 therefore establishes the correct current release baseline:
 - release manifests are generated for operator handoff
 - release automation no longer depends on an implicit outdated branch assumption
 - branding/version metadata is aligned with Mi IP·RED
+
+
+## Final submission handoff baseline
+
+The repository now provides a final handoff command:
+
+    dart run prepare_submission_bundle.dart
+
+This command is expected to:
+
+- consume an already validated `dist/` root
+- copy the current version artifacts into `distribution/submissions/<version>/`
+- snapshot release reports beside the copied artifacts
+- snapshot Play Store metadata/checklist files for the same version
+- preserve the final handoff as an immutable operator bundle

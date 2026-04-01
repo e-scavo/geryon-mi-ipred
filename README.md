@@ -285,3 +285,11 @@ Additionally, Phase 11.3 confirms that distribution readiness now requires:
 - a local `android/key.properties` contract documented by `android/key.properties.example`
 - a repeatable release validation step through `validate_release.dart`
 - store-facing metadata scaffolding under `distribution/play_store/`
+
+
+Additionally, Phase 11.4 confirms that final release operations now require:
+
+- a final submission handoff created through `prepare_submission_bundle.dart`
+- versioned immutable bundles under `distribution/submissions/<version>/`
+- explicit Play Store asset requirements tracked in `distribution/play_store/asset_requirements.md`
+- keystore-path validation against the local environment before final handoff

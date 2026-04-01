@@ -419,6 +419,8 @@ Only the following are justified under this extension:
 - branded publication-surface alignment for Web metadata
 - release validation automation and reporting
 - local signing-contract documentation for Android release work
+- final submission-bundle generation for operator handoff
+- tracked asset-requirements documentation for store publication
 
 ### Resulting Baseline
 
@@ -429,5 +431,6 @@ The repository now establishes:
 - stable build/versioning baseline (11.1)
 - stable packaging/artifact-structuring baseline (11.2)
 - stable distribution-readiness baseline (11.3)
+- stable final local/operator release handoff baseline (11.4)
 
 Future work must build on this without using release work as a pretext for product redesign.

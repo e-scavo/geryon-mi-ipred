@@ -112,14 +112,23 @@ Focus:
 - document the local Android signing contract for reproducible operator setup
 - prepare store-facing metadata handoff without publishing yet
 
+### Phase 11.4 — Final Release Operations & Submission Checklist
+
+Fourth release baseline.
+
+Focus:
+- convert the validated dist output into a final operator-facing submission bundle
+- snapshot release manifests, validation reports, and Play Store metadata into one immutable handoff root
+- document the final operational checklist for upload readiness
+- verify that the locally referenced Android keystore really exists before final handoff
+
 ### Expected Later Subphases
 
-The repository may continue later with justified release/distribution steps such as:
+After 11.4, any later work should be exceptional and narrow, such as:
 
-- deployment pipeline formalization
-- store submission execution
-- release verification matrix
-- smoke-test and approval workflow
+- remote CI/CD submission pipeline formalization
+- signed artifact verification policy hardening
+- smoke-test and approval workflow automation
 
 Those later steps must remain incremental and evidence-based.
 
