@@ -585,6 +585,7 @@ The correct documentary reading of the repository is now:
 - Phase 13.1 establishes a local asset-readiness baseline for the versioned publication surface without changing application behavior or publication control
 - Phase 13.2 adds the explicit listing-consistency contract so minimum-ready assets do not drift into an arbitrary store narrative
 - Phase 13.3 consolidates release validation, submission, publication-surface, and asset-readiness evidence into a single final publication-readiness gate
+- Phase 13.4 closes the whole store/publication readiness baseline as a reusable operating model with documented accepted warnings
 
 ### Phase 11 — Release & Distribution
 
@@ -617,6 +618,7 @@ Subphases:
 - `docs/phase13_store_execution_integrity_market_presence_hardening_13_1_store_asset_readiness_baseline.md`
 - `docs/phase13_store_execution_integrity_market_presence_hardening_13_2_store_listing_visual_consistency_contract.md`
 - `docs/phase13_store_execution_integrity_market_presence_hardening_13_3_publication_readiness_gate.md`
+- `docs/phase13_store_execution_integrity_market_presence_hardening_13_4_store_publication_readiness_closure.md`
 
 ## Current documentary state
 
@@ -630,5 +632,6 @@ The current ZIP confirms that the release/publication baseline is now closed thr
 - Phase 13.1
 - Phase 13.2
 - Phase 13.3
+- Phase 13.4
 
 The current justified step remains inside store-execution integrity and should not reopen architecture, runtime, UX, navigation, Riverpod, backend communication, or existing features.

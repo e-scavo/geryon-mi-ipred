@@ -90,13 +90,29 @@ Focus:
 - expose a single operator-facing summary and a single machine-readable manifest for publication handoff
 - keep the final decision human-controlled while removing ambiguity from the local repository workflow
 
-## Expected Later Subphases
+### Phase 13.4 — Store Publication Readiness Closure
 
-After 13.1, later work should remain incremental and still outside product behavior, such as:
+Implemented.
 
-- optional dimension/aspect-ratio enforcement if the team needs it later
-- future hardening may still refine the final publication-readiness gate without turning it into automatic publication approval
-- any future automation must continue to respect the explicit visual-selection contract introduced in 13.2
+Focus:
+- close the whole Phase 13 stack as one explicit store/publication operating baseline
+- document the accepted non-blocking warnings for the current validated release state
+- standardize how future releases must interpret `PASS`, `WARNING`, and `FAIL`
+- preserve the boundary between repository-side publication readiness and human-controlled Play Console actions
+
+## Final Baseline After Phase 13.4
+
+The repository now treats the full Phase 13 stack as closed and reusable.
+
+That final baseline includes:
+
+- minimum asset-readiness validation for the versioned publication surface
+- a documented visual-selection contract for the listing narrative
+- a consolidated publication-readiness gate with `PASS / WARNING / FAIL`
+- an explicit interpretation that `WARNING` can still be acceptable for controlled publication when no blocking issue exists
+- accepted non-blocking warnings for the current baseline, including optional tablet screenshot gaps and recommended phone-coverage gaps
+
+Any later work should only open if a new justified publication/store concern appears that is not already solved by these mechanisms.
 
 ## Constraints
 
@@ -141,7 +157,7 @@ The current ZIP supports that reading.
 
 ## Conclusion
 
-Phase 13 is the correct next store-facing layer for Mi IP·RED after Phase 12.
+Phase 13 is now formally closed.
 
-It does not reopen application behavior.
-It hardens the integrity of the market-facing material attached to the already validated release and already prepared publication surface.
+It did not reopen application behavior.
+It hardened the integrity of the market-facing material attached to the already validated release and already prepared publication surface, then closed that entire repository-side publication baseline with an explicit operational interpretation for future releases.

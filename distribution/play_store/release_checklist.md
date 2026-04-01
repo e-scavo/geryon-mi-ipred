@@ -33,6 +33,7 @@
 - Revisar `distribution/play_store/releases/<version>/publication_readiness_gate_summary.md`
 - No subir a Play Console si el estado final es `FAIL`
 - Tratar `WARNING` como handoff controlado solo si las observaciones están documentadas
+- Usar el cierre documental de Phase 13 como baseline interpretativo del gate final
 
 ## Contrato visual complementario
 
@@ -116,6 +117,7 @@
 - Usar los archivos de `rollout/` y `evidence/` como contrato documental mínimo antes de mover la versión al siguiente track
 - Conservar `asset_readiness_manifest_<version>.json` como evidencia local del baseline visual validado
 - Conservar `publication_readiness_gate_<version>.json` como evidencia local del dictamen consolidado previo a la publicación
+- Tomar `docs/phase13_store_execution_integrity_market_presence_hardening_13_4_store_publication_readiness_closure.md` como contrato final de interpretación operativa
 
 ## Automation boundary
 - Consider `distribution/play_store/releases/<version>/automation/automation_boundary_matrix.md` the source of truth for what is automatic, assisted, or manual-required

@@ -551,3 +551,28 @@ Even after 13.3, the repository still does not perform:
 - automatic production approval
 
 Those remain intentionally outside the local repository gate.
+
+
+### Phase 13.4 — Store Publication Readiness Closure
+
+Phase 13.4 does not add new validators or new generated artifacts.
+Its purpose is to close the already implemented Phase 13 stack as one reusable repository-side operating model.
+
+The repository therefore now treats the following chain as the complete local publication baseline:
+
+- `validate_release.dart`
+- `prepare_submission_bundle.dart`
+- `prepare_store_publication.dart`
+- `validate_store_assets.dart`
+- `evaluate_publication_readiness.dart`
+
+The correct interpretation after this closure is:
+
+- `PASS` means the version is locally ready without remaining warnings
+- `WARNING` means the version is ready only for controlled publication with warnings explicitly reviewed and accepted
+- `FAIL` means a critical local publication requirement is missing or invalid
+
+For the currently validated baseline, `WARNING` remains acceptable for controlled publication because the remaining observations are visual/editorial and optional-surface related rather than blocking release/publication failures.
+
+This closure also fixes the intent boundary of the full Phase 13 layer.
+It exists to strengthen the repository-side publication operating model, not to automate Play Console upload, track promotion, or production approval.

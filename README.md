@@ -163,6 +163,7 @@ The repository has now opened and implemented:
 - Phase 13.1 — Store Asset Readiness Baseline
 - Phase 13.2 — Store Listing Visual Consistency Contract
 - Phase 13.3 — Publication Readiness Gate
+- Phase 13.4 — Store Publication Readiness Closure
 
 See:
 
@@ -182,6 +183,7 @@ See:
 - `docs/phase13_store_execution_integrity_market_presence_hardening_13_1_store_asset_readiness_baseline.md`
 - `docs/phase13_store_execution_integrity_market_presence_hardening_13_2_store_listing_visual_consistency_contract.md`
 - `docs/phase13_store_execution_integrity_market_presence_hardening_13_3_publication_readiness_gate.md`
+- `docs/phase13_store_execution_integrity_market_presence_hardening_13_4_store_publication_readiness_closure.md`
 
 ---
 
@@ -205,9 +207,10 @@ The active roadmap layer is now:
 11. Store asset readiness baseline
 12. Store listing visual consistency contract
 13. Publication readiness gate
+14. Store publication readiness closure
 
 The current repository baseline has already implemented the full publication rollout layer and has now opened the post-12.4 store-readiness layer.
-This new layer does not change product behavior. It verifies that the versioned Play Store surface contains the minimum real visual material required for a safe publication handoff, formalizes a recommended visual-selection contract for the listing itself, and now also consolidates a final publication-readiness gate across the generated release/publication evidence.
+This new layer does not change product behavior. It verifies that the versioned Play Store surface contains the minimum real visual material required for a safe publication handoff, formalizes a recommended visual-selection contract for the listing itself, consolidates a final publication-readiness gate across the generated release/publication evidence, and now also closes that entire store/publication baseline with an explicit reusable operating contract.
 
 ---
 
