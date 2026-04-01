@@ -149,10 +149,11 @@ The repository has now completed:
 - Phase 11.3 — Distribution Readiness & Publication Surface Validation
 - Phase 11.4 — Final Release Operations & Submission Checklist
 
-The repository is now entering:
+The repository has now opened and implemented:
 
 - Phase 12 — Store Publication Assets & Operational Rollout
 - Phase 12.1 — Store Asset Baseline & Publication Surface Structuring
+- Phase 12.2 — Track Rollout Operational Checklist
 
 See:
 
@@ -165,6 +166,7 @@ See:
 - `docs/phase11_release_distribution_11_4_final_release_operations_submission_checklist.md`
 - `docs/phase12_store_publication_assets_operational_rollout.md`
 - `docs/phase12_store_publication_assets_operational_rollout_12_1_store_asset_baseline_publication_surface_structuring.md`
+- `docs/phase12_store_publication_assets_operational_rollout_12_2_track_rollout_operational_checklist.md`
 
 ---
 
@@ -189,6 +191,9 @@ The active roadmap layer is now:
 12. Track rollout operational checklist
 13. Publication evidence & post-upload validation
 14. Optional automation boundaries
+
+The current repository baseline has already implemented items 10 through 12.
+The next justified concern remains item 13, without reopening application behavior.
 
 ---
 
@@ -232,7 +237,11 @@ Validar una salida ya generada:
 
 Preparar el surface operativo de publicación para la versión actual validada:
 
-    dart run prepare_store_publication.dart
+    dart run prepare_store_publication.dart --release-track=internal
+
+Preparar el surface apuntando explícitamente al siguiente track operativo:
+
+    dart run prepare_store_publication.dart --release-track=closed
 
 ---
 
@@ -315,3 +324,10 @@ Additionally, Phase 12.1 confirms that publication-readiness now also requires:
 - normalized store asset directories under `distribution/play_store/releases/<version>/`
 - explicit rollout notes per active Play track
 - alignment between the validated submission bundle and the store-facing asset set
+
+Additionally, Phase 12.2 confirms that rollout execution must now be guided by track-scoped operational contracts:
+
+- per-track checklists for `internal`, `closed`, and `production`
+- promotion gates between tracks captured inside the generated publication surface
+- evidence templates that keep operator validation aligned with the exact version being promoted
+- an explicit active-track pointer inside the publication surface to reduce rollout ambiguity

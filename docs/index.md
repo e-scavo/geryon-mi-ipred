@@ -462,12 +462,19 @@ Instead, it is centered on the remaining gap between:
 
 - a validated local/manual release package
 - a publication surface that is structurally ready for real Play Console rollout
+- a track-by-track rollout contract that keeps promotion decisions versioned and explicit
 
 ### Phase 12.1 — Store Asset Baseline & Publication Surface Structuring
 
-This subphase establishes the first justified implementation step of Phase 12.
+Implemented.
 
 Its purpose is to convert the already validated submission baseline into a versioned publication surface that organizes store assets, track notes, metadata copies, and rollout evidence without changing application behavior.
+
+### Phase 12.2 — Track Rollout Operational Checklist
+
+Implemented.
+
+Its purpose is to convert the previously generated rollout directories into explicit operator contracts for `internal`, `closed`, and `production`, including promotion gates and evidence templates.
 
 ### Included Concerns
 
@@ -475,7 +482,8 @@ Its purpose is to convert the already validated submission baseline into a versi
 - canonical generation through `prepare_store_publication.dart`
 - alignment between `distribution/submissions/<version>/` and the store-facing surface for the same version
 - normalized Android store asset directories for phone, 7-inch, 10-inch, and feature-graphic material
-- track-specific rollout notes for `internal`, `closed`, and `production`
+- active-track registration inside the generated publication surface
+- track-specific rollout notes, checklists, promotion gates, and evidence templates for `internal`, `closed`, and `production`
 - publication summary and manifest files for the generated surface
 
 ### Expected Outputs
@@ -483,7 +491,7 @@ Its purpose is to convert the already validated submission baseline into a versi
 - structured publication surface per version
 - copied metadata/checklist baseline for the same version
 - operator-facing asset directory contracts
-- explicit rollout notes per Play track
+- explicit rollout contracts per Play track
 - documentary handoff toward later upload/evidence work
 
 ### Constraints
@@ -562,3 +570,4 @@ The correct documentary reading of the repository is now:
 - Phase 11.4 completes the final local/manual submission handoff baseline
 - Phase 12 now becomes the justified next layer because the remaining gap is publication-surface organization rather than release reproducibility
 - Phase 12.1 establishes store asset and rollout structure without reopening product behavior
+- Phase 12.2 formalizes track rollout criteria and operator evidence without reopening product behavior

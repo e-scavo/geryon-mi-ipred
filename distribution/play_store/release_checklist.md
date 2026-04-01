@@ -20,7 +20,7 @@
 
 ## Surface versionado de publicación
 
-    dart run prepare_store_publication.dart
+    dart run prepare_store_publication.dart --release-track=internal
 
 ## Artefactos esperados
 - `dist/web/mi-ipred-web-<version>/`
@@ -32,6 +32,8 @@
 - `distribution/submissions/<version>/submission_summary.md`
 - `distribution/play_store/releases/<version>/publication_surface_<version>.json`
 - `distribution/play_store/releases/<version>/publication_summary.md`
+- `distribution/play_store/releases/<version>/rollout/active_track.md`
+- `distribution/play_store/releases/<version>/rollout/track_matrix.md`
 
 ## Publicación Android
 - Subir el AAB versionado
@@ -41,7 +43,28 @@
 - Preparar el surface versionado de publicación antes de cargar assets y notas de rollout
 - Conservar el APK solo para distribución interna o validación local
 
+## Contrato operativo por track
+
+### Internal
+- Generar o refrescar el surface con `--release-track=internal`
+- Completar `rollout/internal/track_checklist.md`
+- Registrar observaciones iniciales en `rollout/internal/evidence_template.md`
+- Confirmar smoke básico antes de promover a `closed`
+
+### Closed
+- Regenerar o revisar el surface con `--release-track=closed`
+- Confirmar que `internal` quedó sin bloqueantes
+- Completar `rollout/closed/track_checklist.md`
+- Registrar audiencia objetivo, notas de validación y decisión de promoción
+
+### Production
+- Regenerar o revisar el surface con `--release-track=production`
+- Confirmar que `closed` quedó aprobado sin bloqueantes relevantes
+- Completar `rollout/production/track_checklist.md`
+- Registrar decisión final de publicación y observaciones de rollout
+
 ## Cierre operativo
 - Conservar el submission bundle versionado como evidencia de handoff
 - Conservar el publication surface versionado como evidencia de preparación para rollout
 - No modificar a mano los artefactos ya copiados dentro del bundle final
+- Usar los archivos de `rollout/` como contrato documental mínimo antes de mover la versión al siguiente track

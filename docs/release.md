@@ -263,6 +263,8 @@ Phase 11.4 closes the current local/manual release track by introducing a final 
 
 Phase 12.1 begins the next justified release-adjacent layer by structuring the publication surface itself under `distribution/play_store/releases/<version>/`, linking the validated submission bundle with track-specific rollout notes and store-asset directories.
 
+Phase 12.2 hardens that surface by formalizing the rollout contract for `internal`, `closed`, and `production`, adding explicit active-track, checklist, promotion-gate, and evidence expectations inside the generated publication root.
+
 ## Conclusion
 
 The repository is no longer blocked by functional incompleteness.
@@ -339,14 +341,40 @@ The repository now standardizes:
   - `production`
 - JSON publication manifest plus Markdown summary for operator handoff
 
+## Phase 12.2 rollout-contract baseline
+
+Phase 12.2 does not change how the release is built, validated, or packaged.
+
+It changes how the already generated publication surface is interpreted operationally.
+
+### Problem solved by 12.2
+
+Before this subphase, the publication surface already provided versioned directories for rollout notes, but it still did not fully answer:
+
+- what must be checked before starting with `internal`
+- what must be true before promoting to `closed`
+- what must be true before promoting to `production`
+- where the operator should leave evidence for each track
+
+### Standardized result after 12.2
+
+The repository now standardizes:
+
+- `prepare_store_publication.dart --release-track=<track>` as the active-track-aware publication command
+- `rollout/active_track.md` inside the generated publication surface
+- `track_checklist.md` per Play track
+- `promotion_gate.md` per Play track
+- `evidence_template.md` per Play track
+- a top-level `rollout/track_matrix.md` summarizing how the version is expected to move between tracks
+
 ### What this phase still does not solve
 
-Phase 12.1 still does not yet complete:
+Phase 12.2 still does not yet complete:
 
 - direct Play Console publication execution
 - automatic screenshot capture
 - CI/CD publication credentials
 - store-review outcome tracking
-- post-release telemetry decisions
+- post-upload evidence persistence beyond the generated templates
 
 Those remain justified follow-up concerns only if they are supported by later evidence.

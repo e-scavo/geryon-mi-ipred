@@ -2,84 +2,91 @@
 
 ## Objective
 
-Open the next justified phase after Phase 11 by formalizing the store-publication surface required to take the already validated Mi IP·RED release into real Play Console rollout operations without changing product behavior.
+Formalize the store-publication layer that begins after Phase 11 so Mi IP·RED can move from a validated local/manual release baseline into real Play Console rollout operations without changing product behavior.
 
 ## Initial Context
 
-The current ZIP confirms that Phase 11 is complete:
+The current ZIP confirms that the repository already completed the technical release baseline introduced in Phase 11:
 
-- versioning is synchronized
-- Web / APK / AAB builds are reproducible
-- release artifacts are copied into a stable `dist/` structure
-- release validation reports are generated and tracked
-- final submission bundles are generated under `distribution/submissions/<version>/`
-- Play Store metadata and release-checklist scaffolding already exist
+- synchronized versioning
+- reproducible Web / APK / AAB outputs
+- stable `dist/` artifact structure
+- explicit release validation
+- final submission bundles under `distribution/submissions/<version>/`
+- baseline Play Store metadata and policy material
 
-That means the repository is no longer blocked by release reproducibility.
-
-The next justified concern is the publication surface itself.
+Phase 12 exists because the next remaining concern is no longer build reproducibility.
+It is the operational publication layer that must accompany the already validated release.
 
 ## Problem Statement
 
-After Phase 11.4, the operator can produce a validated submission bundle, but the repository still does not provide a canonical, versioned structure for the material that must accompany real Play Console rollout work.
+After Phase 11.4, the operator can produce a validated submission bundle, but publication work still needs a controlled repository-side structure for:
 
-The missing layer is not application code.
+- store-facing assets
+- rollout organization by track
+- promotion gates between tracks
+- evidence and notes tied to the exact validated version
 
-It is the operational organization of:
-
-- store assets
-- rollout notes by track
-- publication evidence linked to the exact validated version
-
-Without that layer, the release is technically ready but publication work remains partially externalized and easy to fragment.
+Without that structure, publication can drift into ad hoc manual work even when the release itself is technically correct.
 
 ## Scope
 
 Phase 12 covers:
 
-- versioned store-publication surface organization
+- versioned publication-surface organization
 - store asset baseline contracts
 - rollout-operations scaffolding per Play track
+- promotion criteria between `internal`, `closed`, and `production`
 - publication evidence summaries aligned with the validated release bundle
-- documentation alignment for the new publication baseline
+- documentary alignment for the new publication baseline
 
 Phase 12 does not cover:
 
 - product/runtime/UI changes
-- new backend features
+- backend protocol changes
+- new customer-facing features
 - direct Play Console API publishing
 - automated screenshot generation
 - analytics/telemetry redesign
 
 ## Root Cause Analysis
 
-Phase 11 was intentionally focused on:
+Phase 11 intentionally focused on:
 
 - build reproducibility
 - packaging
 - validation
 - final local/manual release handoff
 
-That phase solved the release baseline.
+That solved the release baseline.
 
-It did not solve the final organization of the publication surface because that concern only becomes justified once the submission bundle is already stable.
+It did not solve the publication surface and rollout contract because those concerns only become justified once the submission bundle is already stable and versioned.
 
-## Expected Subphases
+## Implemented Subphases
 
 ### Phase 12.1 — Store Asset Baseline & Publication Surface Structuring
 
-First publication subphase.
+Implemented.
 
 Focus:
 - create a canonical versioned publication surface under `distribution/play_store/releases/<version>/`
 - link store metadata, privacy policy, submission bundle, and rollout notes into one publication root
 - normalize the store-asset directories required for real Play Console work
 
-### Expected Later Subphases
+### Phase 12.2 — Track Rollout Operational Checklist
 
-After 12.1, later work should stay narrow and evidence-based, such as:
+Implemented.
 
-- track rollout operational checklist hardening
+Focus:
+- formalize the operator checklist for each Play track
+- define promotion gates from `internal` to `closed` and from `closed` to `production`
+- generate evidence templates and an active-track marker inside the publication surface
+- keep the rollout contract tied to the exact version already validated and prepared for submission
+
+## Expected Later Subphases
+
+After 12.2, later work should stay narrow and evidence-based, such as:
+
 - post-upload evidence and verification policy
 - optional automation boundaries for publication support
 
@@ -96,33 +103,33 @@ The following constraints remain mandatory under all Phase 12 work:
 
 ## Impact
 
-Positive impact of opening Phase 12:
+Positive impact of Phase 12 as currently implemented:
 
-- the repository gains a canonical bridge between validated release output and real publication work
+- the repository now has a canonical bridge between validated release output and real publication work
 - store assets stop being an implicit external concern
-- rollout notes can be organized per version and per track
-- later publication evidence work gets a stable baseline
+- rollout preparation is now versioned both by asset surface and by track contract
+- later publication evidence work can start from a stable operator baseline
 
-Risk if this phase did not open now:
+Risk if this layer were skipped:
 
 - screenshots and rollout notes remain scattered outside the repository baseline
 - operators can mix submission bundles and store assets from different versions
-- publication work remains partially manual and weakly structured
+- track promotion decisions remain partially informal even with a valid AAB
 
 ## Validation
 
-Phase 12 is correctly opened only if the current ZIP supports all of the following:
+Phase 12 is correctly documented only if the current ZIP supports all of the following:
 
 - Phase 11 is operationally complete
-- the next justified gap is publication-surface organization rather than build reproducibility
-- store metadata already exists but store asset structure is still minimal
-- the application itself does not need new runtime/product work to justify the next phase
+- the next justified gap is publication-surface and rollout organization rather than build reproducibility
+- store metadata already exists and now has a versioned publication surface
+- the repository can express track-specific rollout expectations without changing application behavior
 
 The current ZIP supports that reading.
 
 ## Conclusion
 
-Phase 12 is now the correct next layer for Mi IP·RED.
+Phase 12 is the correct release-adjacent layer for Mi IP·RED after Phase 11.
 
 It does not reopen application behavior.
-It formalizes the publication surface around the already validated release baseline.
+It formalizes the publication surface and rollout contract around the already validated release baseline.
