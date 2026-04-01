@@ -154,6 +154,7 @@ The repository has now opened and implemented:
 - Phase 12 — Store Publication Assets & Operational Rollout
 - Phase 12.1 — Store Asset Baseline & Publication Surface Structuring
 - Phase 12.2 — Track Rollout Operational Checklist
+- Phase 12.3 — Publication Evidence & Post-Upload Validation
 
 See:
 
@@ -167,6 +168,7 @@ See:
 - `docs/phase12_store_publication_assets_operational_rollout.md`
 - `docs/phase12_store_publication_assets_operational_rollout_12_1_store_asset_baseline_publication_surface_structuring.md`
 - `docs/phase12_store_publication_assets_operational_rollout_12_2_track_rollout_operational_checklist.md`
+- `docs/phase12_store_publication_assets_operational_rollout_12_3_publication_evidence_post_upload_validation.md`
 
 ---
 
@@ -192,8 +194,8 @@ The active roadmap layer is now:
 13. Publication evidence & post-upload validation
 14. Optional automation boundaries
 
-The current repository baseline has already implemented items 10 through 12.
-The next justified concern remains item 13, without reopening application behavior.
+The current repository baseline has already implemented items 10 through 13.
+The next justified concern remains item 14, without reopening application behavior.
 
 ---
 
@@ -331,3 +333,10 @@ Additionally, Phase 12.2 confirms that rollout execution must now be guided by t
 - promotion gates between tracks captured inside the generated publication surface
 - evidence templates that keep operator validation aligned with the exact version being promoted
 - an explicit active-track pointer inside the publication surface to reduce rollout ambiguity
+
+Additionally, Phase 12.3 confirms that publication work now also requires versioned post-upload evidence and validation outputs:
+
+- a generated `evidence/` root inside the publication surface
+- upload receipts and post-upload validation reports per track
+- promotion decisions captured separately from initial rollout notes
+- a publication ledger that keeps the final repository-side audit trail aligned with the exact version and track

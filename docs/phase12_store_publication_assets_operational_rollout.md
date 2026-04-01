@@ -83,12 +83,22 @@ Focus:
 - generate evidence templates and an active-track marker inside the publication surface
 - keep the rollout contract tied to the exact version already validated and prepared for submission
 
+### Phase 12.3 — Publication Evidence & Post-Upload Validation
+
+Implemented.
+
+Focus:
+- generate a publication ledger for the current versioned surface
+- generate upload receipts, post-upload validation files, and promotion-decision files per track
+- preserve the operator audit trail after the upload actually happens
+- keep all publication evidence tied to the exact version and active track already prepared for rollout
+
 ## Expected Later Subphases
 
-After 12.2, later work should stay narrow and evidence-based, such as:
+After 12.3, later work should stay narrow and automation-oriented, such as:
 
-- post-upload evidence and verification policy
 - optional automation boundaries for publication support
+- external publication notifications or dashboards
 
 ## Constraints
 
@@ -108,7 +118,8 @@ Positive impact of Phase 12 as currently implemented:
 - the repository now has a canonical bridge between validated release output and real publication work
 - store assets stop being an implicit external concern
 - rollout preparation is now versioned both by asset surface and by track contract
-- later publication evidence work can start from a stable operator baseline
+- post-upload validation now has a canonical repository-side audit trail
+- later publication automation work can start from a stable operator baseline
 
 Risk if this layer were skipped:
 

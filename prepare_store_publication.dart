@@ -154,6 +154,7 @@ Future<PublicationSurfaceResult> _prepareStorePublicationSurface({
 
   final copiedFiles = <Map<String, Object?>>[];
   final generatedRolloutFiles = <Map<String, Object?>>[];
+  final generatedEvidenceFiles = <Map<String, Object?>>[];
 
   Future<void> copyFileIntoSurface({
     required File source,
@@ -179,6 +180,20 @@ Future<PublicationSurfaceResult> _prepareStorePublicationSurface({
     await destination.parent.create(recursive: true);
     await destination.writeAsString(content);
     generatedRolloutFiles.add({
+      'publicationPath': destination.path,
+      'sizeBytes': await destination.length(),
+    });
+  }
+
+  Future<void> writeGeneratedEvidenceFile({
+    required String relativeDestination,
+    required String content,
+  }) async {
+    final destination =
+        File(_joinPath(publicationRoot.path, relativeDestination));
+    await destination.parent.create(recursive: true);
+    await destination.writeAsString(content);
+    generatedEvidenceFiles.add({
       'publicationPath': destination.path,
       'sizeBytes': await destination.length(),
     });
@@ -292,6 +307,7 @@ Future<PublicationSurfaceResult> _prepareStorePublicationSurface({
   }
 
   final trackContracts = <String, Map<String, String>>{};
+  final trackEvidenceContracts = <String, Map<String, String>>{};
   for (final track in _supportedTracks) {
     final rolloutNotesRelative =
         _joinPath('rollout', track, 'rollout_notes.md');
@@ -332,12 +348,49 @@ Future<PublicationSurfaceResult> _prepareStorePublicationSurface({
       ),
     );
 
+    final uploadReceiptRelative =
+        _joinPath('evidence', track, 'upload_receipt.md');
+    final postUploadValidationRelative =
+        _joinPath('evidence', track, 'post_upload_validation.md');
+    final promotionDecisionRelative =
+        _joinPath('evidence', track, 'promotion_decision.md');
+
+    await writeGeneratedEvidenceFile(
+      relativeDestination: uploadReceiptRelative,
+      content: _buildUploadReceipt(
+        version: versionSuffix,
+        track: track,
+        isSuggestedTrack: track == releaseTrack,
+      ),
+    );
+    await writeGeneratedEvidenceFile(
+      relativeDestination: postUploadValidationRelative,
+      content: _buildPostUploadValidation(
+        version: versionSuffix,
+        track: track,
+      ),
+    );
+    await writeGeneratedEvidenceFile(
+      relativeDestination: promotionDecisionRelative,
+      content: _buildPromotionDecision(
+        version: versionSuffix,
+        track: track,
+      ),
+    );
+
     trackContracts[track] = {
       'rolloutNotes': _joinPath(publicationRoot.path, rolloutNotesRelative),
       'trackChecklist': _joinPath(publicationRoot.path, checklistRelative),
       'promotionGate': _joinPath(publicationRoot.path, promotionGateRelative),
       'evidenceTemplate':
           _joinPath(publicationRoot.path, evidenceTemplateRelative),
+    };
+    trackEvidenceContracts[track] = {
+      'uploadReceipt': _joinPath(publicationRoot.path, uploadReceiptRelative),
+      'postUploadValidation':
+          _joinPath(publicationRoot.path, postUploadValidationRelative),
+      'promotionDecision':
+          _joinPath(publicationRoot.path, promotionDecisionRelative),
     };
   }
 
@@ -352,6 +405,15 @@ Future<PublicationSurfaceResult> _prepareStorePublicationSurface({
     relativeDestination: _joinPath('rollout', 'track_matrix.md'),
     content: _buildTrackMatrix(version: versionSuffix),
   );
+  await writeGeneratedEvidenceFile(
+    relativeDestination: 'publication_ledger.md',
+    content: _buildPublicationLedger(
+      version: versionSuffix,
+      releaseTrack: releaseTrack,
+      publicationRoot: publicationRoot.path,
+      trackEvidenceContracts: trackEvidenceContracts,
+    ),
+  );
 
   final summaryFile =
       File(_joinPath(publicationRoot.path, 'publication_summary.md'));
@@ -363,6 +425,7 @@ Future<PublicationSurfaceResult> _prepareStorePublicationSurface({
       releaseTrack: releaseTrack,
       copiedFiles: copiedFiles,
       generatedRolloutFiles: generatedRolloutFiles,
+      generatedEvidenceFiles: generatedEvidenceFiles,
     ),
   );
 
@@ -382,12 +445,17 @@ Future<PublicationSurfaceResult> _prepareStorePublicationSurface({
     'rolloutTracks': _supportedTracks,
     'policyRoot': _joinPath(publicationRoot.path, 'policy'),
     'rolloutRoot': _joinPath(publicationRoot.path, 'rollout'),
+    'evidenceRoot': _joinPath(publicationRoot.path, 'evidence'),
+    'publicationLedgerFile':
+        _joinPath(publicationRoot.path, 'publication_ledger.md'),
     'activeTrackFile':
         _joinPath(publicationRoot.path, 'rollout', 'active_track.md'),
     'trackMatrixFile':
         _joinPath(publicationRoot.path, 'rollout', 'track_matrix.md'),
     'generatedRolloutFiles': generatedRolloutFiles,
+    'generatedEvidenceFiles': generatedEvidenceFiles,
     'trackContracts': trackContracts,
+    'trackEvidenceContracts': trackEvidenceContracts,
   };
   await manifestFile.writeAsString(
     const JsonEncoder.withIndent('  ').convert(payload),
@@ -511,7 +579,8 @@ String _buildPromotionGate({
         '- Registro final del rollout completado en `evidence_template.md`.',
       )
       ..writeln(
-          '- Sin bloqueantes relevantes posteriores al inicio del rollout.')
+        '- Sin bloqueantes relevantes posteriores al inicio del rollout.',
+      )
       ..writeln('- Decisión final de publicación documentada por el operador.');
     return buffer.toString();
   }
@@ -558,6 +627,98 @@ Track: `${config.id}`
 ''';
 }
 
+String _buildUploadReceipt({
+  required String version,
+  required String track,
+  required bool isSuggestedTrack,
+}) {
+  final config = _trackConfigs[track]!;
+  return '''# Upload Receipt — ${config.label}
+
+Versión objetivo: `$version`
+Track: `${config.id}`
+Track sugerido al generar el surface: `${isSuggestedTrack ? 'sí' : 'no'}`
+
+## Registro de upload
+- Fecha y hora:
+- Operador:
+- Consola / cuenta:
+- País o audiencia objetivo:
+- Nombre visible del release:
+- Estado inicial observado en consola:
+
+## Artefacto publicado
+- AAB utilizado:
+- Submission bundle asociado:
+- Metadata asociada:
+- Assets asociados:
+
+## Observaciones iniciales
+- Notas del upload:
+- Incidentes inmediatos:
+''';
+}
+
+String _buildPostUploadValidation({
+  required String version,
+  required String track,
+}) {
+  final config = _trackConfigs[track]!;
+  return '''# Post-Upload Validation — ${config.label}
+
+Versión objetivo: `$version`
+Track: `${config.id}`
+
+## Estado observado
+- Fecha y hora de validación:
+- Operador:
+- Estado del release en consola:
+- ¿Procesado sin errores?:
+
+## Validación funcional
+- Alcance validado:
+- Smoke test ejecutado:
+- Resultado:
+- Bloqueantes detectados:
+- Incidentes menores:
+
+## Validación de publicación
+- Assets visibles correctos:
+- Metadata visible correcta:
+- Política y enlaces correctos:
+- Notas del release correctas:
+
+## Próximo paso sugerido
+- Acción recomendada:
+- Justificación:
+- Próximo track esperado: `${config.nextTrackLabel ?? 'cierre final'}`
+''';
+}
+
+String _buildPromotionDecision({
+  required String version,
+  required String track,
+}) {
+  final config = _trackConfigs[track]!;
+  return '''# Promotion Decision — ${config.label}
+
+Versión objetivo: `$version`
+Track: `${config.id}`
+
+## Decisión
+- Fecha:
+- Responsable:
+- Resultado final: `approved` | `blocked` | `hold`
+- Próximo track: `${config.nextTrackLabel ?? 'cierre final'}`
+
+## Fundamentos
+- Evidencia revisada:
+- Bloqueantes:
+- Riesgos residuales:
+- Comentarios del responsable:
+''';
+}
+
 String _buildActiveTrackSummary({
   required String version,
   required String releaseTrack,
@@ -572,7 +733,8 @@ Etiqueta: `${config.label}`
 ## Recordatorio operativo
 - Revisar `rollout/${config.id}/track_checklist.md` antes de publicar.
 - Completar `rollout/${config.id}/evidence_template.md` durante el upload y la validación.
-- Usar `rollout/${config.id}/promotion_gate.md` antes de avanzar al siguiente track.
+- Completar `evidence/${config.id}/upload_receipt.md` y `evidence/${config.id}/post_upload_validation.md` después del upload.
+- Registrar la decisión final en `evidence/${config.id}/promotion_decision.md` antes de avanzar al siguiente track.
 ''';
 }
 
@@ -598,8 +760,55 @@ String _buildTrackMatrix({
       ..writeln('- Próximo track: `${config.nextTrackLabel ?? 'cierre final'}`')
       ..writeln('- Checklist: `rollout/$track/track_checklist.md`')
       ..writeln('- Gate: `rollout/$track/promotion_gate.md`')
-      ..writeln('- Evidencia: `rollout/$track/evidence_template.md`');
+      ..writeln('- Evidencia previa: `rollout/$track/evidence_template.md`')
+      ..writeln(
+          '- Evidencia posterior: `evidence/$track/post_upload_validation.md`')
+      ..writeln('- Decisión: `evidence/$track/promotion_decision.md`');
   }
+
+  return buffer.toString();
+}
+
+String _buildPublicationLedger({
+  required String version,
+  required String releaseTrack,
+  required String publicationRoot,
+  required Map<String, Map<String, String>> trackEvidenceContracts,
+}) {
+  final buffer = StringBuffer()
+    ..writeln('# Publication Ledger — Mi IP·RED')
+    ..writeln()
+    ..writeln('Versión objetivo: `$version`')
+    ..writeln('Track activo sugerido: `$releaseTrack`')
+    ..writeln('Surface de publicación: `$publicationRoot`')
+    ..writeln()
+    ..writeln('## Estado general')
+    ..writeln('- Fecha de última actualización:')
+    ..writeln('- Operador responsable:')
+    ..writeln('- Estado general de publicación:')
+    ..writeln('- Observaciones globales:')
+    ..writeln()
+    ..writeln('## Evidencia por track');
+
+  for (final track in _supportedTracks) {
+    final evidence = trackEvidenceContracts[track]!;
+    buffer
+      ..writeln()
+      ..writeln('### ${track.toUpperCase()}')
+      ..writeln('- Upload receipt: `${evidence['uploadReceipt']}`')
+      ..writeln(
+        '- Post-upload validation: `${evidence['postUploadValidation']}`',
+      )
+      ..writeln('- Promotion decision: `${evidence['promotionDecision']}`')
+      ..writeln('- Estado resumido:');
+  }
+
+  buffer
+    ..writeln()
+    ..writeln('## Cierre')
+    ..writeln('- ¿La versión quedó cerrada?:')
+    ..writeln('- Fecha de cierre:')
+    ..writeln('- Comentario final:');
 
   return buffer.toString();
 }
@@ -611,6 +820,7 @@ String _buildPublicationSummary({
   required String releaseTrack,
   required List<Map<String, Object?>> copiedFiles,
   required List<Map<String, Object?>> generatedRolloutFiles,
+  required List<Map<String, Object?>> generatedEvidenceFiles,
 }) {
   final buffer = StringBuffer()
     ..writeln('# Publication Summary — Mi IP·RED')
@@ -636,10 +846,21 @@ String _buildPublicationSummary({
     ..writeln('- `rollout/internal/`')
     ..writeln('- `rollout/closed/`')
     ..writeln('- `rollout/production/`')
+    ..writeln('- `evidence/internal/`')
+    ..writeln('- `evidence/closed/`')
+    ..writeln('- `evidence/production/`')
     ..writeln()
     ..writeln('## Contrato operativo de rollout generado');
 
   for (final file in generatedRolloutFiles) {
+    buffer.writeln('- `${file['publicationPath']}`');
+  }
+
+  buffer
+    ..writeln()
+    ..writeln('## Evidencia post-upload generada');
+
+  for (final file in generatedEvidenceFiles) {
     buffer.writeln('- `${file['publicationPath']}`');
   }
 
@@ -838,6 +1059,5 @@ const Map<String, _TrackConfig> _trackConfigs = {
     promotionGateItems: [
       'No aplica promoción adicional: este es el track final.',
     ],
-    nextTrackLabel: null,
   ),
 };

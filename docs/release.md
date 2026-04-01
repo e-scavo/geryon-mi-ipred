@@ -378,3 +378,38 @@ Phase 12.2 still does not yet complete:
 - post-upload evidence persistence beyond the generated templates
 
 Those remain justified follow-up concerns only if they are supported by later evidence.
+
+
+## Phase 12.3 evidence and post-upload validation baseline
+
+Phase 12.3 still does not change how Mi IP·RED is built, validated, or packaged locally.
+
+Its purpose is to complete the repository-side publication trail after the publication surface and per-track rollout contract already exist.
+
+The generated publication surface must now also carry a stable `evidence/` root with:
+
+- `publication_ledger.md`
+- `evidence/<track>/upload_receipt.md`
+- `evidence/<track>/post_upload_validation.md`
+- `evidence/<track>/promotion_decision.md`
+
+This baseline exists so the operator can record, for the exact version and track:
+
+- when the upload happened
+- what console state was observed
+- what validation was executed after the upload
+- what incidents or blockers were detected
+- whether the version is approved, blocked, or promoted
+
+Phase 12.3 therefore closes the gap between:
+
+- a prepared publication surface
+- a track-scoped operational contract
+- a repository-side post-upload audit trail
+
+Phase 12.3 still does not complete:
+
+- direct Play Console automation
+- review scraping from Google Play
+- policy or rollout strategy automation
+- external notification pipelines

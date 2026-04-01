@@ -476,6 +476,12 @@ Implemented.
 
 Its purpose is to convert the previously generated rollout directories into explicit operator contracts for `internal`, `closed`, and `production`, including promotion gates and evidence templates.
 
+### Phase 12.3 — Publication Evidence & Post-Upload Validation
+
+Implemented.
+
+Its purpose is to formalize what gets recorded after the upload and validation steps, so each version keeps post-upload evidence, validation results, promotion decisions, and an operator ledger inside the generated publication surface.
+
 ### Included Concerns
 
 - versioned publication surfaces under `distribution/play_store/releases/<version>/`
@@ -485,6 +491,8 @@ Its purpose is to convert the previously generated rollout directories into expl
 - active-track registration inside the generated publication surface
 - track-specific rollout notes, checklists, promotion gates, and evidence templates for `internal`, `closed`, and `production`
 - publication summary and manifest files for the generated surface
+- versioned post-upload evidence and validation documents per track
+- a publication ledger for repository-side auditability of rollout decisions
 
 ### Expected Outputs
 
@@ -492,7 +500,7 @@ Its purpose is to convert the previously generated rollout directories into expl
 - copied metadata/checklist baseline for the same version
 - operator-facing asset directory contracts
 - explicit rollout contracts per Play track
-- documentary handoff toward later upload/evidence work
+- documentary handoff toward later publication automation work
 
 ### Constraints
 

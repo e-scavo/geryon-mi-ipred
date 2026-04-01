@@ -34,6 +34,10 @@
 - `distribution/play_store/releases/<version>/publication_summary.md`
 - `distribution/play_store/releases/<version>/rollout/active_track.md`
 - `distribution/play_store/releases/<version>/rollout/track_matrix.md`
+- `distribution/play_store/releases/<version>/publication_ledger.md`
+- `distribution/play_store/releases/<version>/evidence/<track>/upload_receipt.md`
+- `distribution/play_store/releases/<version>/evidence/<track>/post_upload_validation.md`
+- `distribution/play_store/releases/<version>/evidence/<track>/promotion_decision.md`
 
 ## Publicación Android
 - Subir el AAB versionado
@@ -49,22 +53,29 @@
 - Generar o refrescar el surface con `--release-track=internal`
 - Completar `rollout/internal/track_checklist.md`
 - Registrar observaciones iniciales en `rollout/internal/evidence_template.md`
-- Confirmar smoke básico antes de promover a `closed`
+- Completar `evidence/internal/upload_receipt.md` después del upload
+- Completar `evidence/internal/post_upload_validation.md` con el resultado real del smoke test
+- Registrar decisión en `evidence/internal/promotion_decision.md` antes de promover a `closed`
 
 ### Closed
 - Regenerar o revisar el surface con `--release-track=closed`
 - Confirmar que `internal` quedó sin bloqueantes
 - Completar `rollout/closed/track_checklist.md`
-- Registrar audiencia objetivo, notas de validación y decisión de promoción
+- Completar `evidence/closed/upload_receipt.md` después del upload
+- Completar `evidence/closed/post_upload_validation.md` con el resultado de la audiencia acotada
+- Registrar audiencia objetivo, notas de validación y decisión de promoción en `evidence/closed/promotion_decision.md`
 
 ### Production
 - Regenerar o revisar el surface con `--release-track=production`
 - Confirmar que `closed` quedó aprobado sin bloqueantes relevantes
 - Completar `rollout/production/track_checklist.md`
-- Registrar decisión final de publicación y observaciones de rollout
+- Completar `evidence/production/upload_receipt.md` después del upload
+- Completar `evidence/production/post_upload_validation.md` con el resultado real del rollout productivo
+- Registrar decisión final de publicación y observaciones de rollout en `evidence/production/promotion_decision.md`
 
 ## Cierre operativo
 - Conservar el submission bundle versionado como evidencia de handoff
 - Conservar el publication surface versionado como evidencia de preparación para rollout
+- Completar `publication_ledger.md` con el resumen final de la versión
 - No modificar a mano los artefactos ya copiados dentro del bundle final
-- Usar los archivos de `rollout/` como contrato documental mínimo antes de mover la versión al siguiente track
+- Usar los archivos de `rollout/` y `evidence/` como contrato documental mínimo antes de mover la versión al siguiente track
