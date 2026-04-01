@@ -2,7 +2,7 @@
 
 ## Objective
 
-Define the current release and publication baseline for Mi IP·RED using the real repository state after the completion of Phase 12.4 and the implementation of Phase 13.1.
+Define the current release and publication baseline for Mi IP·RED using the real repository state after the completion of Phase 12.4 and the implementation of Phase 13.3.
 
 This document is no longer limited to structural refactor aftermath.
 
@@ -524,3 +524,30 @@ Even after 13.2, the repository still does not perform:
 - automatic approval of publication readiness
 
 Those remain later, optional hardening candidates only if the store workflow proves stable.
+
+
+### Problem solved by 13.3
+
+Phase 13.3 does not replace `validate_release.dart`, `prepare_submission_bundle.dart`, `prepare_store_publication.dart`, or `validate_store_assets.dart`.
+Instead, it consolidates their evidence into one final repository-side decision point so the operator no longer has to reconstruct publication readiness manually from multiple files.
+
+### Standardized result after 13.3
+
+The repository now also standardizes:
+
+- `evaluate_publication_readiness.dart` as the canonical final publication-readiness gate
+- `distribution/play_store/releases/<version>/publication_readiness_gate_<version>.json` as the versioned machine-readable final gate
+- `distribution/play_store/releases/<version>/publication_readiness_gate_summary.md` as the operator-facing final decision summary
+- `distribution/play_store/publication_readiness_latest.json` as the rolling latest consolidated publication state
+- a single `PASS / WARNING / FAIL` conclusion that integrates technical release, submission bundle, publication surface, and asset-readiness evidence
+
+### What this phase still does not solve after 13.3
+
+Even after 13.3, the repository still does not perform:
+
+- automatic Play Console upload
+- automatic track promotion
+- screenshot generation or pixel-level quality scoring
+- automatic production approval
+
+Those remain intentionally outside the local repository gate.

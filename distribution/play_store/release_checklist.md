@@ -26,6 +26,14 @@
 
     dart run validate_store_assets.dart
 
+## Gate final de publication readiness
+
+    dart run evaluate_publication_readiness.dart
+
+- Revisar `distribution/play_store/releases/<version>/publication_readiness_gate_summary.md`
+- No subir a Play Console si el estado final es `FAIL`
+- Tratar `WARNING` como handoff controlado solo si las observaciones están documentadas
+
 ## Contrato visual complementario
 
 - Revisar `distribution/play_store/visual_selection_contract.md`
@@ -55,6 +63,9 @@
 - `distribution/play_store/releases/<version>/asset_readiness_manifest_<version>.json`
 - `distribution/play_store/releases/<version>/asset_readiness_summary.md`
 - `distribution/play_store/asset_readiness_latest.json`
+- `distribution/play_store/releases/<version>/publication_readiness_gate_<version>.json`
+- `distribution/play_store/releases/<version>/publication_readiness_gate_summary.md`
+- `distribution/play_store/publication_readiness_latest.json`
 
 ## Publicación Android
 - Subir el AAB versionado
@@ -104,6 +115,7 @@
 - No modificar a mano los artefactos ya copiados dentro del bundle final
 - Usar los archivos de `rollout/` y `evidence/` como contrato documental mínimo antes de mover la versión al siguiente track
 - Conservar `asset_readiness_manifest_<version>.json` como evidencia local del baseline visual validado
+- Conservar `publication_readiness_gate_<version>.json` como evidencia local del dictamen consolidado previo a la publicación
 
 ## Automation boundary
 - Consider `distribution/play_store/releases/<version>/automation/automation_boundary_matrix.md` the source of truth for what is automatic, assisted, or manual-required

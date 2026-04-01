@@ -1,0 +1,59 @@
+{
+  "appName": "Mi IP·RED",
+  "generatedAt": "2026-04-01T16:44:51.244882",
+  "version": {
+    "major": 1,
+    "minor": 0,
+    "patch": 0,
+    "build": 83,
+    "codeName": "gorrión",
+    "pubspecVersion": "1.0.0+83"
+  },
+  "status": "warning",
+  "publicationRoot": "distribution/play_store\\releases\\1.0.0+83",
+  "allowWarningStatus": false,
+  "components": {
+    "releaseValidation": {
+      "present": true,
+      "status": "pass",
+      "path": "dist\\release_validation_1.0.0+83.json"
+    },
+    "submissionBundle": {
+      "present": true,
+      "status": "pass",
+      "path": "distribution/submissions\\1.0.0+83\\submission_bundle_1.0.0+83.json"
+    },
+    "publicationSurface": {
+      "present": true,
+      "status": "pass",
+      "path": "distribution/play_store\\releases\\1.0.0+83\\publication_surface_1.0.0+83.json"
+    },
+    "assetReadiness": {
+      "present": true,
+      "status": "warning",
+      "path": "distribution/play_store\\releases\\1.0.0+83\\asset_readiness_manifest_1.0.0+83.json"
+    },
+    "publicationStructure": {
+      "present": true,
+      "status": "pass",
+      "path": "distribution/play_store\\releases\\1.0.0+83"
+    }
+  },
+  "structure": {
+    "tracksPresent": true,
+    "evidencePresent": true
+  },
+  "blockingIssues": [],
+  "warnings": [
+    "Asset readiness remains in warning for this release.",
+    "phone_screenshots: cumple el mínimo técnico pero queda por debajo del baseline visual recomendado (2/4).",
+    "phone_screenshots: no se detecta cobertura recomendada de billing en los nombres de archivo.",
+    "phone_screenshots: no se detecta cobertura recomendada de receipts en los nombres de archivo.",
+    "phone_screenshots: no se detecta cobertura recomendada de payment en los nombres de archivo.",
+    "seven_inch_screenshots: cumple el mínimo técnico pero queda por debajo del baseline visual recomendado (0/2).",
+    "seven_inch_screenshots: todavía no contiene imágenes válidas.",
+    "ten_inch_screenshots: cumple el mínimo técnico pero queda por debajo del baseline visual recomendado (0/2).",
+    "ten_inch_screenshots: todavía no contiene imágenes válidas."
+  ],
+  "recommendation": "Ready for controlled Play Console publication with documented warnings."
+}

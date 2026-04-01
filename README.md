@@ -162,6 +162,7 @@ The repository has now opened and implemented:
 - Phase 13 — Store Execution Integrity & Market Presence Hardening
 - Phase 13.1 — Store Asset Readiness Baseline
 - Phase 13.2 — Store Listing Visual Consistency Contract
+- Phase 13.3 — Publication Readiness Gate
 
 See:
 
@@ -180,6 +181,7 @@ See:
 - `docs/phase13_store_execution_integrity_market_presence_hardening.md`
 - `docs/phase13_store_execution_integrity_market_presence_hardening_13_1_store_asset_readiness_baseline.md`
 - `docs/phase13_store_execution_integrity_market_presence_hardening_13_2_store_listing_visual_consistency_contract.md`
+- `docs/phase13_store_execution_integrity_market_presence_hardening_13_3_publication_readiness_gate.md`
 
 ---
 
@@ -202,9 +204,10 @@ The active roadmap layer is now:
 10. Store execution integrity & market presence hardening
 11. Store asset readiness baseline
 12. Store listing visual consistency contract
+13. Publication readiness gate
 
 The current repository baseline has already implemented the full publication rollout layer and has now opened the post-12.4 store-readiness layer.
-This new layer does not change product behavior. It verifies that the versioned Play Store surface contains the minimum real visual material required for a safe publication handoff and now also formalizes a recommended visual-selection contract for the listing itself.
+This new layer does not change product behavior. It verifies that the versioned Play Store surface contains the minimum real visual material required for a safe publication handoff, formalizes a recommended visual-selection contract for the listing itself, and now also consolidates a final publication-readiness gate across the generated release/publication evidence.
 
 ---
 
@@ -233,6 +236,10 @@ Release validation:
 Store asset readiness and visual consistency validation:
 
     dart run validate_store_assets.dart
+
+Publication readiness gate:
+
+    dart run evaluate_publication_readiness.dart
 
 Web + APK + AAB release build with the current synchronized version:
 
