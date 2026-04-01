@@ -161,6 +161,7 @@ The repository has now opened and implemented:
 
 - Phase 13 — Store Execution Integrity & Market Presence Hardening
 - Phase 13.1 — Store Asset Readiness Baseline
+- Phase 13.2 — Store Listing Visual Consistency Contract
 
 See:
 
@@ -178,6 +179,7 @@ See:
 - `docs/phase12_store_publication_assets_operational_rollout_12_4_optional_automation_boundaries.md`
 - `docs/phase13_store_execution_integrity_market_presence_hardening.md`
 - `docs/phase13_store_execution_integrity_market_presence_hardening_13_1_store_asset_readiness_baseline.md`
+- `docs/phase13_store_execution_integrity_market_presence_hardening_13_2_store_listing_visual_consistency_contract.md`
 
 ---
 
@@ -199,9 +201,10 @@ The active roadmap layer is now:
 
 10. Store execution integrity & market presence hardening
 11. Store asset readiness baseline
+12. Store listing visual consistency contract
 
 The current repository baseline has already implemented the full publication rollout layer and has now opened the post-12.4 store-readiness layer.
-This new layer does not change product behavior. It verifies that the versioned Play Store surface contains the minimum real visual material required for a safe publication handoff.
+This new layer does not change product behavior. It verifies that the versioned Play Store surface contains the minimum real visual material required for a safe publication handoff and now also formalizes a recommended visual-selection contract for the listing itself.
 
 ---
 
@@ -227,7 +230,7 @@ Release validation:
 
     dart run validate_release.dart
 
-Store asset readiness validation:
+Store asset readiness and visual consistency validation:
 
     dart run validate_store_assets.dart
 

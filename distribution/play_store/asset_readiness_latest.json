@@ -1,6 +1,6 @@
 {
   "appName": "Mi IP·RED",
-  "generatedAt": "2026-04-01T10:07:39.604388",
+  "generatedAt": "2026-04-01T11:34:38.030938",
   "version": {
     "major": 1,
     "minor": 0,
@@ -21,10 +21,20 @@
       "relativePath": "android\\phone_screenshots",
       "required": true,
       "minimumRequired": 2,
+      "recommendedMinimum": 4,
       "allowedExtensions": [
         ".png",
         ".jpg",
         ".jpeg"
+      ],
+      "requiredCoverageTags": [
+        "login",
+        "dashboard"
+      ],
+      "recommendedCoverageTags": [
+        "billing",
+        "receipts",
+        "payment"
       ],
       "foundFiles": [
         "phone_01_login.png",
@@ -37,7 +47,12 @@
       "count": 2,
       "passed": true,
       "issues": [],
-      "warnings": [],
+      "warnings": [
+        "phone_screenshots: cumple el mínimo técnico pero queda por debajo del baseline visual recomendado (2/4).",
+        "phone_screenshots: no se detecta cobertura recomendada de billing en los nombres de archivo.",
+        "phone_screenshots: no se detecta cobertura recomendada de receipts en los nombres de archivo.",
+        "phone_screenshots: no se detecta cobertura recomendada de payment en los nombres de archivo."
+      ],
       "recommendedExample": "phone_01_dashboard.png"
     },
     {
@@ -45,11 +60,14 @@
       "relativePath": "android\\feature_graphic",
       "required": true,
       "minimumRequired": 1,
+      "recommendedMinimum": 1,
       "allowedExtensions": [
         ".png",
         ".jpg",
         ".jpeg"
       ],
+      "requiredCoverageTags": [],
+      "recommendedCoverageTags": [],
       "foundFiles": [
         "feature_graphic.png"
       ],
@@ -68,11 +86,14 @@
       "relativePath": "android\\seven_inch_screenshots",
       "required": false,
       "minimumRequired": 0,
+      "recommendedMinimum": 2,
       "allowedExtensions": [
         ".png",
         ".jpg",
         ".jpeg"
       ],
+      "requiredCoverageTags": [],
+      "recommendedCoverageTags": [],
       "foundFiles": [],
       "ignoredFiles": [
         "README.md"
@@ -82,6 +103,7 @@
       "passed": true,
       "issues": [],
       "warnings": [
+        "seven_inch_screenshots: cumple el mínimo técnico pero queda por debajo del baseline visual recomendado (0/2).",
         "seven_inch_screenshots: todavía no contiene imágenes válidas."
       ],
       "recommendedExample": "tablet7_01_dashboard.png"
@@ -91,11 +113,14 @@
       "relativePath": "android\\ten_inch_screenshots",
       "required": false,
       "minimumRequired": 0,
+      "recommendedMinimum": 2,
       "allowedExtensions": [
         ".png",
         ".jpg",
         ".jpeg"
       ],
+      "requiredCoverageTags": [],
+      "recommendedCoverageTags": [],
       "foundFiles": [],
       "ignoredFiles": [
         "README.md"
@@ -105,6 +130,7 @@
       "passed": true,
       "issues": [],
       "warnings": [
+        "ten_inch_screenshots: cumple el mínimo técnico pero queda por debajo del baseline visual recomendado (0/2).",
         "ten_inch_screenshots: todavía no contiene imágenes válidas."
       ],
       "recommendedExample": "tablet10_01_dashboard.png"
@@ -113,7 +139,13 @@
   "summary": {
     "requiredFailures": [],
     "warnings": [
+      "phone_screenshots: cumple el mínimo técnico pero queda por debajo del baseline visual recomendado (2/4).",
+      "phone_screenshots: no se detecta cobertura recomendada de billing en los nombres de archivo.",
+      "phone_screenshots: no se detecta cobertura recomendada de receipts en los nombres de archivo.",
+      "phone_screenshots: no se detecta cobertura recomendada de payment en los nombres de archivo.",
+      "seven_inch_screenshots: cumple el mínimo técnico pero queda por debajo del baseline visual recomendado (0/2).",
       "seven_inch_screenshots: todavía no contiene imágenes válidas.",
+      "ten_inch_screenshots: cumple el mínimo técnico pero queda por debajo del baseline visual recomendado (0/2).",
       "ten_inch_screenshots: todavía no contiene imágenes válidas."
     ],
     "detectedValidAssets": [

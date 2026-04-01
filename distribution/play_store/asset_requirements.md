@@ -60,10 +60,26 @@ Si los grupos opcionales no tienen imágenes todavía, el script lo informa como
 ## Capturas sugeridas
 - Login
 - Dashboard principal
-- FacturasVT
-- RecibosVT
-- DébitosVT / CréditosVT según la superficie actualmente visible
+- FacturasVT / comprobantes
+- RecibosVT / historial
+- Datos de pago, medio de pago o código de pago según la superficie actualmente visible
 - Flujo de descarga o detalle si corresponde
+
+## Baseline visual recomendado a partir de Phase 13.2
+
+Aunque el mínimo técnico siga siendo:
+
+- 2 phone screenshots válidos
+- 1 feature graphic válido
+
+el listing recomendado para una publicación real debería cubrir:
+
+1. login
+2. dashboard
+3. al menos una surface financiera adicional
+4. idealmente otra surface financiera o de pago
+
+Esto permite distinguir entre un release `asset-ready` y un release con narrativa visual suficientemente representativa para store listing.
 
 ## Naming recomendado
 - `phone_01_login.png`
@@ -75,11 +91,14 @@ Si los grupos opcionales no tienen imágenes todavía, el script lo informa como
 
 En Phase 13.1 el naming recomendado genera advertencias si no se sigue, pero no bloquea la validación.
 
+A partir de Phase 13.2, el validator también puede emitir advertencias adicionales si los nombres no sugieren cobertura de login, dashboard y superficies financieras/pago dentro de `phone_screenshots`.
+
 ## Reglas operativas
 - Las capturas deben corresponder a la versión exacta del AAB que se sube
 - No mezclar capturas de builds anteriores con un bundle nuevo
 - Mantener coherencia visual con branding Mi IP·RED
 - El feature graphic debe representar la misma identidad visual que se ve en iconografía y screenshots
+- Mantener alineación con `distribution/play_store/visual_selection_contract.md` para orden, cobertura y coherencia editorial
 - Guardar los assets fuente pesados fuera del repositorio si no es necesario trackearlos en Git
 - Mantener notas de rollout por track dentro del surface versionado de publicación
 - Revisar `asset_readiness_summary.md` antes de un upload real a Play Console
@@ -94,3 +113,11 @@ En Phase 13.1 el naming recomendado genera advertencias si no se sigue, pero no 
 - No publica directamente en Play Console
 - No reemplaza la revisión manual previa a subir el release
 - No valida todavía dimensiones exactas ni contenido visual interno de las imágenes
+
+## Contrato visual complementario
+
+Para reglas editoriales y de coherencia entre screenshots y feature graphic, usar también:
+
+- `distribution/play_store/visual_selection_contract.md`
+
+Ese archivo no reemplaza los mínimos de readiness; los complementa con criterios de selección y narrativa visual.

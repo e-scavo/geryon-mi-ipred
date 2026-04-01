@@ -583,6 +583,7 @@ The correct documentary reading of the repository is now:
 - Phase 12.4 formalizes the automation boundary so publication support remains human-controlled
 - Phase 13 now becomes the justified next layer because the remaining gap is not structural publication scaffolding but store-readiness verification of the actual visual assets
 - Phase 13.1 establishes a local asset-readiness baseline for the versioned publication surface without changing application behavior or publication control
+- Phase 13.2 adds the explicit listing-consistency contract so minimum-ready assets do not drift into an arbitrary store narrative
 
 ### Phase 11 — Release & Distribution
 
@@ -613,6 +614,7 @@ Master:
 
 Subphases:
 - `docs/phase13_store_execution_integrity_market_presence_hardening_13_1_store_asset_readiness_baseline.md`
+- `docs/phase13_store_execution_integrity_market_presence_hardening_13_2_store_listing_visual_consistency_contract.md`
 
 ## Current documentary state
 
@@ -624,5 +626,6 @@ The current ZIP confirms that the release/publication baseline is now closed thr
 - Phase 12.3
 - Phase 12.4
 - Phase 13.1
+- Phase 13.2
 
 The current justified step remains inside store-execution integrity and should not reopen architecture, runtime, UX, navigation, Riverpod, backend communication, or existing features.

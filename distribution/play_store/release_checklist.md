@@ -26,6 +26,12 @@
 
     dart run validate_store_assets.dart
 
+## Contrato visual complementario
+
+- Revisar `distribution/play_store/visual_selection_contract.md`
+- Confirmar que el set phone represente login + dashboard + al menos una surface financiera adicional
+- Confirmar que el feature graphic siga la misma narrativa visual del release
+
 ## Artefactos esperados
 - `dist/web/mi-ipred-web-<version>/`
 - `dist/android/apk/mi-ipred-android-apk-<version>.apk`
@@ -58,6 +64,8 @@
 - Preparar el surface versionado de publicación antes de cargar assets y notas de rollout
 - Ejecutar `dart run validate_store_assets.dart` después de cargar screenshots y feature graphic
 - Revisar que el summary de readiness no tenga faltantes requeridos antes del upload real
+- Revisar warnings de consistencia visual antes de considerar cerrado el listing
+- Confirmar que el set de phone screenshots no sea solo mínimo técnico si la publicación ya va a exposición real
 - Conservar el APK solo para distribución interna o validación local
 
 ## Contrato operativo por track

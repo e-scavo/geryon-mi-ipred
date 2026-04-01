@@ -70,13 +70,23 @@ Focus:
 - report optional tablet groups without blocking the baseline
 - generate a versioned readiness manifest and summary tied to the active release version
 
+### Phase 13.2 — Store Listing Visual Consistency Contract
+
+Implemented.
+
+Focus:
+- formalize the recommended screenshot narrative for the store listing
+- document ordering and naming conventions across phone, tablet, and feature-graphic groups
+- enrich the validator with warning-level consistency signals without changing required failure semantics
+- keep human review explicit while reducing arbitrary visual drift between releases
+
 ## Expected Later Subphases
 
 After 13.1, later work should remain incremental and still outside product behavior, such as:
 
-- stricter visual consistency contracts if the asset workflow proves stable
 - optional dimension/aspect-ratio enforcement if the team needs it later
 - a final publication-readiness gate that stays repository-assisted but human-approved
+- any future automation must continue to respect the explicit visual-selection contract introduced in 13.2
 
 ## Constraints
 
@@ -98,6 +108,7 @@ Positive impact of Phase 13 as currently implemented:
 - operators now have a deterministic local check before real Play Console upload
 - the same versioned release root can carry both rollout documents and asset-readiness evidence
 - future hardening can build on a stable readiness contract instead of ad hoc manual review
+- the store listing now has a documented visual-selection contract instead of relying on implicit operator memory
 
 Risk if this layer were skipped:
 

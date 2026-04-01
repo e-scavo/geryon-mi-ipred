@@ -495,3 +495,32 @@ Phase 13.1 still does not yet complete:
 - automatic production approval
 
 That remains intentionally outside the current repository boundary.
+
+### Problem solved by 13.2
+
+Phase 13.2 does not change the minimum readiness gate created by 13.1.
+Instead, it hardens the quality of the listing narrative by documenting and warning on:
+
+- screenshot ordering and recommended coverage
+- naming consistency for phone, tablet, and feature-graphic assets
+- the distinction between technical readiness and editorial coherence
+- feature-graphic alignment with the same Mi IP·RED store narrative
+
+### Standardized result after 13.2
+
+The repository now also standardizes:
+
+- `distribution/play_store/visual_selection_contract.md` as the canonical listing-consistency contract
+- richer warning output from `validate_store_assets.dart` for low-coverage but technically valid screenshot sets
+- explicit documentation that 2 phone screenshots satisfy only the minimum gate, not the recommended listing baseline
+
+### What this phase still does not solve after 13.2
+
+Even after 13.2, the repository still does not perform:
+
+- screenshot quality scoring from image pixels
+- automated Play Console review
+- dimension or aspect-ratio enforcement
+- automatic approval of publication readiness
+
+Those remain later, optional hardening candidates only if the store workflow proves stable.

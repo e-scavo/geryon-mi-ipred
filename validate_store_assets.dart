@@ -111,14 +111,22 @@ Future<AssetValidationResult> _validateStoreAssets({
       relativePath: _joinPath('android', 'phone_screenshots'),
       required: true,
       minimumRequired: 2,
+      recommendedMinimum: 4,
       recommendedPattern: RegExp(r'^phone_\d{2}_[a-z0-9_\-]+\.(png|jpg|jpeg)$'),
       recommendedExample: 'phone_01_dashboard.png',
+      requiredCoverageTags: ['login', 'dashboard'],
+      recommendedCoverageTags: [
+        'billing',
+        'receipts',
+        'payment',
+      ],
     ),
     AssetGroupDefinition(
       name: 'feature_graphic',
       relativePath: _joinPath('android', 'feature_graphic'),
       required: true,
       minimumRequired: 1,
+      recommendedMinimum: 1,
       recommendedPattern: RegExp(r'^feature_graphic\.(png|jpg|jpeg)$'),
       recommendedExample: 'feature_graphic.png',
     ),
@@ -127,6 +135,7 @@ Future<AssetValidationResult> _validateStoreAssets({
       relativePath: _joinPath('android', 'seven_inch_screenshots'),
       required: false,
       minimumRequired: 0,
+      recommendedMinimum: 2,
       recommendedPattern:
           RegExp(r'^tablet7_\d{2}_[a-z0-9_\-]+\.(png|jpg|jpeg)$'),
       recommendedExample: 'tablet7_01_dashboard.png',
@@ -136,6 +145,7 @@ Future<AssetValidationResult> _validateStoreAssets({
       relativePath: _joinPath('android', 'ten_inch_screenshots'),
       required: false,
       minimumRequired: 0,
+      recommendedMinimum: 2,
       recommendedPattern:
           RegExp(r'^tablet10_\d{2}_[a-z0-9_\-]+\.(png|jpg|jpeg)$'),
       recommendedExample: 'tablet10_01_dashboard.png',
@@ -276,6 +286,8 @@ Future<EvaluatedAssetGroup> _evaluateGroup(
     );
   }
 
+  final detectedCoverageTags = <String>{};
+
   for (final entity in directory.listSync()) {
     if (entity is! File) {
       ignoredFiles.add(entity);
@@ -311,7 +323,9 @@ Future<EvaluatedAssetGroup> _evaluateGroup(
     }
 
     validFiles.add(entity);
-    if (!definition.recommendedPattern.hasMatch(basename.toLowerCase())) {
+    final normalizedName = basename.toLowerCase();
+    detectedCoverageTags.addAll(_detectCoverageTags(normalizedName));
+    if (!definition.recommendedPattern.hasMatch(normalizedName)) {
       warnings.add(
         '${definition.name}: ${basename} no sigue el naming recomendado (ejemplo: ${definition.recommendedExample}).',
       );
@@ -322,6 +336,32 @@ Future<EvaluatedAssetGroup> _evaluateGroup(
     issues.add(
       'Se requieren al menos ${definition.minimumRequired} assets válidos en ${definition.name} y se encontraron ${validFiles.length}.',
     );
+  }
+
+  if (definition.recommendedMinimum > definition.minimumRequired &&
+      validFiles.length >= definition.minimumRequired &&
+      validFiles.length < definition.recommendedMinimum) {
+    warnings.add(
+      '${definition.name}: cumple el mínimo técnico pero queda por debajo del baseline visual recomendado (${validFiles.length}/${definition.recommendedMinimum}).',
+    );
+  }
+
+  for (final requiredTag in definition.requiredCoverageTags) {
+    if (!detectedCoverageTags.contains(requiredTag) &&
+        validFiles.length >= definition.minimumRequired) {
+      warnings.add(
+        '${definition.name}: no se detecta cobertura requerida de $requiredTag en los nombres de archivo.',
+      );
+    }
+  }
+
+  for (final recommendedTag in definition.recommendedCoverageTags) {
+    if (!detectedCoverageTags.contains(recommendedTag) &&
+        validFiles.isNotEmpty) {
+      warnings.add(
+        '${definition.name}: no se detecta cobertura recomendada de $recommendedTag en los nombres de archivo.',
+      );
+    }
   }
 
   if (!definition.required && validFiles.isEmpty) {
@@ -339,6 +379,46 @@ Future<EvaluatedAssetGroup> _evaluateGroup(
     warnings: warnings,
     passed: issues.isEmpty,
   );
+}
+
+Set<String> _detectCoverageTags(String basename) {
+  final tags = <String>{};
+
+  bool hasAny(List<String> probes) =>
+      probes.any((probe) => basename.contains(probe));
+
+  if (hasAny(['login', 'auth', 'acceso', 'ingreso'])) {
+    tags.add('login');
+  }
+  if (hasAny(['dashboard', 'home', 'inicio', 'resumen'])) {
+    tags.add('dashboard');
+  }
+  if (hasAny([
+    'factura',
+    'facturas',
+    'invoice',
+    'billing',
+    'comprobante',
+    'comprobantes'
+  ])) {
+    tags.add('billing');
+  }
+  if (hasAny(['recibo', 'recibos', 'receipt', 'historial', 'history'])) {
+    tags.add('receipts');
+  }
+  if (hasAny([
+    'pago',
+    'pagos',
+    'payment',
+    'payments',
+    'medio_pago',
+    'codigo_pago',
+    'code_payment'
+  ])) {
+    tags.add('payment');
+  }
+
+  return tags;
 }
 
 String _buildSummary({
@@ -431,6 +511,14 @@ String _buildSummary({
   }
 
   buffer
+    ..writeln()
+    ..writeln('## Visual consistency contract')
+    ..writeln(
+        '- Phone screenshots should cover login, dashboard, and at least one financial/payment surface.')
+    ..writeln(
+        '- The recommended phone baseline is 4 or more screenshots, even when 2 satisfy the minimum technical gate.')
+    ..writeln(
+        '- Feature graphic should stay aligned with Mi IP·RED branding and the current screenshot narrative.')
     ..writeln()
     ..writeln('## Recommendation')
     ..writeln(
@@ -561,16 +649,22 @@ class AssetGroupDefinition {
   final String relativePath;
   final bool required;
   final int minimumRequired;
+  final int recommendedMinimum;
   final RegExp recommendedPattern;
   final String recommendedExample;
+  final List<String> requiredCoverageTags;
+  final List<String> recommendedCoverageTags;
 
   const AssetGroupDefinition({
     required this.name,
     required this.relativePath,
     required this.required,
     required this.minimumRequired,
+    required this.recommendedMinimum,
     required this.recommendedPattern,
     required this.recommendedExample,
+    this.requiredCoverageTags = const [],
+    this.recommendedCoverageTags = const [],
   });
 }
 
@@ -603,7 +697,10 @@ class EvaluatedAssetGroup {
         'relativePath': definition.relativePath,
         'required': definition.required,
         'minimumRequired': definition.minimumRequired,
+        'recommendedMinimum': definition.recommendedMinimum,
         'allowedExtensions': _allowedImageExtensions,
+        'requiredCoverageTags': definition.requiredCoverageTags,
+        'recommendedCoverageTags': definition.recommendedCoverageTags,
         'foundFiles': validFiles.map((file) => _basename(file.path)).toList(),
         'ignoredFiles':
             ignoredFiles.map((file) => _basename(file.path)).toList(),
