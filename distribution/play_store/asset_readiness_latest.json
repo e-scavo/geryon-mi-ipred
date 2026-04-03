@@ -1,18 +1,18 @@
 {
   "appName": "Mi IP·RED",
-  "generatedAt": "2026-04-01T11:34:38.030938",
+  "generatedAt": "2026-04-03T15:52:02.372586",
   "version": {
     "major": 1,
     "minor": 0,
     "patch": 0,
-    "build": 83,
+    "build": 85,
     "codeName": "gorrión",
-    "pubspecVersion": "1.0.0+83"
+    "pubspecVersion": "1.0.0+85"
   },
   "playStoreRoot": "distribution/play_store",
-  "publicationRoot": "distribution/play_store\\releases\\1.0.0+83",
-  "status": "warning",
-  "requiredGroupsPassed": true,
+  "publicationRoot": "distribution/play_store\\releases\\1.0.0+85",
+  "status": "fail",
+  "requiredGroupsPassed": false,
   "optionalGroupsPassed": false,
   "allowMissingOptional": false,
   "groups": [
@@ -36,23 +36,17 @@
         "receipts",
         "payment"
       ],
-      "foundFiles": [
-        "phone_01_login.png",
-        "phone_02_dashboard.png"
-      ],
+      "foundFiles": [],
       "ignoredFiles": [
         "README.md"
       ],
       "invalidFiles": [],
-      "count": 2,
-      "passed": true,
-      "issues": [],
-      "warnings": [
-        "phone_screenshots: cumple el mínimo técnico pero queda por debajo del baseline visual recomendado (2/4).",
-        "phone_screenshots: no se detecta cobertura recomendada de billing en los nombres de archivo.",
-        "phone_screenshots: no se detecta cobertura recomendada de receipts en los nombres de archivo.",
-        "phone_screenshots: no se detecta cobertura recomendada de payment en los nombres de archivo."
+      "count": 0,
+      "passed": false,
+      "issues": [
+        "Se requieren al menos 2 assets válidos en phone_screenshots y se encontraron 0."
       ],
+      "warnings": [],
       "recommendedExample": "phone_01_dashboard.png"
     },
     {
@@ -68,16 +62,16 @@
       ],
       "requiredCoverageTags": [],
       "recommendedCoverageTags": [],
-      "foundFiles": [
-        "feature_graphic.png"
-      ],
+      "foundFiles": [],
       "ignoredFiles": [
         "README.md"
       ],
       "invalidFiles": [],
-      "count": 1,
-      "passed": true,
-      "issues": [],
+      "count": 0,
+      "passed": false,
+      "issues": [
+        "Se requieren al menos 1 assets válidos en feature_graphic y se encontraron 0."
+      ],
       "warnings": [],
       "recommendedExample": "feature_graphic.png"
     },
@@ -137,22 +131,17 @@
     }
   ],
   "summary": {
-    "requiredFailures": [],
+    "requiredFailures": [
+      "phone_screenshots",
+      "feature_graphic"
+    ],
     "warnings": [
-      "phone_screenshots: cumple el mínimo técnico pero queda por debajo del baseline visual recomendado (2/4).",
-      "phone_screenshots: no se detecta cobertura recomendada de billing en los nombres de archivo.",
-      "phone_screenshots: no se detecta cobertura recomendada de receipts en los nombres de archivo.",
-      "phone_screenshots: no se detecta cobertura recomendada de payment en los nombres de archivo.",
       "seven_inch_screenshots: cumple el mínimo técnico pero queda por debajo del baseline visual recomendado (0/2).",
       "seven_inch_screenshots: todavía no contiene imágenes válidas.",
       "ten_inch_screenshots: cumple el mínimo técnico pero queda por debajo del baseline visual recomendado (0/2).",
       "ten_inch_screenshots: todavía no contiene imágenes válidas."
     ],
-    "detectedValidAssets": [
-      "android\\phone_screenshots\\phone_01_login.png",
-      "android\\phone_screenshots\\phone_02_dashboard.png",
-      "android\\feature_graphic\\feature_graphic.png"
-    ],
+    "detectedValidAssets": [],
     "ignoredFiles": [
       "android\\phone_screenshots\\README.md",
       "android\\feature_graphic\\README.md",
