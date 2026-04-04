@@ -15,12 +15,26 @@ echo.
 echo Preparando copia temporal...
 mkdir "%TEMP_DIR%"
 
-robocopy "%PROJECT_DIR%" "%TEMP_DIR%" /E /XD distribution/submissions dist .git .dart_tool build .idea .vscode >nul
+robocopy "%PROJECT_DIR%" "%TEMP_DIR%" /E /XD .fvm distribution/submissions dist .git .dart_tool build .idea .vscode >nul
 
 if errorlevel 8 (
     echo ERROR: fallo robocopy.
     rmdir /s /q "%TEMP_DIR%"
     exit /b 1
+)
+
+echo Eliminando del temporal...
+if exist "%TEMP_DIR%\windows\flutter\ephemeral" (
+    rmdir /s /q "%TEMP_DIR%\windows\flutter\ephemeral"
+)
+if exist "%TEMP_DIR%\.fvm" (
+    rmdir /s /q "%TEMP_DIR%\.fvm"
+)
+if exist "%TEMP_DIR%\dist" (
+    rmdir /s /q "%TEMP_DIR%\dist"
+)
+if exist "%TEMP_DIR%\distribution\submissions" (
+    rmdir /s /q "%TEMP_DIR%\distribution\submissions"
 )
 
 if exist "%OUTPUT_FILE%" del /f /q "%OUTPUT_FILE%"

@@ -10,11 +10,11 @@ import 'package:geryon_web_app_ws_v2/models/CommonModel/model.dart';
 import 'package:geryon_web_app_ws_v2/extensions/color.dart';
 import 'package:geryon_web_app_ws_v2/models/CommonUtils/common_utils.dart';
 import 'package:geryon_web_app_ws_v2/models/GenericDataModel/data_model.dart';
-import 'package:geryon_web_app_ws_v2/models/LoadingGeneric/widget.dart';
-import 'package:geryon_web_app_ws_v2/models/child_popup_error_message.dart';
 import 'package:geryon_web_app_ws_v2/models/error_handler.dart';
 import 'package:geryon_web_app_ws_v2/models/tbl_ClientesV2/additionalparams.dart';
-import 'package:geryon_web_app_ws_v2/pages/CatchMainScreen/widget.dart';
+import 'package:geryon_web_app_ws_v2/shared/overlays/error_dialog_route.dart';
+import 'package:geryon_web_app_ws_v2/shared/widgets/loading_generic.dart';
+import 'package:geryon_web_app_ws_v2/shared/widgets/system_error_surface.dart';
 import 'package:geryon_web_app_ws_v2/shared/window/window_model.dart';
 import 'package:geryon_web_app_ws_v2/shared/window/window_widget.dart';
 

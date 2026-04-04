@@ -16,7 +16,7 @@ import 'package:geryon_web_app_ws_v2/models/CommonParamKeyValue/model.dart';
 import 'package:geryon_web_app_ws_v2/models/CommonUtils/common_utils.dart';
 import 'package:geryon_web_app_ws_v2/models/GenericDataModel/data_model.dart';
 import 'package:geryon_web_app_ws_v2/models/GenericDataModel/model.dart';
-import 'package:geryon_web_app_ws_v2/models/child_popup_error_message.dart';
+import 'package:geryon_web_app_ws_v2/shared/overlays/error_dialog_route.dart';
 import 'package:geryon_web_app_ws_v2/models/error_handler.dart';
 import 'package:geryon_web_app_ws_v2/models/tbl_AFIP_WSFE_TiposDeDocumentos/model.dart';
 import 'package:geryon_web_app_ws_v2/models/tbl_CategoriasDeIVA/model.dart';

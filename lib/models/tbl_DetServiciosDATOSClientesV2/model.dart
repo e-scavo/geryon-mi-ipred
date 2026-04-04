@@ -15,7 +15,7 @@ import 'package:geryon_web_app_ws_v2/models/CommonParamKeyValue/common_param_key
 import 'package:geryon_web_app_ws_v2/models/CommonUtils/common_utils.dart';
 import 'package:geryon_web_app_ws_v2/models/GenericDataModel/data_model.dart';
 import 'package:geryon_web_app_ws_v2/models/GenericDataModel/model.dart';
-import 'package:geryon_web_app_ws_v2/models/child_popup_error_message.dart';
+import 'package:geryon_web_app_ws_v2/shared/overlays/error_dialog_route.dart';
 import 'package:geryon_web_app_ws_v2/models/error_handler.dart';
 import 'package:geryon_web_app_ws_v2/models/tbl_Ciudades/model.dart';
 import 'package:geryon_web_app_ws_v2/models/tbl_ClientesV2/model.dart';

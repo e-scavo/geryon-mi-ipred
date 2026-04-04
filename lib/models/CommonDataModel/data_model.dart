@@ -18,10 +18,10 @@ import 'package:geryon_web_app_ws_v2/models/CommonParamRequest/header_request.da
 import 'package:geryon_web_app_ws_v2/models/CommonRPCMessageResponse/common_rpc_message_response.dart';
 import 'package:geryon_web_app_ws_v2/models/CommonUtils/common_utils.dart';
 import 'package:geryon_web_app_ws_v2/models/GenericDataModel/model.dart';
-import 'package:geryon_web_app_ws_v2/models/ScreenGeneralWorkInProgress/popup_frame.dart';
-import 'package:geryon_web_app_ws_v2/models/child_popup_error_message.dart';
 import 'package:geryon_web_app_ws_v2/models/tbl_Empresas/model.dart';
 import 'package:geryon_web_app_ws_v2/models/error_handler.dart';
+import 'package:geryon_web_app_ws_v2/shared/overlays/error_dialog_route.dart';
+import 'package:geryon_web_app_ws_v2/shared/overlays/work_in_progress/work_in_progress_dialog_route.dart';
 
 typedef SetTest<T> = Future<ErrorHandler> Function({
   required String searchText,

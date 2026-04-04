@@ -17,7 +17,6 @@ import 'package:geryon_web_app_ws_v2/common_vars.dart';
 import 'package:geryon_web_app_ws_v2/features/auth/presentation/login_widget.dart';
 import 'package:geryon_web_app_ws_v2/models/CommonFileDescriptorModel/common_file_descriptor_model.dart';
 import 'package:geryon_web_app_ws_v2/models/CommonRPCMessageResponse/common_rpc_message_response.dart';
-import 'package:geryon_web_app_ws_v2/models/GeneralLoadingProgress/popup_model.dart';
 import 'package:geryon_web_app_ws_v2/core/transport/geryonsocket_model.dart';
 import 'package:geryon_web_app_ws_v2/models/LogIcons/model.dart';
 import 'package:geryon_web_app_ws_v2/models/Login/model.dart';
@@ -29,12 +28,13 @@ import 'package:geryon_web_app_ws_v2/models/StandarizeErrors/model.dart';
 import 'package:geryon_web_app_ws_v2/models/SynchronizedMapThreadsToDataModelCRUD/model.dart';
 import 'package:geryon_web_app_ws_v2/models/SynchronizedMapV2CRUD/model.dart';
 import 'package:geryon_web_app_ws_v2/models/app_version_model.dart';
-import 'package:geryon_web_app_ws_v2/models/child_popup_error_message.dart';
+import 'package:geryon_web_app_ws_v2/shared/overlays/error_dialog_route.dart';
 import 'package:geryon_web_app_ws_v2/models/error_handler.dart';
 import 'package:geryon_web_app_ws_v2/models/tbl_Empresas/model.dart';
 //import 'package:geryon_web_app_ws_v2/services/websocket_client.dart';
 import 'package:geryon_web_app_ws_v2/core/utils/utils.dart';
 import 'package:geryon_web_app_ws_v2/core/files/file_saver.dart';
+import 'package:geryon_web_app_ws_v2/shared/overlays/global_loading_dialog_route.dart';
 
 class _PreparedTrackedMessageResult {
   final CommonRPCMessageResponse? messageResponse;

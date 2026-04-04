@@ -157,3 +157,59 @@ Phase 14 is now open and its first justified implementation cut is completed.
 The repository did not need a new behavioral redesign first.
 It needed the remaining active widget surface to catch up with the architecture that had already been stabilized by earlier phases.
 Phase 14.1 completes that first normalization layer and leaves the project in a safer position for the later billing workbench modernization steps.
+
+
+### Phase 14.1.1 — Canonical Source Consolidation & Legacy Wrapper Cleanup
+
+Implemented.
+
+Focus:
+
+- consolidate the real implementation behind the canonical paths created in 14.1
+- reduce active legacy files to wrapper or export compatibility layers where possible
+- move the billing document download implementation to the billing feature boundary
+- keep compatibility import paths alive for runtime/model callers that still point to the legacy locations
+- avoid any behavior, runtime, navigation, or business-rule redesign while closing the residual duplication left by 14.1
+
+## Final Baseline After Phase 14.1.1
+
+After Phase 14.1.1, the repository now has a stricter canonical-source contract:
+
+- the shared loading widget has a single real implementation under `lib/shared/widgets/loading_generic.dart`
+- the shared system error surface has a single real implementation under `lib/shared/widgets/system_error_surface.dart`
+- the shared error/loading/work-in-progress overlays remain canonically implemented under `lib/shared/overlays/`
+- the billing documents table remains canonically implemented under `lib/features/billing/presentation/widgets/billing_documents_table.dart`
+- the billing document download dialog and route are now canonically implemented under `lib/features/billing/presentation/overlays/`
+- legacy UI files that remain active for compatibility are now reduced to wrappers or exports instead of carrying duplicate full implementations
+
+This means the project keeps backward-compatible import stability while removing the duplicate-source condition detected during the 14.1 validation pass.
+
+## Impact
+
+Additional positive impact of Phase 14.1.1:
+
+- the canonical shared and billing-local files now truly become the single source of implementation for the active surfaces normalized in Phase 14.1
+- compatibility remains available for model/runtime layers that still reference legacy import paths
+- the billing feature boundary is cleaner before starting the billing workbench modernization phase
+- the repository becomes easier to maintain because active UI surfaces no longer exist as full duplicated implementations on both canonical and legacy paths
+
+## Validation
+
+Phase 14.1.1 is correctly represented only if the current ZIP now supports all of the following:
+
+- the legacy shared UI files under `lib/models/` and `lib/pages/` now resolve through wrappers or exports instead of retaining full duplicate implementations
+- the billing document download implementation now lives canonically under `lib/features/billing/presentation/overlays/`
+- the legacy billing download file remains as a compatibility export only
+- the legacy billing table file remains as a compatibility export only
+- callers that were already repointed in 14.1 still resolve against the canonical destinations introduced in 14.1
+
+The current ZIP supports that reading.
+
+## Conclusion
+
+Phase 14 remains open, and its first normalization layer is now structurally tightened.
+
+Phase 14.1 created the canonical destinations and repointed the main callers.
+Phase 14.1.1 closes the residual duplicate-source gap by making the canonical destinations the real implementation owners while legacy paths remain compatibility-only wrappers.
+
+This leaves the project in a cleaner and safer state before any larger billing workbench redesign begins.
