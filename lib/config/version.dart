@@ -1,7 +1,7 @@
 const int vMajor = 1;
 const int vMinor = 0;
 const int vPatch = 0;
-const int vBuild = 85;
+const int vBuild = 86;
 const String vCodeName = "gorrión";
 
 const String sAppName = "Mi IP·RED";

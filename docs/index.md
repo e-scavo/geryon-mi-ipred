@@ -635,3 +635,24 @@ The current ZIP confirms that the release/publication baseline is now closed thr
 - Phase 13.4
 
 The current justified step remains inside store-execution integrity and should not reopen architecture, runtime, UX, navigation, Riverpod, backend communication, or existing features.
+
+
+## Phase 14 Status
+
+The current ZIP now also supports the opening and implementation of the next justified layer after the formal closure of Phase 13.
+
+That layer is:
+
+- `docs/phase14_surface_normalization_billing_workbench_modernization.md`
+- `docs/phase14_surface_normalization_billing_workbench_modernization_14_1_legacy_widget_surface_audit_final_normalization.md`
+
+Phase 14 does not reopen release, publication, runtime, or cross-feature UX baselines.
+It begins the controlled normalization of the remaining legacy widget surface that still coexists with the already consolidated feature/shared structure.
+
+### Phase 14 — Surface Normalization & Billing Workbench Modernization
+
+Master:
+- `docs/phase14_surface_normalization_billing_workbench_modernization.md`
+
+Subphases:
+- `docs/phase14_surface_normalization_billing_workbench_modernization_14_1_legacy_widget_surface_audit_final_normalization.md`

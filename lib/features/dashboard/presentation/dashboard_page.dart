@@ -6,7 +6,7 @@ import 'package:geryon_web_app_ws_v2/common_vars.dart';
 import 'package:geryon_web_app_ws_v2/core/utils/utils.dart';
 import 'package:geryon_web_app_ws_v2/features/billing/presentation/billing_widget.dart';
 import 'package:geryon_web_app_ws_v2/features/dashboard/controllers/dashboard_controller.dart';
-import 'package:geryon_web_app_ws_v2/models/LoadingGeneric/widget.dart';
+import 'package:geryon_web_app_ws_v2/shared/widgets/loading_generic.dart';
 import 'package:geryon_web_app_ws_v2/models/ServiceProvider/login_data_user_message_model.dart';
 import 'package:geryon_web_app_ws_v2/shared/layouts/frame_with_scroll.dart';
 import 'package:geryon_web_app_ws_v2/shared/widgets/copyable_list_tile.dart';

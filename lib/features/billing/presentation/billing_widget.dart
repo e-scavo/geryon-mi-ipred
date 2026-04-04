@@ -7,12 +7,12 @@ import 'package:geryon_web_app_ws_v2/common_vars.dart';
 import 'package:geryon_web_app_ws_v2/enums/const_requests.dart';
 import 'package:geryon_web_app_ws_v2/features/billing/controllers/billing_controller.dart';
 import 'package:geryon_web_app_ws_v2/features/contracts/application_coordinator.dart';
-import 'package:geryon_web_app_ws_v2/models/LoadingGeneric/widget.dart';
+import 'package:geryon_web_app_ws_v2/shared/widgets/loading_generic.dart';
 import 'package:geryon_web_app_ws_v2/models/ServiceProvider/data_model.dart';
-import 'package:geryon_web_app_ws_v2/models/SimpleTableWithScroll/widget.dart';
-import 'package:geryon_web_app_ws_v2/models/child_popup_error_message.dart';
+import 'package:geryon_web_app_ws_v2/features/billing/presentation/widgets/billing_documents_table.dart';
+import 'package:geryon_web_app_ws_v2/shared/overlays/error_dialog_route.dart';
 import 'package:geryon_web_app_ws_v2/models/error_handler.dart';
-import 'package:geryon_web_app_ws_v2/pages/CatchMainScreen/widget.dart';
+import 'package:geryon_web_app_ws_v2/shared/widgets/system_error_surface.dart';
 import 'package:geryon_web_app_ws_v2/shared/widgets/feature_empty_state.dart';
 import 'package:geryon_web_app_ws_v2/shared/widgets/feature_error_state.dart';
 import 'package:geryon_web_app_ws_v2/shared/window/window_model.dart';
@@ -297,7 +297,7 @@ Error: ${e.toString()}
           : const <Map<String, dynamic>>[];
 
       return SizedBox(
-        child: SimpleTableWithScrollLimit(
+        child: BillingDocumentsTable(
           data: comprobantes,
           constraints: constraints,
         ),

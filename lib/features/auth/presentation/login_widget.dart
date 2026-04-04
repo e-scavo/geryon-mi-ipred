@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geryon_web_app_ws_v2/features/auth/controllers/login_controller.dart';
-import 'package:geryon_web_app_ws_v2/models/LoadingGeneric/widget.dart';
+import 'package:geryon_web_app_ws_v2/shared/widgets/loading_generic.dart';
 import 'package:geryon_web_app_ws_v2/shared/widgets/feature_error_state.dart';
 import 'package:geryon_web_app_ws_v2/shared/widgets/shake_text_field.dart';
 

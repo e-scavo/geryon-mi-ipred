@@ -1,7 +1,7 @@
 import 'dart:developer' as developer;
 
 import 'package:flutter/material.dart';
-import 'package:geryon_web_app_ws_v2/pages/CatchMainScreen/widget.dart';
+import 'package:geryon_web_app_ws_v2/shared/widgets/system_error_surface.dart';
 import 'package:geryon_web_app_ws_v2/shared/window/window_model.dart';
 
 class WindowWidget extends StatefulWidget {

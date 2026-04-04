@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geryon_web_app_ws_v2/common_vars.dart';
 import 'package:geryon_web_app_ws_v2/core/utils/utils.dart';
 import 'package:geryon_web_app_ws_v2/features/dashboard/presentation/dashboard_page.dart';
-import 'package:geryon_web_app_ws_v2/models/GeneralLoadingProgress/popup_model.dart';
+import 'package:geryon_web_app_ws_v2/shared/overlays/global_loading_dialog_route.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -112,7 +112,7 @@ class _MyStartingPageState extends ConsumerState<MyStartingPage> {
 
   Future<void> _initWork() async {
     const functionName = '_initWork';
-    const logFunctionName = '.::_initWork::.';
+    const logFunctionName = '.::$functionName::.';
 
     developer.log(
       'Iniciando trabajo...',
@@ -162,7 +162,7 @@ class _MyStartingPageState extends ConsumerState<MyStartingPage> {
   @override
   Widget build(BuildContext context) {
     const functionName = 'BUILD';
-    const logFunctionName = '.::BUILD::.';
+    const logFunctionName = '.::$functionName::.';
     buildTimes++;
 
     developer.log(
