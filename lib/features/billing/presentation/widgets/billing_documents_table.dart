@@ -1,199 +1,116 @@
-import 'dart:developer' as developer;
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:geryon_web_app_ws_v2/common_vars.dart';
-import 'package:geryon_web_app_ws_v2/enums/const_requests.dart';
-import 'package:geryon_web_app_ws_v2/models/CommonDownloadLocally/model.dart';
-import 'package:geryon_web_app_ws_v2/features/billing/presentation/overlays/billing_document_download_dialog_route.dart';
+import 'package:geryon_web_app_ws_v2/features/billing/presentation/models/billing_workbench_column.dart';
+import 'package:geryon_web_app_ws_v2/features/billing/presentation/widgets/billing_workbench_header.dart';
+import 'package:geryon_web_app_ws_v2/features/billing/presentation/widgets/billing_workbench_row.dart';
 
-class BillingDocumentsTable extends StatelessWidget {
-  final BoxConstraints constraints;
-  final List<Map<String, dynamic>> data;
+class BillingWorkbenchTable extends StatefulWidget {
+  final List<Map<String, dynamic>> rows;
+  final List<BillingWorkbenchColumn> columns;
+  final double tableWidth;
+  final ValueChanged<Map<String, dynamic>> onDownload;
 
-  const BillingDocumentsTable({
+  const BillingWorkbenchTable({
     super.key,
-    required this.data,
-    required this.constraints,
+    required this.rows,
+    required this.columns,
+    required this.tableWidth,
+    required this.onDownload,
   });
 
   @override
+  State<BillingWorkbenchTable> createState() => _BillingWorkbenchTableState();
+}
+
+class _BillingWorkbenchTableState extends State<BillingWorkbenchTable> {
+  late final ScrollController _horizontalController;
+
+  @override
+  void initState() {
+    super.initState();
+    _horizontalController = ScrollController();
+  }
+
+  @override
+  void dispose() {
+    _horizontalController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildTableHeader(),
-        const Divider(height: 1),
-        SizedBox(
-          height: 300, // ← Límite vertical (ajustable)
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: SizedBox(
-              width: constraints.maxWidth, // ← Mínimo para evitar apilamiento
-              child: data.isEmpty
-                  ? ListView(
-                      children: [_buildEmptyRow()],
-                    )
-                  : ListView.builder(
-                      itemCount: data.length,
-                      itemBuilder: (_, index) => _buildRow(data[index]),
-                    ),
-            ),
-          ),
-        ),
-      ],
+    final scrollBehavior = MaterialScrollBehavior().copyWith(
+      dragDevices: {
+        PointerDeviceKind.mouse,
+        PointerDeviceKind.touch,
+        PointerDeviceKind.trackpad,
+        PointerDeviceKind.stylus,
+        PointerDeviceKind.unknown,
+      },
     );
-  }
 
-  Widget _buildTableHeader() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      color: Colors.grey[300],
-      child: Row(
-        children: const [
-          Expanded(
-              flex: 3,
-              child: Text('Nº de Comprobante',
-                  style: TextStyle(fontWeight: FontWeight.bold))),
-          Expanded(
-              flex: 2,
-              child:
-                  Text('Fecha', style: TextStyle(fontWeight: FontWeight.bold))),
-          Expanded(
-              flex: 2,
-              child:
-                  Text('Monto', style: TextStyle(fontWeight: FontWeight.bold))),
-          SizedBox(width: 40, child: Icon(Icons.download, size: 20)),
-        ],
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.grey.shade300),
       ),
-    );
-  }
-
-  Widget _buildEmptyRow() {
-    return Container(
-      height: 100,
-      padding: const EdgeInsets.all(16),
-      alignment: Alignment.center,
-      child: Card(
-        elevation: 1,
-        color: Colors.grey[100],
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: const [
-              Icon(Icons.info_outline, color: Colors.grey),
-              SizedBox(width: 12),
-              Text(
-                'No hay comprobantes por mostrar',
-                style: TextStyle(
-                  fontStyle: FontStyle.italic,
-                  color: Colors.grey,
-                  fontSize: 16,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(14),
+        child: ScrollConfiguration(
+          behavior: scrollBehavior,
+          child: Scrollbar(
+            controller: _horizontalController,
+            thumbVisibility: true,
+            trackVisibility: true,
+            interactive: true,
+            notificationPredicate: (notification) =>
+                notification.metrics.axis == Axis.horizontal,
+            child: SingleChildScrollView(
+              controller: _horizontalController,
+              scrollDirection: Axis.horizontal,
+              physics: const ClampingScrollPhysics(),
+              child: SizedBox(
+                width: widget.tableWidth,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    BillingWorkbenchHeader(
+                      columns: widget.columns,
+                      tableWidth: widget.tableWidth,
+                    ),
+                    if (widget.rows.isEmpty)
+                      SizedBox(
+                        width: widget.tableWidth,
+                        child: Container(
+                          padding: const EdgeInsets.all(24),
+                          alignment: Alignment.center,
+                          child: const Text(
+                            'No hay comprobantes por mostrar en esta página.',
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      )
+                    else
+                      ...List.generate(
+                        widget.rows.length,
+                        (index) => BillingWorkbenchRow(
+                          item: widget.rows[index],
+                          columns: widget.columns,
+                          tableWidth: widget.tableWidth,
+                          alternate: index.isOdd,
+                          onDownload: () {
+                            widget.onDownload(widget.rows[index]);
+                          },
+                        ),
+                      ),
+                  ],
                 ),
               ),
-            ],
+            ),
           ),
         ),
       ),
     );
-  }
-
-  Widget _buildRow(Map<String, dynamic> item) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: Colors.grey)),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-              flex: 3,
-              child: Text(item['NroCpbte'].toString().padLeft(9, '0'))),
-          Expanded(flex: 2, child: Text(item['FechaCpbte'].toString())),
-          Expanded(
-              flex: 2,
-              child: Text(item['ImporteTotalConImpuestos'].toString())),
-          SizedBox(
-            width: 40,
-            child: IconButton(
-              icon: const Icon(Icons.download),
-              onPressed: () async {
-                await _downloadVoucher(item);
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _downloadVoucher(Map<String, dynamic> item) async {
-    // Aquí iría la lógica para descargar el comprobante
-    developer.log(
-      'Descargando comprobante: ${item['ClaseCpbte']} - ${item['CodEmp']} - ${item['NroCpbte']}',
-      name: 'BillingDocumentsTable._downloadVoucher',
-    );
-    List<CommonDownloadLocallyModel> pParams = [];
-    CommonDownloadLocallyModel pCpbte =
-        CommonDownloadLocallyModel.fromClaseCpbte(
-      pModulo: 'Ventas',
-      pClaseCpbte: 'Unknown',
-      pCodEmp: -1,
-      pNroCpbte: -1,
-    );
-    switch (item['ClaseCpbte']) {
-      case "FacturasVT":
-        pCpbte.claseCpbte = item['ClaseCpbte'];
-        pCpbte.codEmp = item['CodEmp'];
-        pCpbte.nroCpbte = item['NroCpbte'];
-        pCpbte.tipoCliente = item['TipoCliente'];
-        pCpbte.codClie = item['CodClie'];
-        pCpbte.razonSocial = item['RazonSocial'];
-        break;
-      case "RecibosVT":
-        pCpbte.claseCpbte = item['ClaseCpbte'];
-        pCpbte.codEmp = item['CodEmp'];
-        pCpbte.nroCpbte = item['NroCpbte'];
-        pCpbte.tipoCliente = item['TipoCliente'];
-        pCpbte.codClie = item['CodClie'];
-        pCpbte.razonSocial = item['RazonSocial'];
-        break;
-      case "CreditosVT":
-        pCpbte.claseCpbte = item['ClaseCpbte'];
-        pCpbte.codEmp = item['CodEmp'];
-        pCpbte.nroCpbte = item['NroCpbte'];
-        pCpbte.tipoCliente = item['TipoCliente'];
-        pCpbte.codClie = item['CodClie'];
-        pCpbte.razonSocial = item['RazonSocial'];
-        break;
-      case "DebitosVT":
-        pCpbte.claseCpbte = item['ClaseCpbte'];
-        pCpbte.codEmp = item['CodEmp'];
-        pCpbte.nroCpbte = item['NroCpbte'];
-        pCpbte.tipoCliente = item['TipoCliente'];
-        pCpbte.codClie = item['CodClie'];
-        pCpbte.razonSocial = item['RazonSocial'];
-        break;
-      default:
-    }
-    pParams.add(pCpbte);
-    if (navigatorKey.currentState != null) {
-      await navigatorKey.currentState?.push(
-          ScreenPoPUpCommonDownloadLocallyScreen<CommonDownloadLocallyModel>(
-        pGlobalRequest: ConstRequests.viewRequest,
-        pActionRequest: ConstRequests.viewRequest,
-        pLocalActionRequest: ConstRequests.downloadRequest,
-        pParams: pParams,
-        autoStart: true,
-      ));
-    }
-
-    developer.log(
-      'Comprobante descargado: ${item['ClaseCpbte']} - ${item['CodEmp']} - ${item['NroCpbte']}',
-      name: 'BillingDocumentsTable._downloadVoucher',
-    );
-    return;
   }
 }

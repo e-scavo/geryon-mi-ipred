@@ -213,3 +213,143 @@ Phase 14.1 created the canonical destinations and repointed the main callers.
 Phase 14.1.1 closes the residual duplicate-source gap by making the canonical destinations the real implementation owners while legacy paths remain compatibility-only wrappers.
 
 This leaves the project in a cleaner and safer state before any larger billing workbench redesign begins.
+
+### Phase 14.2.1 — Billing Workbench Surface Contract & Pagination Baseline
+
+Implemented.
+
+Focus:
+
+- introduce a canonical billing workbench shell inside the billing presentation boundary
+- replace the previous simple embedded table usage with a workbench-oriented surface
+- add presentation-only local pagination without touching backend or business logic
+- add a toolbar, summary strip, modular table structure, and pagination footer
+- preserve the existing per-row download behavior
+- keep the older `BillingDocumentsTable` entry point as a compatibility wrapper while the billing feature moves to the new workbench shell
+
+## Final Baseline After Phase 14.2.1
+
+After Phase 14.2.1, the billing feature now has a stronger workbench foundation:
+
+- `BillingWidget` now renders a canonical `BillingWorkbench` surface
+- the workbench owns local rows-per-page state and current-page state
+- billing now exposes a toolbar with refresh and rows-per-page controls
+- billing now exposes a summary strip with visible range and page context
+- the table is now structurally decomposed into column, header, row, table, and pagination widgets
+- the billing document download action remains available from each visible row
+- `BillingDocumentsTable` remains available as a compatibility wrapper rather than the main owner of the presentation contract
+
+This means Phase 14 is no longer only about path normalization.
+It now also includes the first safe modernization layer of the billing surface itself.
+
+## Impact
+
+Positive impact of Phase 14.2.1:
+
+- billing navigation becomes lighter when the document count grows
+- the surface feels closer to a desktop workbench instead of a temporary embedded table
+- future additions such as filtering, sorting, selection, or grouped presentation now have a safer modular base
+- the billing feature gains stronger ownership of its own operational surface without reopening any backend or runtime concerns
+
+## Validation
+
+Phase 14.2.1 is correctly represented only if the current ZIP now supports all of the following:
+
+- `BillingWidget` uses a workbench-oriented surface under `lib/features/billing/presentation/widgets/`
+- rows-per-page can be adjusted locally
+- users can navigate between pages locally
+- visible-range context is shown in the summary and footer areas
+- row download remains available
+- the workbench responds to layout constraints without platform-specific branching
+
+The current ZIP supports that reading.
+
+## Conclusion
+
+Phase 14 remains open, and billing modernization is now formally underway.
+
+Phase 14.1 and 14.1.1 prepared the structural surface.
+Phase 14.2.1 is the first presentation modernization layer that turns billing into a real workbench baseline while preserving the current logic, contracts, and runtime architecture.
+
+
+### Phase 14.2.1.1 — Billing Workbench Vertical Flow & Overflow Stabilization
+
+Implemented.
+
+Focus:
+
+- remove the rigid fixed-height embedding that clipped billing sections inside dashboard
+- let each billing type expand naturally according to its current visible page slice
+- restore parent-owned vertical scrolling for the dashboard surface
+- preserve the workbench shell, summary, pagination, and row actions introduced in Phase 14.2.1
+
+Result:
+
+- billing sections no longer depend on a hard-coded container height
+- the main `BOTTOM OVERFLOWED` issue observed during runtime validation is structurally removed
+- the dashboard vertical reading flow remains the single scroll owner for billing blocks
+
+
+### Phase 14.2.1.2 — Billing Workbench Header Cleanup, Horizontal Table Access & Backend Pagination Alignment
+
+Implemented.
+
+Focus:
+
+- remove the redundant type title from the workbench toolbar so the billing type is not repeated unnecessarily
+- replace proportional-only billing columns with explicit-width columns so the horizontal table contract is stable
+- add an interactive horizontal scrollbar and drag-capable horizontal access for desktop and touch usage
+- move billing pagination from presentation-only local slicing to real backend-aligned `offset` / `pageSize` requests
+- keep the billing widget as the owner of current page and rows-per-page state while the workbench remains a presentation surface
+
+## Final Baseline After Phase 14.2.1.2
+
+After Phase 14.2.1.2, the billing workbench is no longer only visually paginated.
+
+The current baseline now supports:
+
+- one clear billing-type identity per section without toolbar title duplication
+- explicit horizontal access to all billing columns, including the download action column
+- page changes that trigger real backend-aligned data loads
+- rows-per-page changes that reset to page one and trigger real backend-aligned data loads
+- summary and footer values that remain consistent with total-record information reported by the backend model
+
+## Impact
+
+Positive impact of Phase 14.2.1.2:
+
+- billing sections become visually lighter because the repeated title layer is removed from the toolbar
+- the action column remains reachable instead of being compressed by flexible-width layout
+- horizontal table navigation becomes clearer and more usable on desktop/web
+- billing requests now scale better because the feature stops loading the entire voucher collection when only one page is needed
+
+## Validation
+
+Phase 14.2.1.2 is correctly represented only if the current ZIP now supports all of the following:
+
+- the toolbar no longer repeats the billing type title
+- the table exposes a stable horizontal scrollbar and allows reaching the action column
+- changing page produces a new backend request using an updated offset
+- changing rows per page produces a new backend request using an updated page size
+- the visible-range summary remains aligned with backend totals rather than with a local full-list slice
+
+The current delivery reflects that implementation.
+
+
+## Phase 14.2.1.3 — Billing Workbench Table Width Harmonization & Horizontal Viewport Alignment
+
+### Objective
+
+Align the rendered billing table width with the available workbench viewport width so the grid fills the section container on wide screens and keeps horizontal scroll only for narrow viewports below the intrinsic minimum table width.
+
+### Implementation Characteristics
+
+This stabilization keeps the existing backend pagination and billing interactions untouched. The change is strictly presentational and responsive:
+
+- the billing workbench now distinguishes intrinsic minimum table width from effective rendered width
+- the table grows to the available width when the billing section is wider than the column minimum
+- the scrollbar remains active only when the viewport becomes narrower than that minimum
+
+### Result
+
+The billing table, summary, and footer now feel visually aligned inside the wider billing section, while small windows still retain horizontal access to the complete column set.

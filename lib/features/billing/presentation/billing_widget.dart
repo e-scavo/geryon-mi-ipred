@@ -9,14 +9,12 @@ import 'package:geryon_web_app_ws_v2/features/billing/controllers/billing_contro
 import 'package:geryon_web_app_ws_v2/features/contracts/application_coordinator.dart';
 import 'package:geryon_web_app_ws_v2/shared/widgets/loading_generic.dart';
 import 'package:geryon_web_app_ws_v2/models/ServiceProvider/data_model.dart';
-import 'package:geryon_web_app_ws_v2/features/billing/presentation/widgets/billing_documents_table.dart';
+import 'package:geryon_web_app_ws_v2/features/billing/presentation/widgets/billing_workbench.dart';
 import 'package:geryon_web_app_ws_v2/shared/overlays/error_dialog_route.dart';
 import 'package:geryon_web_app_ws_v2/models/error_handler.dart';
 import 'package:geryon_web_app_ws_v2/shared/widgets/system_error_surface.dart';
 import 'package:geryon_web_app_ws_v2/shared/widgets/feature_empty_state.dart';
 import 'package:geryon_web_app_ws_v2/shared/widgets/feature_error_state.dart';
-import 'package:geryon_web_app_ws_v2/shared/window/window_model.dart';
-import 'package:geryon_web_app_ws_v2/shared/window/window_widget.dart';
 
 class BillingWidget extends ConsumerStatefulWidget {
   final BoxConstraints constraints;
@@ -47,11 +45,14 @@ class _BillingWidgetState extends ConsumerState<BillingWidget> {
 
   late BillingFeatureState _billingState;
   ProviderSubscription<ServiceProvider>? _subscription;
+  late int _rowsPerPage;
+  int _currentPage = 1;
 
   @override
   void initState() {
     super.initState();
     _billingState = _controller.buildInitialState();
+    _rowsPerPage = _resolveDefaultRowsPerPage();
     mainScroller = ScrollController();
     mainCatchScroller = ScrollController();
     secondScroller = ScrollController();
@@ -69,13 +70,24 @@ class _BillingWidgetState extends ConsumerState<BillingWidget> {
     super.dispose();
   }
 
-  Future<void> _reloadBillingData() async {
+  int _resolveDefaultRowsPerPage() {
+    return widget.constraints.maxWidth >= 1100 ? 20 : 10;
+  }
+
+  Future<void> _reloadBillingData({
+    int? page,
+    int? rowsPerPage,
+  }) async {
     const String functionName = 'BillingWidget._reloadBillingData';
     final String logFunctionName = '.::$functionName::.';
     final currentClientIndex = _controller.resolveCurrentClientIndex(ref: ref);
+    final int nextPage = page ?? _currentPage;
+    final int nextRowsPerPage = rowsPerPage ?? _rowsPerPage;
 
     if (mounted) {
       setState(() {
+        _currentPage = nextPage;
+        _rowsPerPage = nextRowsPerPage;
         _billingState = _controller.buildLoadingState(
           currentState: _billingState,
           trackedClientIndex: currentClientIndex,
@@ -90,6 +102,8 @@ class _BillingWidgetState extends ConsumerState<BillingWidget> {
       globalRequest: pGlobalRequest,
       localRequest: pLocalRequest,
       debug: debug,
+      currentPage: _currentPage,
+      rowsPerPage: _rowsPerPage,
     );
 
     if (!mounted) {
@@ -104,6 +118,23 @@ class _BillingWidgetState extends ConsumerState<BillingWidget> {
       setState(() {
         _billingState = nextState;
       });
+      return;
+    }
+
+    final int totalItems = nextState.isReady && nextState.dataModel != null
+        ? _controller.resolveTotalItems(dataModel: nextState.dataModel!)
+        : 0;
+    final int totalPages =
+        totalItems <= 0 ? 1 : ((totalItems + _rowsPerPage - 1) ~/ _rowsPerPage);
+
+    if (totalItems > 0 && _currentPage > totalPages) {
+      setState(() {
+        _currentPage = totalPages;
+      });
+      await _reloadBillingData(
+        page: totalPages,
+        rowsPerPage: _rowsPerPage,
+      );
       return;
     }
 
@@ -151,7 +182,11 @@ class _BillingWidgetState extends ConsumerState<BillingWidget> {
               name: '$mainFunc - $listenerLogFunctionName',
             );
 
-            unawaited(_reloadBillingData());
+            _currentPage = 1;
+            unawaited(_reloadBillingData(
+              page: 1,
+              rowsPerPage: _rowsPerPage,
+            ));
           }
         },
       );
@@ -168,7 +203,10 @@ class _BillingWidgetState extends ConsumerState<BillingWidget> {
           name: '$mainFunc - $logFunctionName',
         );
 
-        unawaited(_reloadBillingData());
+        unawaited(_reloadBillingData(
+          page: _currentPage,
+          rowsPerPage: _rowsPerPage,
+        ));
       }
     } catch (e, stacktrace) {
       if (mounted) {
@@ -203,7 +241,32 @@ Error: ${e.toString()}
   }
 
   void _requestBillingReload() {
-    unawaited(_reloadBillingData());
+    unawaited(_reloadBillingData(
+      page: _currentPage,
+      rowsPerPage: _rowsPerPage,
+    ));
+  }
+
+  void _requestBillingPageChange(int nextPage) {
+    if (nextPage == _currentPage) {
+      return;
+    }
+
+    unawaited(_reloadBillingData(
+      page: nextPage,
+      rowsPerPage: _rowsPerPage,
+    ));
+  }
+
+  void _requestBillingRowsPerPageChange(int nextRowsPerPage) {
+    if (nextRowsPerPage == _rowsPerPage) {
+      return;
+    }
+
+    unawaited(_reloadBillingData(
+      page: 1,
+      rowsPerPage: nextRowsPerPage,
+    ));
   }
 
   @override
@@ -255,38 +318,47 @@ Error: ${e.toString()}
       required BoxConstraints constraints,
     }) {
       if (_billingState.isLoading) {
-        return LoadingGeneric(
-          loadingText: _controller.resolveBillingLoadingText(
-            billingType: widget.pType,
+        return Padding(
+          padding: const EdgeInsets.all(18),
+          child: LoadingGeneric(
+            loadingText: _controller.resolveBillingLoadingText(
+              billingType: widget.pType,
+            ),
           ),
         );
       }
 
       if (_billingState.hasError) {
-        return FeatureErrorState(
-          title: _controller.resolveBillingErrorTitle(
-            billingType: widget.pType,
-            state: _billingState,
+        return Padding(
+          padding: const EdgeInsets.all(18),
+          child: FeatureErrorState(
+            title: _controller.resolveBillingErrorTitle(
+              billingType: widget.pType,
+              state: _billingState,
+            ),
+            message: _controller.resolveBillingErrorMessage(
+              billingType: widget.pType,
+              state: _billingState,
+            ),
+            retryLabel: 'Volver a intentar',
+            onRetry: _requestBillingReload,
           ),
-          message: _controller.resolveBillingErrorMessage(
-            billingType: widget.pType,
-            state: _billingState,
-          ),
-          retryLabel: 'Volver a intentar',
-          onRetry: _requestBillingReload,
         );
       }
 
       if (_controller.isEmptyState(state: _billingState)) {
-        return FeatureEmptyState(
-          title: _controller.resolveBillingEmptyTitle(
-            billingType: widget.pType,
+        return Padding(
+          padding: const EdgeInsets.all(18),
+          child: FeatureEmptyState(
+            title: _controller.resolveBillingEmptyTitle(
+              billingType: widget.pType,
+            ),
+            message: _controller.resolveBillingEmptyMessage(
+              billingType: widget.pType,
+            ),
+            actionLabel: 'Actualizar listado',
+            onAction: _requestBillingReload,
           ),
-          message: _controller.resolveBillingEmptyMessage(
-            billingType: widget.pType,
-          ),
-          actionLabel: 'Actualizar listado',
-          onAction: _requestBillingReload,
         );
       }
 
@@ -295,11 +367,27 @@ Error: ${e.toString()}
               dataModel: _billingState.dataModel!,
             )
           : const <Map<String, dynamic>>[];
+      final int totalItems =
+          _billingState.isReady && _billingState.dataModel != null
+              ? _controller.resolveTotalItems(
+                  dataModel: _billingState.dataModel!,
+                )
+              : 0;
 
-      return SizedBox(
-        child: BillingDocumentsTable(
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(18, 12, 18, 18),
+        child: BillingWorkbench(
           data: comprobantes,
           constraints: constraints,
+          collectionLabel: _controller.resolveBillingCollectionLabel(
+            billingType: widget.pType,
+          ),
+          currentPage: _currentPage,
+          rowsPerPage: _rowsPerPage,
+          totalItems: totalItems,
+          onRefresh: _requestBillingReload,
+          onPageChanged: _requestBillingPageChange,
+          onRowsPerPageChanged: _requestBillingRowsPerPageChange,
         ),
       );
     }
@@ -312,66 +400,110 @@ Error: ${e.toString()}
     String wTitle = 'Comprobantes';
 
     switch (widget.pType) {
-      case "FacturasVT":
+      case 'FacturasVT':
         wTitle = 'FACTURAS';
         break;
-      case "RecibosVT":
+      case 'RecibosVT':
         wTitle = 'RECIBOS';
         break;
-      case "DebitosVT":
+      case 'DebitosVT':
         wTitle = 'NOTAS DE DÉBITO';
         break;
-      case "CreditosVT":
+      case 'CreditosVT':
         wTitle = 'NOTAS DE CRÉDITO';
         break;
       default:
     }
 
     final Color wColor = theme.colorScheme.primary;
+    final double effectiveWidth = widget.constraints.hasBoundedWidth
+        ? widget.constraints.maxWidth
+        : MediaQuery.sizeOf(context).width;
+    final BoxConstraints bodyConstraints = BoxConstraints(
+      minWidth: 0,
+      maxWidth: effectiveWidth,
+    );
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        double windowWidth = constraints.maxWidth;
-        double windowHeight = constraints.maxHeight;
-
-        developer.log(
-          '$mainFunc - $locFunc - windowWidth:$windowWidth - windowHeight:$windowHeight',
-          name: 'BillingWidget',
-        );
-
-        try {
-          return Container(
-            decoration: const BoxDecoration(
-              borderRadius: BorderRadius.all(Radius.circular(8)),
-              color: Colors.white,
-            ),
-            width: windowWidth,
-            height: windowHeight,
-            constraints: constraints,
-            child: WindowWidget(
-              windowModel: WindowModel(
-                title: wTitle,
-                titleColorBackground: wColor,
-                constraints: constraints,
-                headerWidget: buildWindowHeader(),
-                bodyWidget: buildWindowBody(
-                  constraints: constraints,
+    try {
+      return Container(
+        decoration: const BoxDecoration(
+          borderRadius: BorderRadius.all(Radius.circular(8)),
+          color: Colors.white,
+        ),
+        width: double.infinity,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                color: wColor,
+                borderRadius: const BorderRadiusDirectional.only(
+                  topStart: Radius.circular(8),
+                  topEnd: Radius.circular(8),
+                ),
+              ),
+              height: 30,
+              width: double.infinity,
+              child: Align(
+                alignment: Alignment.center,
+                child: RichText(
+                  textAlign: TextAlign.start,
+                  text: TextSpan(
+                    text: wTitle,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
                 ),
               ),
             ),
-          );
-        } catch (e, stacktrace) {
-          return CatchMainScreen(
-            locFunc: locFunc,
-            constraints: constraints,
-            e: e,
-            stacktrace: stacktrace,
-            debug: true,
-            pScreenMaxHeight: constraints.maxHeight,
-            pScreenMaxWidth: constraints.maxWidth,
-          );
-        }
-      },
-    );
+            Container(
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                border: Border(
+                  top: BorderSide(
+                    color: Colors.black26,
+                    width: 1.0,
+                  ),
+                  left: BorderSide(
+                    color: Colors.black26,
+                    width: 1.0,
+                  ),
+                  right: BorderSide(
+                    color: Colors.black26,
+                    width: 1.0,
+                  ),
+                  bottom: BorderSide(
+                    color: Colors.black26,
+                    width: 1.0,
+                  ),
+                ),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  buildWindowHeader(),
+                  buildWindowBody(
+                    constraints: bodyConstraints,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    } catch (e, stacktrace) {
+      return CatchMainScreen(
+        locFunc: locFunc,
+        constraints: bodyConstraints,
+        e: e,
+        stacktrace: stacktrace,
+        debug: true,
+        pScreenMaxHeight: 0,
+        pScreenMaxWidth: effectiveWidth,
+      );
+    }
   }
 }

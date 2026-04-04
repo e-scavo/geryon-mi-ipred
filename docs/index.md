@@ -646,6 +646,7 @@ That layer is:
 - `docs/phase14_surface_normalization_billing_workbench_modernization.md`
 - `docs/phase14_surface_normalization_billing_workbench_modernization_14_1_legacy_widget_surface_audit_final_normalization.md`
 - `docs/phase14_surface_normalization_billing_workbench_modernization_14_1_1_canonical_source_consolidation_legacy_wrapper_cleanup.md`
+- `docs/phase14_surface_normalization_billing_workbench_modernization_14_2_1_billing_workbench_surface_contract_pagination_baseline.md`
 
 Phase 14 does not reopen release, publication, runtime, or cross-feature UX baselines.
 It begins the controlled normalization of the remaining legacy widget surface that still coexists with the already consolidated feature/shared structure.
@@ -658,3 +659,12 @@ Master:
 Subphases:
 - `docs/phase14_surface_normalization_billing_workbench_modernization_14_1_legacy_widget_surface_audit_final_normalization.md`
 - `docs/phase14_surface_normalization_billing_workbench_modernization_14_1_1_canonical_source_consolidation_legacy_wrapper_cleanup.md`
+- `docs/phase14_surface_normalization_billing_workbench_modernization_14_2_1_billing_workbench_surface_contract_pagination_baseline.md`
+
+- `docs/phase14_surface_normalization_billing_workbench_modernization_14_2_1_1_billing_workbench_vertical_flow_overflow_stabilization.md`
+- `docs/phase14_surface_normalization_billing_workbench_modernization_14_2_1_2_billing_workbench_header_cleanup_horizontal_table_access_backend_pagination_alignment.md`
+
+
+## Phase 14.2.1.3
+
+- Phase 14.2.1.3 completed as billing workbench table width harmonization and horizontal viewport alignment

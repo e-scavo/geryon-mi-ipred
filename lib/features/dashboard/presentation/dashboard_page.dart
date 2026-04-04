@@ -309,12 +309,8 @@ class _DashboardContent extends StatelessWidget {
     required BoxConstraints constraints,
     required String type,
   }) {
-    final bool isCompact = constraints.maxWidth < 700;
-    final double billingHeight = isCompact ? 560 : 472;
-
     return SizedBox(
       width: double.infinity,
-      height: billingHeight,
       child: BillingWidget(
         constraints: constraints,
         pType: type,

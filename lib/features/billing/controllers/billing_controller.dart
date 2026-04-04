@@ -224,6 +224,8 @@ class BillingController {
     required ConstRequests globalRequest,
     required ConstRequests localRequest,
     required bool debug,
+    required int currentPage,
+    required int rowsPerPage,
   }) async {
     final currentClientIndex = resolveCurrentClientIndex(ref: ref);
 
@@ -234,6 +236,8 @@ class BillingController {
       globalRequest: globalRequest,
       localRequest: localRequest,
       debug: debug,
+      currentPage: currentPage,
+      rowsPerPage: rowsPerPage,
     );
 
     if (!result.success) {
@@ -252,6 +256,20 @@ class BillingController {
       dataModel: result.dataModel!,
       trackedClientIndex: currentClientIndex,
     );
+  }
+
+  int resolveTotalItems({
+    required GenericDataModel<TableComprobantesVTModel> dataModel,
+  }) {
+    if (dataModel.totalFilteredRecords > 0) {
+      return dataModel.totalFilteredRecords;
+    }
+
+    if (dataModel.totalRecords > 0) {
+      return dataModel.totalRecords;
+    }
+
+    return dataModel.cData.length;
   }
 
   bool hasRows({
@@ -416,6 +434,8 @@ class BillingController {
     required ConstRequests globalRequest,
     required ConstRequests localRequest,
     required bool debug,
+    required int currentPage,
+    required int rowsPerPage,
   }) async {
     const String functionName = 'loadBillingData';
     final String logFunctionName = '$_logClassName.$functionName';
@@ -471,12 +491,16 @@ class BillingController {
       );
       tEnteDataModel.fromJsonFunction = TableComprobantesVTModel.fromJson;
 
+      final int safeCurrentPage = currentPage < 1 ? 1 : currentPage;
+      final int safeRowsPerPage = rowsPerPage < 1 ? 10 : rowsPerPage;
+      final int resolvedOffset = (safeCurrentPage - 1) * safeRowsPerPage;
+
       pHeaderParamsRequests.realGlobalRequest = globalRequest.typeId;
       pHeaderParamsRequests.realLocalRequest = localRequest.typeId;
       pHeaderParamsRequests.globalRequest = ConstRequests.viewRequest.typeId;
       pHeaderParamsRequests.localRequest = ConstRequests.viewRequest.typeId;
-      pHeaderParamsRequests.offset = 0;
-      pHeaderParamsRequests.pageSize = 0;
+      pHeaderParamsRequests.offset = resolvedOffset;
+      pHeaderParamsRequests.pageSize = safeRowsPerPage;
       pHeaderParamsRequests.sortField = 'FechaCpbte';
       pHeaderParamsRequests.sortIndex = 0;
       pHeaderParamsRequests.sortAsc = false;

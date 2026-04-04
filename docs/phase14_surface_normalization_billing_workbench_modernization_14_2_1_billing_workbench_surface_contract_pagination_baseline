@@ -1,0 +1,213 @@
+# Phase 14.2.1 — Billing Workbench Surface Contract & Pagination Baseline
+
+## Objective
+
+Implement the first safe modernization layer of the billing surface by replacing the previous simple embedded document table with a billing workbench shell that remains fully local to presentation, preserves the current billing data contract, and introduces controlled pagination, toolbar, summary, and desktop-oriented navigation rhythm.
+
+## Initial Context
+
+Before this subphase, the real ZIP already confirmed the following:
+
+- Phase 14.1 completed the legacy widget surface audit and canonical path normalization
+- Phase 14.1.1 consolidated the canonical sources and reduced the old duplicated surface condition
+- the billing feature already had a canonical presentation area under `lib/features/billing/presentation/`
+- the billing flow already loaded data safely through `BillingController`
+- document download already existed and had to remain behaviorally stable
+
+The remaining open gap was no longer structural ownership of the widgets.
+The remaining gap was the operational quality of the billing surface itself.
+
+## Problem Statement
+
+The current billing implementation still behaved like a simple embedded table:
+
+- manual header and row layout
+- fixed table height
+- no local pagination
+- no summary strip
+- no explicit workbench toolbar
+- no desktop-oriented navigation rhythm
+- no rows-per-page control
+- weak preparation for later growth
+
+This did not break functionality, but it left the billing surface too limited for the next modernization steps and too close to a temporary table instead of a durable workbench.
+
+## Scope
+
+Phase 14.2.1 includes:
+
+- introduction of a new billing workbench presentation shell
+- local pagination in the presentation layer only
+- toolbar with refresh action and rows-per-page selector
+- summary strip with visible-range and page context
+- modernized table header / row / footer structure
+- preservation of current download action per row
+- responsive behavior based on constraints rather than platform checks
+- compatibility wrapper retention for the older `BillingDocumentsTable` entry point
+
+Phase 14.2.1 does not include:
+
+- backend pagination
+- business-logic changes
+- Riverpod changes
+- navigation redesign
+- sorting semantics
+- filtering semantics
+- grouped rows or merged cells
+- bulk selection or multi-select actions
+- export workflows beyond the existing download action
+
+## Root Cause Analysis
+
+Earlier phases correctly prioritized:
+
+- application-layer consolidation
+- runtime reliability
+- UX consistency
+- release and publication readiness
+- final surface normalization
+
+That left billing in a transitional but valid state: structurally cleaner than before, but still visually and operationally closer to a legacy table than to a full workbench.
+
+The root cause was not a missing data source.
+The root cause was missing presentation orchestration on top of the already stable billing data contract.
+
+The correct next move was therefore to evolve the billing presentation shell itself, while keeping all established contracts intact.
+
+## Files Affected
+
+New presentation models:
+
+- `lib/features/billing/presentation/models/billing_workbench_column.dart`
+- `lib/features/billing/presentation/models/billing_workbench_page_state.dart`
+
+New billing workbench widgets:
+
+- `lib/features/billing/presentation/widgets/billing_workbench.dart`
+- `lib/features/billing/presentation/widgets/billing_workbench_toolbar.dart`
+- `lib/features/billing/presentation/widgets/billing_workbench_summary.dart`
+- `lib/features/billing/presentation/widgets/billing_workbench_table.dart`
+- `lib/features/billing/presentation/widgets/billing_workbench_header.dart`
+- `lib/features/billing/presentation/widgets/billing_workbench_row.dart`
+- `lib/features/billing/presentation/widgets/billing_workbench_pagination.dart`
+
+Adjusted presentation callers:
+
+- `lib/features/billing/presentation/billing_widget.dart`
+- `lib/features/billing/presentation/widgets/billing_documents_table.dart`
+
+Documentation:
+
+- `docs/index.md`
+- `docs/phase14_surface_normalization_billing_workbench_modernization.md`
+- `docs/phase14_surface_normalization_billing_workbench_modernization_14_2_1_billing_workbench_surface_contract_pagination_baseline.md`
+
+## Implementation Characteristics
+
+### 1. BillingWorkbench becomes the new presentation shell
+
+The billing surface now renders through a dedicated `BillingWorkbench` widget instead of depending directly on the former simple table widget.
+
+That workbench is responsible only for presentation concerns:
+
+- local page state
+- visible-range slicing
+- layout rhythm
+- desktop-oriented toolbar/summary/footer structure
+- reuse of the preexisting download action flow
+
+### 2. Pagination remains local and safe
+
+The controller and backend communication remain unchanged.
+
+The workbench consumes the same row list already produced by `BillingController.buildTableRows(...)` and performs only local slicing in memory.
+
+That means:
+
+- no contract changes
+- no request changes
+- no backend coupling increase
+- no business-rule expansion
+
+### 3. Toolbar baseline is introduced
+
+A toolbar now provides:
+
+- contextual title
+- current total-record count
+- rows-per-page selector
+- explicit refresh action
+
+This turns the billing surface into an operational workbench without yet forcing filtering or sorting semantics into the same subphase.
+
+### 4. Summary strip is introduced
+
+A dedicated summary block now exposes:
+
+- visible range
+- current page / total pages
+- current billing collection label
+
+This improves orientation, especially when the billing dataset grows.
+
+### 5. Table structure becomes modular
+
+The old single-file table logic is replaced by a modular structure with:
+
+- column contract model
+- header widget
+- row widget
+- table shell
+- pagination footer
+
+This makes later iterations safer because the workbench can now evolve without reopening the whole billing feature in a monolithic way.
+
+### 6. Legacy compatibility remains available
+
+`BillingDocumentsTable` is preserved as a compatibility wrapper that now delegates to the new workbench shell.
+
+That means the repository keeps a safer migration boundary while the canonical billing caller already uses the new workbench directly.
+
+## Validation
+
+Phase 14.2.1 is correctly represented only if the current ZIP now supports all of the following:
+
+- `BillingWidget` uses a workbench-oriented presentation surface
+- pagination is handled locally in the billing presentation layer
+- rows-per-page can be changed without touching backend contracts
+- billing still supports downloading a document from each visible row
+- the workbench adapts by constraints rather than platform branching
+- the previous `BillingDocumentsTable` path remains usable as a compatibility wrapper
+
+The current ZIP supports that reading.
+
+## Risks
+
+Primary controlled risks in this subphase were:
+
+- introducing too much behavior into presentation state
+- accidentally changing the billing download contract
+- making the workbench assume full-screen instead of an embedded window environment
+- adding sorting/filtering/grouping too early and overloading the phase
+
+The implementation avoids those risks by:
+
+- keeping pagination local and presentation-only
+- preserving the row download action contract
+- keeping the workbench embedded-friendly
+- limiting this subphase to toolbar + summary + table + pagination baseline
+
+## Conclusion
+
+Phase 14.2.1 completes the first real billing workbench baseline.
+
+The billing feature no longer presents its documents through a temporary-feeling embedded table alone.
+It now exposes a structured workbench surface with:
+
+- toolbar
+- summary
+- paginated table rhythm
+- footer navigation
+- preserved download behavior
+
+This leaves the project in a stronger position for the next billing modernization steps without reopening architecture, runtime, business logic, or backend contracts.
