@@ -228,6 +228,7 @@ class BillingController {
     required int rowsPerPage,
     required String sortField,
     required bool sortAsc,
+    required String searchText,
   }) async {
     final currentClientIndex = resolveCurrentClientIndex(ref: ref);
 
@@ -242,6 +243,7 @@ class BillingController {
       rowsPerPage: rowsPerPage,
       sortField: sortField,
       sortAsc: sortAsc,
+      searchText: searchText,
     );
 
     if (!result.success) {
@@ -431,6 +433,43 @@ class BillingController {
     }
   }
 
+  bool hasActiveSearch({
+    required String searchText,
+  }) {
+    return searchText.trim().isNotEmpty;
+  }
+
+  String resolveBillingFilteredEmptyTitle({
+    required String billingType,
+    required String searchText,
+  }) {
+    final normalizedSearch = searchText.trim();
+    if (normalizedSearch.isEmpty) {
+      return resolveBillingEmptyTitle(
+        billingType: billingType,
+      );
+    }
+
+    final label = resolveBillingCollectionLabel(
+      billingType: billingType,
+    );
+    return 'No encontramos $label para la búsqueda actual';
+  }
+
+  String resolveBillingFilteredEmptyMessage({
+    required String billingType,
+    required String searchText,
+  }) {
+    final normalizedSearch = searchText.trim();
+    if (normalizedSearch.isEmpty) {
+      return resolveBillingEmptyMessage(
+        billingType: billingType,
+      );
+    }
+
+    return 'No encontramos resultados para "$normalizedSearch". Probá con otro número de comprobante o limpiá la búsqueda.';
+  }
+
   Future<BillingLoadResult> loadBillingData({
     required WidgetRef ref,
     required String threadHashID,
@@ -442,6 +481,7 @@ class BillingController {
     required int rowsPerPage,
     required String sortField,
     required bool sortAsc,
+    required String searchText,
   }) async {
     const String functionName = 'loadBillingData';
     final String logFunctionName = '$_logClassName.$functionName';
@@ -510,7 +550,7 @@ class BillingController {
       pHeaderParamsRequests.sortField = sortField;
       pHeaderParamsRequests.sortIndex = 0;
       pHeaderParamsRequests.sortAsc = sortAsc;
-      pHeaderParamsRequests.search = "";
+      pHeaderParamsRequests.search = searchText.trim();
       pHeaderParamsRequests.table = tEnteDataModel.cEncRecord.iDefaultTable();
 
       final currentClient = serviceProvider.activeClient;

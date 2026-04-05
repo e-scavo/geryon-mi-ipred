@@ -8,6 +8,7 @@ class BillingWorkbenchSummary extends StatelessWidget {
   final int currentPage;
   final int totalPages;
   final bool compact;
+  final String searchText;
 
   const BillingWorkbenchSummary({
     super.key,
@@ -18,13 +19,14 @@ class BillingWorkbenchSummary extends StatelessWidget {
     required this.currentPage,
     required this.totalPages,
     required this.compact,
+    required this.searchText,
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    final items = <Widget>[
+    final List<Widget> items = <Widget>[
       _SummaryTile(
         label: 'Rango visible',
         value: totalItems == 0
@@ -41,6 +43,16 @@ class BillingWorkbenchSummary extends StatelessWidget {
       ),
     ];
 
+    final normalizedSearch = searchText.trim();
+    if (normalizedSearch.isNotEmpty) {
+      items.add(
+        _SummaryTile(
+          label: 'Búsqueda',
+          value: normalizedSearch,
+        ),
+      );
+    }
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(14),
@@ -53,22 +65,26 @@ class BillingWorkbenchSummary extends StatelessWidget {
           ? Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: items
+                  .asMap()
+                  .entries
                   .map(
-                    (item) => Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: item,
+                    (entry) => Padding(
+                      padding: EdgeInsets.only(
+                        bottom: entry.key == items.length - 1 ? 0 : 12,
+                      ),
+                      child: entry.value,
                     ),
                   )
                   .toList(growable: false),
             )
-          : Row(
+          : Wrap(
+              spacing: 12,
+              runSpacing: 12,
               children: items
                   .map(
-                    (item) => Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.only(right: 12),
-                        child: item,
-                      ),
+                    (item) => SizedBox(
+                      width: 180,
+                      child: item,
                     ),
                   )
                   .toList(growable: false),

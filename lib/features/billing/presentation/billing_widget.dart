@@ -49,6 +49,7 @@ class _BillingWidgetState extends ConsumerState<BillingWidget> {
   int _currentPage = 1;
   String _sortField = 'FechaCpbte';
   bool _sortAsc = false;
+  String _searchText = '';
 
   @override
   void initState() {
@@ -81,6 +82,7 @@ class _BillingWidgetState extends ConsumerState<BillingWidget> {
     int? rowsPerPage,
     String? sortField,
     bool? sortAsc,
+    String? searchText,
   }) async {
     const String functionName = 'BillingWidget._reloadBillingData';
     final String logFunctionName = '.::$functionName::.';
@@ -89,6 +91,7 @@ class _BillingWidgetState extends ConsumerState<BillingWidget> {
     final int nextRowsPerPage = rowsPerPage ?? _rowsPerPage;
     final String nextSortField = sortField ?? _sortField;
     final bool nextSortAsc = sortAsc ?? _sortAsc;
+    final String nextSearchText = searchText ?? _searchText;
 
     if (mounted) {
       setState(() {
@@ -96,6 +99,7 @@ class _BillingWidgetState extends ConsumerState<BillingWidget> {
         _rowsPerPage = nextRowsPerPage;
         _sortField = nextSortField;
         _sortAsc = nextSortAsc;
+        _searchText = nextSearchText;
         _billingState = _controller.buildLoadingState(
           currentState: _billingState,
           trackedClientIndex: currentClientIndex,
@@ -114,6 +118,7 @@ class _BillingWidgetState extends ConsumerState<BillingWidget> {
       rowsPerPage: _rowsPerPage,
       sortField: _sortField,
       sortAsc: _sortAsc,
+      searchText: _searchText,
     );
 
     if (!mounted) {
@@ -292,6 +297,31 @@ Error: ${e.toString()}
     ));
   }
 
+  void _requestBillingSearchSubmit(String value) {
+    final String normalizedSearch = value.trim();
+    if (normalizedSearch == _searchText) {
+      return;
+    }
+
+    unawaited(_reloadBillingData(
+      page: 1,
+      rowsPerPage: _rowsPerPage,
+      searchText: normalizedSearch,
+    ));
+  }
+
+  void _requestBillingClearSearch() {
+    if (_searchText.isEmpty) {
+      return;
+    }
+
+    unawaited(_reloadBillingData(
+      page: 1,
+      rowsPerPage: _rowsPerPage,
+      searchText: '',
+    ));
+  }
+
   @override
   Widget build(BuildContext context) {
     String functionName = 'BillingWidget.build';
@@ -370,17 +400,34 @@ Error: ${e.toString()}
       }
 
       if (_controller.isEmptyState(state: _billingState)) {
+        final bool hasActiveSearch = _controller.hasActiveSearch(
+          searchText: _searchText,
+        );
+
         return Padding(
           padding: const EdgeInsets.all(18),
           child: FeatureEmptyState(
-            title: _controller.resolveBillingEmptyTitle(
-              billingType: widget.pType,
-            ),
-            message: _controller.resolveBillingEmptyMessage(
-              billingType: widget.pType,
-            ),
-            actionLabel: 'Actualizar listado',
-            onAction: _requestBillingReload,
+            title: hasActiveSearch
+                ? _controller.resolveBillingFilteredEmptyTitle(
+                    billingType: widget.pType,
+                    searchText: _searchText,
+                  )
+                : _controller.resolveBillingEmptyTitle(
+                    billingType: widget.pType,
+                  ),
+            message: hasActiveSearch
+                ? _controller.resolveBillingFilteredEmptyMessage(
+                    billingType: widget.pType,
+                    searchText: _searchText,
+                  )
+                : _controller.resolveBillingEmptyMessage(
+                    billingType: widget.pType,
+                  ),
+            actionLabel:
+                hasActiveSearch ? 'Limpiar búsqueda' : 'Actualizar listado',
+            onAction: hasActiveSearch
+                ? _requestBillingClearSearch
+                : _requestBillingReload,
           ),
         );
       }
@@ -410,10 +457,13 @@ Error: ${e.toString()}
           totalItems: totalItems,
           sortField: _sortField,
           sortAsc: _sortAsc,
+          searchText: _searchText,
           onRefresh: _requestBillingReload,
           onPageChanged: _requestBillingPageChange,
           onRowsPerPageChanged: _requestBillingRowsPerPageChange,
           onSortChanged: _requestBillingSortChange,
+          onSearchSubmitted: _requestBillingSearchSubmit,
+          onClearSearch: _requestBillingClearSearch,
         ),
       );
     }

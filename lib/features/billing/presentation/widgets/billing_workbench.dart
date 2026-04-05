@@ -22,10 +22,13 @@ class BillingWorkbench extends StatelessWidget {
   final int totalItems;
   final String sortField;
   final bool sortAsc;
+  final String searchText;
   final VoidCallback? onRefresh;
   final ValueChanged<int>? onPageChanged;
   final ValueChanged<int>? onRowsPerPageChanged;
   final void Function(String sortField, bool sortAsc)? onSortChanged;
+  final ValueChanged<String>? onSearchSubmitted;
+  final VoidCallback? onClearSearch;
 
   const BillingWorkbench({
     super.key,
@@ -37,10 +40,13 @@ class BillingWorkbench extends StatelessWidget {
     required this.totalItems,
     required this.sortField,
     required this.sortAsc,
+    required this.searchText,
     this.onRefresh,
     this.onPageChanged,
     this.onRowsPerPageChanged,
     this.onSortChanged,
+    this.onSearchSubmitted,
+    this.onClearSearch,
   });
 
   static const List<int> availableRowsPerPage = <int>[10, 20, 50];
@@ -171,10 +177,13 @@ class BillingWorkbench extends StatelessWidget {
           rowsPerPage: rowsPerPage,
           availableRowsPerPage: availableRowsPerPage,
           compact: _isCompact,
+          searchText: searchText,
           onRefresh: onRefresh,
           onRowsPerPageChanged: (value) {
             onRowsPerPageChanged?.call(value);
           },
+          onSearchSubmitted: onSearchSubmitted,
+          onClearSearch: onClearSearch,
         ),
         const SizedBox(height: 14),
         BillingWorkbenchSummary(
@@ -185,6 +194,7 @@ class BillingWorkbench extends StatelessWidget {
           currentPage: _pageState.safeCurrentPage,
           totalPages: _pageState.totalPages,
           compact: _isCompact,
+          searchText: searchText,
         ),
         const SizedBox(height: 14),
         BillingWorkbenchTable(

@@ -378,3 +378,31 @@ The billing surface now behaves more like an actual workbench:
 - the active sort direction is visible in the header
 - the backend receives the requested ordering together with pagination
 - the workbench remains stable in layout, scroll behavior, and row download actions
+
+
+## Phase 14.2.2.2 — Search & Filter Entry Layer
+
+### Objective
+
+Add the first useful discovery layer on top of the stabilized billing workbench so users can reduce the voucher universe without losing backend pagination, backend sorting, horizontal access, or row download behavior.
+
+### Implementation Characteristics
+
+The current ZIP confirms full backend support for `Search` in the shared request header, but it does not provide equally explicit evidence for a billing-specific date-range contract in this exact flow. Because of that, this phase implements the search layer completely and handles the date-range portion honestly rather than faking unsupported filtering.
+
+The applied changes are intentionally narrow:
+
+- `BillingWidget` now owns `searchText` together with page, page size, and sort state
+- `BillingController` now forwards the real search string into `HeaderParamsRequest.search`
+- the billing toolbar now exposes a visible search input, submit action, and clear action
+- the workbench summary now reflects active search context
+- empty states now distinguish between “no vouchers available” and “no results for the current search”
+
+### Result
+
+The billing workbench is now meaningfully faster to explore in day-to-day use:
+
+- users can search vouchers directly from the toolbar
+- clearing the search resets the listing cleanly back to page `1`
+- backend paging and backend sorting stay intact
+- the UI no longer pretends to support date-range filtering without a verified contract for that exact backend path
