@@ -220,14 +220,16 @@ class BillingWorkbench extends StatelessWidget {
           visibleTo: _pageState.visibleTo,
           totalItems: totalItems,
           compact: _isCompact,
+          isRefreshing: isRefreshing,
           onPreviousPage: () {
-            if (_pageState.safeCurrentPage <= 1) {
+            if (_pageState.safeCurrentPage <= 1 || isRefreshing) {
               return;
             }
             onPageChanged?.call(_pageState.safeCurrentPage - 1);
           },
           onNextPage: () {
-            if (_pageState.safeCurrentPage >= _pageState.totalPages) {
+            if (_pageState.safeCurrentPage >= _pageState.totalPages ||
+                isRefreshing) {
               return;
             }
             onPageChanged?.call(_pageState.safeCurrentPage + 1);
