@@ -406,3 +406,29 @@ The billing workbench is now meaningfully faster to explore in day-to-day use:
 - clearing the search resets the listing cleanly back to page `1`
 - backend paging and backend sorting stay intact
 - the UI no longer pretends to support date-range filtering without a verified contract for that exact backend path
+
+
+## Phase 14.2.2.3 — Table Interaction Rhythm & State Feedback
+
+### Objective
+
+Refine the billing workbench interaction layer so the table communicates interactivity more clearly, feels lighter during paging, sort, and search refreshes, and reads more like a professional operator-facing surface without changing the already-stabilized backend contracts.
+
+### Implementation Characteristics
+
+This phase keeps the workbench structure intact and focuses on interaction feedback and visual rhythm:
+
+- billing interaction reloads now preserve the current table surface and show a localized refresh state instead of always replacing the whole section with a large loading state
+- sortable headers now expose clearer hover affordance, active-sort emphasis, and a more legible direction indicator
+- table rows now react with a soft hover treatment and tighter, more deliberate row density
+- the toolbar, summary strip, and pagination footer now share a more coherent card rhythm and spacing
+- summary tiles gained lightweight iconography to better segment context without redesigning the module
+
+### Result
+
+The billing workbench now feels calmer and more explicit in day-to-day use:
+
+- users can immediately identify sortable headers
+- row scanning is easier because hover rhythm and spacing are clearer
+- search, sorting, and paging refreshes feel less disruptive
+- the module reads as one coherent workbench instead of a stack of correct but flatter blocks

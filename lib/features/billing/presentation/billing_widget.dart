@@ -50,6 +50,7 @@ class _BillingWidgetState extends ConsumerState<BillingWidget> {
   String _sortField = 'FechaCpbte';
   bool _sortAsc = false;
   String _searchText = '';
+  bool _isInteractionLoading = false;
 
   @override
   void initState() {
@@ -92,6 +93,8 @@ class _BillingWidgetState extends ConsumerState<BillingWidget> {
     final String nextSortField = sortField ?? _sortField;
     final bool nextSortAsc = sortAsc ?? _sortAsc;
     final String nextSearchText = searchText ?? _searchText;
+    final bool hadVisibleData =
+        _billingState.dataModel != null && !_billingState.hasError;
 
     if (mounted) {
       setState(() {
@@ -100,6 +103,7 @@ class _BillingWidgetState extends ConsumerState<BillingWidget> {
         _sortField = nextSortField;
         _sortAsc = nextSortAsc;
         _searchText = nextSearchText;
+        _isInteractionLoading = hadVisibleData;
         _billingState = _controller.buildLoadingState(
           currentState: _billingState,
           trackedClientIndex: currentClientIndex,
@@ -132,6 +136,7 @@ class _BillingWidgetState extends ConsumerState<BillingWidget> {
       );
       setState(() {
         _billingState = nextState;
+        _isInteractionLoading = false;
       });
       return;
     }
@@ -155,6 +160,7 @@ class _BillingWidgetState extends ConsumerState<BillingWidget> {
 
     setState(() {
       _billingState = nextState;
+      _isInteractionLoading = false;
     });
 
     developer.log(
@@ -370,7 +376,7 @@ Error: ${e.toString()}
     Widget buildWindowBody({
       required BoxConstraints constraints,
     }) {
-      if (_billingState.isLoading) {
+      if (_billingState.isLoading && _billingState.dataModel == null) {
         return Padding(
           padding: const EdgeInsets.all(18),
           child: LoadingGeneric(
@@ -464,6 +470,7 @@ Error: ${e.toString()}
           onSortChanged: _requestBillingSortChange,
           onSearchSubmitted: _requestBillingSearchSubmit,
           onClearSearch: _requestBillingClearSearch,
+          isRefreshing: _isInteractionLoading,
         ),
       );
     }

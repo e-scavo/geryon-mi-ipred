@@ -19,12 +19,10 @@ class BillingWorkbenchHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return SizedBox(
       width: tableWidth,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
           color: Colors.grey.shade100,
           border: Border(
@@ -41,9 +39,6 @@ class BillingWorkbenchHeader extends StatelessWidget {
                     sortField: sortField,
                     sortAsc: sortAsc,
                     onSortRequested: onSortRequested,
-                    textStyle: theme.textTheme.labelLarge?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
                   ),
                 ),
               )
@@ -54,67 +49,102 @@ class BillingWorkbenchHeader extends StatelessWidget {
   }
 }
 
-class _HeaderCell extends StatelessWidget {
+class _HeaderCell extends StatefulWidget {
   final BillingWorkbenchColumn column;
   final String sortField;
   final bool sortAsc;
   final ValueChanged<BillingWorkbenchColumn>? onSortRequested;
-  final TextStyle? textStyle;
 
   const _HeaderCell({
     required this.column,
     required this.sortField,
     required this.sortAsc,
     required this.onSortRequested,
-    required this.textStyle,
   });
 
+  @override
+  State<_HeaderCell> createState() => _HeaderCellState();
+}
+
+class _HeaderCellState extends State<_HeaderCell> {
+  bool _hovered = false;
+
   bool get _isActiveSort =>
-      column.sortable &&
-      column.sortField != null &&
-      column.sortField == sortField;
+      widget.column.sortable &&
+      widget.column.sortField != null &&
+      widget.column.sortField == widget.sortField;
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final bool interactive =
+        widget.column.sortable && widget.column.sortField != null;
+    final Color foregroundColor = _isActiveSort
+        ? theme.colorScheme.primary
+        : (_hovered && interactive
+            ? theme.colorScheme.primary.withValues(alpha: 0.90)
+            : (theme.textTheme.labelLarge?.color ?? Colors.black87));
+    final FontWeight weight = _isActiveSort ? FontWeight.w800 : FontWeight.w700;
+
     final Widget label = Text(
-      column.label,
+      widget.column.label,
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
-      style: textStyle,
+      style: theme.textTheme.labelLarge?.copyWith(
+        fontWeight: weight,
+        color: foregroundColor,
+      ),
     );
 
-    if (!column.sortable || column.sortField == null) {
+    if (!interactive) {
       return Align(
-        alignment: column.alignment,
+        alignment: widget.column.alignment,
         child: label,
       );
     }
 
-    final Color activeColor = Theme.of(context).colorScheme.primary;
-    final IconData iconData = _isActiveSort
-        ? (sortAsc ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded)
-        : Icons.unfold_more_rounded;
-
-    final Color? iconColor = _isActiveSort ? activeColor : Colors.grey.shade500;
+    final IconData indicator = _isActiveSort
+        ? (widget.sortAsc ? Icons.arrow_upward : Icons.arrow_downward)
+        : Icons.unfold_more;
 
     return Align(
-      alignment: column.alignment,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(8),
-        onTap: () => onSortRequested?.call(column),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Flexible(child: label),
-              const SizedBox(width: 6),
-              Icon(
-                iconData,
-                size: 16,
-                color: iconColor,
+      alignment: widget.column.alignment,
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        onEnter: (_) => setState(() => _hovered = true),
+        onExit: (_) => setState(() => _hovered = false),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(10),
+            onTap: () => widget.onSortRequested?.call(widget.column),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 160),
+              curve: Curves.easeOut,
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+              decoration: BoxDecoration(
+                color: _isActiveSort
+                    ? theme.colorScheme.primary.withValues(alpha: 0.10)
+                    : (_hovered
+                        ? theme.colorScheme.primary.withValues(alpha: 0.06)
+                        : Colors.transparent),
+                borderRadius: BorderRadius.circular(10),
               ),
-            ],
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Flexible(child: label),
+                  const SizedBox(width: 6),
+                  Icon(
+                    indicator,
+                    size: 16,
+                    color: _isActiveSort
+                        ? theme.colorScheme.primary
+                        : foregroundColor.withValues(alpha: 0.78),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       ),

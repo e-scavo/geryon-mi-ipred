@@ -29,6 +29,7 @@ class BillingWorkbench extends StatelessWidget {
   final void Function(String sortField, bool sortAsc)? onSortChanged;
   final ValueChanged<String>? onSearchSubmitted;
   final VoidCallback? onClearSearch;
+  final bool isRefreshing;
 
   const BillingWorkbench({
     super.key,
@@ -47,6 +48,7 @@ class BillingWorkbench extends StatelessWidget {
     this.onSortChanged,
     this.onSearchSubmitted,
     this.onClearSearch,
+    this.isRefreshing = false,
   });
 
   static const List<int> availableRowsPerPage = <int>[10, 20, 50];
@@ -178,6 +180,7 @@ class BillingWorkbench extends StatelessWidget {
           availableRowsPerPage: availableRowsPerPage,
           compact: _isCompact,
           searchText: searchText,
+          isRefreshing: isRefreshing,
           onRefresh: onRefresh,
           onRowsPerPageChanged: (value) {
             onRowsPerPageChanged?.call(value);
@@ -185,7 +188,7 @@ class BillingWorkbench extends StatelessWidget {
           onSearchSubmitted: onSearchSubmitted,
           onClearSearch: onClearSearch,
         ),
-        const SizedBox(height: 14),
+        const SizedBox(height: 12),
         BillingWorkbenchSummary(
           collectionLabel: collectionLabel,
           totalItems: totalItems,
@@ -196,7 +199,7 @@ class BillingWorkbench extends StatelessWidget {
           compact: _isCompact,
           searchText: searchText,
         ),
-        const SizedBox(height: 14),
+        const SizedBox(height: 12),
         BillingWorkbenchTable(
           rows: data,
           columns: _columns,
@@ -207,8 +210,9 @@ class BillingWorkbench extends StatelessWidget {
           onDownload: (item) {
             _downloadVoucher(item);
           },
+          isRefreshing: isRefreshing,
         ),
-        const SizedBox(height: 14),
+        const SizedBox(height: 12),
         BillingWorkbenchPagination(
           currentPage: _pageState.safeCurrentPage,
           totalPages: _pageState.totalPages,

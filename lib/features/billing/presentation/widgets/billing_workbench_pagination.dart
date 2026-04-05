@@ -64,18 +64,27 @@ class BillingWorkbenchPagination extends StatelessWidget {
       ],
     );
 
-    if (compact) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [pageInfo, const SizedBox(height: 12), navButtons],
-      );
-    }
+    final content = compact
+        ? Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [pageInfo, const SizedBox(height: 12), navButtons],
+          )
+        : Row(
+            children: [
+              Expanded(child: pageInfo),
+              navButtons,
+            ],
+          );
 
-    return Row(
-      children: [
-        Expanded(child: pageInfo),
-        navButtons,
-      ],
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: content,
     );
   }
 }

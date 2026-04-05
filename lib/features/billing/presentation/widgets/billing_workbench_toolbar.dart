@@ -7,6 +7,7 @@ class BillingWorkbenchToolbar extends StatefulWidget {
   final List<int> availableRowsPerPage;
   final bool compact;
   final String searchText;
+  final bool isRefreshing;
   final VoidCallback? onRefresh;
   final ValueChanged<int> onRowsPerPageChanged;
   final ValueChanged<String>? onSearchSubmitted;
@@ -20,6 +21,7 @@ class BillingWorkbenchToolbar extends StatefulWidget {
     required this.availableRowsPerPage,
     required this.compact,
     required this.searchText,
+    required this.isRefreshing,
     required this.onRowsPerPageChanged,
     this.onRefresh,
     this.onSearchSubmitted,
@@ -80,146 +82,187 @@ class _BillingWorkbenchToolbarState extends State<BillingWorkbenchToolbar> {
             color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.75),
           ),
         ),
-        if (widget.searchText.trim().isNotEmpty) ...[
-          const SizedBox(height: 4),
-          Text(
-            'Búsqueda activa: "${widget.searchText.trim()}"',
-            style: theme.textTheme.bodySmall?.copyWith(
-              fontWeight: FontWeight.w600,
+        const SizedBox(height: 6),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.primary.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Text(
+                '${widget.totalItems} ${widget.collectionLabel}',
+                style: theme.textTheme.labelMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: theme.colorScheme.primary,
+                ),
+              ),
             ),
-          ),
-        ],
+            if (widget.searchText.trim().isNotEmpty)
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
+                  'Búsqueda: "${widget.searchText.trim()}"',
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            if (widget.isRefreshing)
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primary.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      width: 12,
+                      height: 12,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: theme.colorScheme.primary,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Actualizando',
+                      style: theme.textTheme.labelMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: theme.colorScheme.primary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
       ],
     );
 
-    final rowsPerPageOptions = <int>{
-      ...widget.availableRowsPerPage,
-      widget.rowsPerPage,
-    }.toList()
-      ..sort();
-
-    final Widget searchField = ConstrainedBox(
-      constraints: BoxConstraints(
-        minWidth: widget.compact ? 220 : 260,
-        maxWidth: widget.compact ? 360 : 420,
-      ),
+    final searchField = SizedBox(
+      width: widget.compact ? double.infinity : 280,
       child: TextField(
         controller: _searchController,
         textInputAction: TextInputAction.search,
         onSubmitted: (_) => _submitSearch(),
         decoration: InputDecoration(
-          isDense: true,
           hintText: 'Buscar comprobante',
-          prefixIcon: const Icon(Icons.search_rounded),
+          prefixIcon: const Icon(Icons.search),
           suffixIcon: _searchController.text.trim().isEmpty
               ? null
               : IconButton(
                   tooltip: 'Limpiar búsqueda',
                   onPressed: _clearSearch,
-                  icon: const Icon(Icons.close_rounded),
+                  icon: const Icon(Icons.close),
                 ),
+          isDense: true,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
           ),
         ),
-        onChanged: (_) {
-          setState(() {});
-        },
+        onChanged: (_) => setState(() {}),
       ),
     );
 
     final controls = Wrap(
-      spacing: 12,
-      runSpacing: 12,
+      spacing: 10,
+      runSpacing: 10,
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: BoxDecoration(
-            color: Colors.grey.shade100,
-            borderRadius: BorderRadius.circular(999),
-            border: Border.all(color: Colors.grey.shade300),
-          ),
-          child: Text(
-            '${widget.totalItems} ${widget.collectionLabel}',
-            style: theme.textTheme.labelMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
         searchField,
         FilledButton.icon(
-          onPressed: _submitSearch,
+          onPressed: widget.isRefreshing ? null : _submitSearch,
           icon: const Icon(Icons.search),
           label: const Text('Buscar'),
         ),
         if (widget.searchText.trim().isNotEmpty)
           OutlinedButton.icon(
-            onPressed: _clearSearch,
+            onPressed: widget.isRefreshing ? null : _clearSearch,
             icon: const Icon(Icons.filter_alt_off_outlined),
             label: const Text('Limpiar'),
           ),
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Filas',
-              style: theme.textTheme.labelMedium,
+        DropdownButtonHideUnderline(
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey.shade300),
+              borderRadius: BorderRadius.circular(12),
+              color: Colors.white,
             ),
-            const SizedBox(width: 8),
-            DropdownButtonHideUnderline(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
               child: DropdownButton<int>(
                 value: widget.rowsPerPage,
                 borderRadius: BorderRadius.circular(12),
-                items: rowsPerPageOptions
+                items: widget.availableRowsPerPage
                     .map(
                       (value) => DropdownMenuItem<int>(
                         value: value,
-                        child: Text(value.toString()),
+                        child: Text('$value filas'),
                       ),
                     )
                     .toList(growable: false),
-                onChanged: (value) {
-                  if (value == null) {
-                    return;
-                  }
-                  widget.onRowsPerPageChanged(value);
-                },
+                onChanged: widget.isRefreshing
+                    ? null
+                    : (value) {
+                        if (value != null) {
+                          widget.onRowsPerPageChanged(value);
+                        }
+                      },
               ),
             ),
-          ],
+          ),
         ),
-        FilledButton.icon(
-          onPressed: widget.onRefresh,
+        IconButton.filledTonal(
+          tooltip: 'Actualizar listado',
+          onPressed: widget.isRefreshing ? null : widget.onRefresh,
           icon: const Icon(Icons.refresh),
-          label: const Text('Actualizar'),
         ),
       ],
     );
 
-    if (widget.compact) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          infoBlock,
-          const SizedBox(height: 12),
-          controls,
-        ],
-      );
-    }
-
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(child: infoBlock),
-        const SizedBox(width: 16),
-        Flexible(
-          child: Align(
-            alignment: Alignment.centerRight,
-            child: controls,
-          ),
-        ),
-      ],
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: widget.compact
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                infoBlock,
+                const SizedBox(height: 12),
+                controls,
+              ],
+            )
+          : Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(child: infoBlock),
+                const SizedBox(width: 16),
+                Flexible(
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: controls,
+                  ),
+                ),
+              ],
+            ),
     );
   }
 }
