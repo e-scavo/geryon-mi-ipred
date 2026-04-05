@@ -20,9 +20,12 @@ class BillingWorkbench extends StatelessWidget {
   final int currentPage;
   final int rowsPerPage;
   final int totalItems;
+  final String sortField;
+  final bool sortAsc;
   final VoidCallback? onRefresh;
   final ValueChanged<int>? onPageChanged;
   final ValueChanged<int>? onRowsPerPageChanged;
+  final void Function(String sortField, bool sortAsc)? onSortChanged;
 
   const BillingWorkbench({
     super.key,
@@ -32,9 +35,12 @@ class BillingWorkbench extends StatelessWidget {
     required this.currentPage,
     required this.rowsPerPage,
     required this.totalItems,
+    required this.sortField,
+    required this.sortAsc,
     this.onRefresh,
     this.onPageChanged,
     this.onRowsPerPageChanged,
+    this.onSortChanged,
   });
 
   static const List<int> availableRowsPerPage = <int>[10, 20, 50];
@@ -44,17 +50,23 @@ class BillingWorkbench extends StatelessWidget {
           key: 'NroCpbte',
           label: 'Nº de comprobante',
           width: 220,
+          sortable: true,
+          sortField: 'NroCpbte',
         ),
         BillingWorkbenchColumn(
           key: 'FechaCpbte',
           label: 'Fecha',
           width: 180,
+          sortable: true,
+          sortField: 'FechaCpbte',
         ),
         BillingWorkbenchColumn(
           key: 'ImporteTotalConImpuestos',
           label: 'Monto',
           width: 200,
           alignment: Alignment.centerRight,
+          sortable: true,
+          sortField: 'ImporteTotalConImpuestos',
         ),
         BillingWorkbenchColumn(
           key: 'download',
@@ -136,6 +148,16 @@ class BillingWorkbench extends StatelessWidget {
     );
   }
 
+  void _handleSortRequested(BillingWorkbenchColumn column) {
+    if (!column.sortable || column.sortField == null) {
+      return;
+    }
+
+    final bool nextSortAsc = sortField == column.sortField ? !sortAsc : true;
+
+    onSortChanged?.call(column.sortField!, nextSortAsc);
+  }
+
   @override
   Widget build(BuildContext context) {
     final double effectiveTableWidth = _resolveEffectiveTableWidth();
@@ -169,6 +191,9 @@ class BillingWorkbench extends StatelessWidget {
           rows: data,
           columns: _columns,
           tableWidth: effectiveTableWidth,
+          sortField: sortField,
+          sortAsc: sortAsc,
+          onSortRequested: _handleSortRequested,
           onDownload: (item) {
             _downloadVoucher(item);
           },

@@ -47,6 +47,8 @@ class _BillingWidgetState extends ConsumerState<BillingWidget> {
   ProviderSubscription<ServiceProvider>? _subscription;
   late int _rowsPerPage;
   int _currentPage = 1;
+  String _sortField = 'FechaCpbte';
+  bool _sortAsc = false;
 
   @override
   void initState() {
@@ -77,17 +79,23 @@ class _BillingWidgetState extends ConsumerState<BillingWidget> {
   Future<void> _reloadBillingData({
     int? page,
     int? rowsPerPage,
+    String? sortField,
+    bool? sortAsc,
   }) async {
     const String functionName = 'BillingWidget._reloadBillingData';
     final String logFunctionName = '.::$functionName::.';
     final currentClientIndex = _controller.resolveCurrentClientIndex(ref: ref);
     final int nextPage = page ?? _currentPage;
     final int nextRowsPerPage = rowsPerPage ?? _rowsPerPage;
+    final String nextSortField = sortField ?? _sortField;
+    final bool nextSortAsc = sortAsc ?? _sortAsc;
 
     if (mounted) {
       setState(() {
         _currentPage = nextPage;
         _rowsPerPage = nextRowsPerPage;
+        _sortField = nextSortField;
+        _sortAsc = nextSortAsc;
         _billingState = _controller.buildLoadingState(
           currentState: _billingState,
           trackedClientIndex: currentClientIndex,
@@ -104,6 +112,8 @@ class _BillingWidgetState extends ConsumerState<BillingWidget> {
       debug: debug,
       currentPage: _currentPage,
       rowsPerPage: _rowsPerPage,
+      sortField: _sortField,
+      sortAsc: _sortAsc,
     );
 
     if (!mounted) {
@@ -269,6 +279,19 @@ Error: ${e.toString()}
     ));
   }
 
+  void _requestBillingSortChange(String nextSortField, bool nextSortAsc) {
+    if (nextSortField == _sortField && nextSortAsc == _sortAsc) {
+      return;
+    }
+
+    unawaited(_reloadBillingData(
+      page: 1,
+      rowsPerPage: _rowsPerPage,
+      sortField: nextSortField,
+      sortAsc: nextSortAsc,
+    ));
+  }
+
   @override
   Widget build(BuildContext context) {
     String functionName = 'BillingWidget.build';
@@ -385,9 +408,12 @@ Error: ${e.toString()}
           currentPage: _currentPage,
           rowsPerPage: _rowsPerPage,
           totalItems: totalItems,
+          sortField: _sortField,
+          sortAsc: _sortAsc,
           onRefresh: _requestBillingReload,
           onPageChanged: _requestBillingPageChange,
           onRowsPerPageChanged: _requestBillingRowsPerPageChange,
+          onSortChanged: _requestBillingSortChange,
         ),
       );
     }

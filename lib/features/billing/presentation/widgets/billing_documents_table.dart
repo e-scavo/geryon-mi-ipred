@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:geryon_web_app_ws_v2/features/billing/presentation/models/billing_workbench_column.dart';
@@ -8,6 +10,9 @@ class BillingWorkbenchTable extends StatefulWidget {
   final List<Map<String, dynamic>> rows;
   final List<BillingWorkbenchColumn> columns;
   final double tableWidth;
+  final String sortField;
+  final bool sortAsc;
+  final ValueChanged<BillingWorkbenchColumn>? onSortRequested;
   final ValueChanged<Map<String, dynamic>> onDownload;
 
   const BillingWorkbenchTable({
@@ -15,6 +20,9 @@ class BillingWorkbenchTable extends StatefulWidget {
     required this.rows,
     required this.columns,
     required this.tableWidth,
+    required this.sortField,
+    required this.sortAsc,
+    this.onSortRequested,
     required this.onDownload,
   });
 
@@ -49,68 +57,81 @@ class _BillingWorkbenchTableState extends State<BillingWorkbenchTable> {
       },
     );
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade300),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(14),
-        child: ScrollConfiguration(
-          behavior: scrollBehavior,
-          child: Scrollbar(
-            controller: _horizontalController,
-            thumbVisibility: true,
-            trackVisibility: true,
-            interactive: true,
-            notificationPredicate: (notification) =>
-                notification.metrics.axis == Axis.horizontal,
-            child: SingleChildScrollView(
-              controller: _horizontalController,
-              scrollDirection: Axis.horizontal,
-              physics: const ClampingScrollPhysics(),
-              child: SizedBox(
-                width: widget.tableWidth,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    BillingWorkbenchHeader(
-                      columns: widget.columns,
-                      tableWidth: widget.tableWidth,
-                    ),
-                    if (widget.rows.isEmpty)
-                      SizedBox(
-                        width: widget.tableWidth,
-                        child: Container(
-                          padding: const EdgeInsets.all(24),
-                          alignment: Alignment.center,
-                          child: const Text(
-                            'No hay comprobantes por mostrar en esta página.',
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      )
-                    else
-                      ...List.generate(
-                        widget.rows.length,
-                        (index) => BillingWorkbenchRow(
-                          item: widget.rows[index],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final double effectiveTableWidth = math.max(
+          widget.tableWidth,
+          constraints.hasBoundedWidth
+              ? constraints.maxWidth
+              : widget.tableWidth,
+        );
+
+        return DecoratedBox(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: Colors.grey.shade300),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(14),
+            child: ScrollConfiguration(
+              behavior: scrollBehavior,
+              child: Scrollbar(
+                controller: _horizontalController,
+                thumbVisibility: effectiveTableWidth > constraints.maxWidth,
+                trackVisibility: effectiveTableWidth > constraints.maxWidth,
+                interactive: true,
+                notificationPredicate: (notification) =>
+                    notification.metrics.axis == Axis.horizontal,
+                child: SingleChildScrollView(
+                  controller: _horizontalController,
+                  scrollDirection: Axis.horizontal,
+                  physics: const ClampingScrollPhysics(),
+                  child: SizedBox(
+                    width: effectiveTableWidth,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        BillingWorkbenchHeader(
                           columns: widget.columns,
-                          tableWidth: widget.tableWidth,
-                          alternate: index.isOdd,
-                          onDownload: () {
-                            widget.onDownload(widget.rows[index]);
-                          },
+                          tableWidth: effectiveTableWidth,
+                          sortField: widget.sortField,
+                          sortAsc: widget.sortAsc,
+                          onSortRequested: widget.onSortRequested,
                         ),
-                      ),
-                  ],
+                        if (widget.rows.isEmpty)
+                          SizedBox(
+                            width: effectiveTableWidth,
+                            child: Container(
+                              padding: const EdgeInsets.all(24),
+                              alignment: Alignment.center,
+                              child: const Text(
+                                'No hay comprobantes por mostrar en esta página.',
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          )
+                        else
+                          ...List.generate(
+                            widget.rows.length,
+                            (index) => BillingWorkbenchRow(
+                              item: widget.rows[index],
+                              columns: widget.columns,
+                              tableWidth: effectiveTableWidth,
+                              alternate: index.isOdd,
+                              onDownload: () =>
+                                  widget.onDownload(widget.rows[index]),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

@@ -663,8 +663,13 @@ Subphases:
 
 - `docs/phase14_surface_normalization_billing_workbench_modernization_14_2_1_1_billing_workbench_vertical_flow_overflow_stabilization.md`
 - `docs/phase14_surface_normalization_billing_workbench_modernization_14_2_1_2_billing_workbench_header_cleanup_horizontal_table_access_backend_pagination_alignment.md`
+- `docs/phase14_surface_normalization_billing_workbench_modernization_14_2_2_1_sortable_columns_query_state_wiring.md`
 
 
 ## Phase 14.2.1.3
 
 - Phase 14.2.1.3 completed as billing workbench table width harmonization and horizontal viewport alignment
+
+## Phase 14.2.2.1
+
+- Phase 14.2.2.1 completed as sortable columns and billing query-state wiring

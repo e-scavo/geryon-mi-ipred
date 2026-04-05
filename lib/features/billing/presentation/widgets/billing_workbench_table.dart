@@ -10,6 +10,9 @@ class BillingWorkbenchTable extends StatefulWidget {
   final List<Map<String, dynamic>> rows;
   final List<BillingWorkbenchColumn> columns;
   final double tableWidth;
+  final String sortField;
+  final bool sortAsc;
+  final ValueChanged<BillingWorkbenchColumn>? onSortRequested;
   final ValueChanged<Map<String, dynamic>> onDownload;
 
   const BillingWorkbenchTable({
@@ -17,6 +20,9 @@ class BillingWorkbenchTable extends StatefulWidget {
     required this.rows,
     required this.columns,
     required this.tableWidth,
+    required this.sortField,
+    required this.sortAsc,
+    this.onSortRequested,
     required this.onDownload,
   });
 
@@ -89,6 +95,9 @@ class _BillingWorkbenchTableState extends State<BillingWorkbenchTable> {
                         BillingWorkbenchHeader(
                           columns: widget.columns,
                           tableWidth: effectiveTableWidth,
+                          sortField: widget.sortField,
+                          sortAsc: widget.sortAsc,
+                          onSortRequested: widget.onSortRequested,
                         ),
                         if (widget.rows.isEmpty)
                           SizedBox(
@@ -110,9 +119,8 @@ class _BillingWorkbenchTableState extends State<BillingWorkbenchTable> {
                               columns: widget.columns,
                               tableWidth: effectiveTableWidth,
                               alternate: index.isOdd,
-                              onDownload: () {
-                                widget.onDownload(widget.rows[index]);
-                              },
+                              onDownload: () =>
+                                  widget.onDownload(widget.rows[index]),
                             ),
                           ),
                       ],

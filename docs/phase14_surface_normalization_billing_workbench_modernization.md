@@ -353,3 +353,28 @@ This stabilization keeps the existing backend pagination and billing interaction
 ### Result
 
 The billing table, summary, and footer now feel visually aligned inside the wider billing section, while small windows still retain horizontal access to the complete column set.
+
+## Phase 14.2.2.1 — Sortable Columns & Query-State Wiring
+
+### Objective
+
+Add true sortable-column interaction to the stabilized billing workbench so the table headers can drive backend ordering without breaking the already validated pagination, width alignment, and download behavior.
+
+### Implementation Characteristics
+
+This phase introduces a narrow query-state extension rather than a structural redesign:
+
+- `BillingWidget` now owns `sortField` and `sortAsc` together with `currentPage` and `rowsPerPage`
+- `BillingController` now forwards sort state into the backend request payload
+- the billing workbench column model now marks sortable columns explicitly
+- the billing header renders sortable cells with neutral and active direction indicators
+- changing the sort resets the visible page back to `1` before reloading
+
+### Result
+
+The billing surface now behaves more like an actual workbench:
+
+- voucher number, date, and amount can be sorted from the UI
+- the active sort direction is visible in the header
+- the backend receives the requested ordering together with pagination
+- the workbench remains stable in layout, scroll behavior, and row download actions

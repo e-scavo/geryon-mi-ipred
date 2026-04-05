@@ -226,6 +226,8 @@ class BillingController {
     required bool debug,
     required int currentPage,
     required int rowsPerPage,
+    required String sortField,
+    required bool sortAsc,
   }) async {
     final currentClientIndex = resolveCurrentClientIndex(ref: ref);
 
@@ -238,6 +240,8 @@ class BillingController {
       debug: debug,
       currentPage: currentPage,
       rowsPerPage: rowsPerPage,
+      sortField: sortField,
+      sortAsc: sortAsc,
     );
 
     if (!result.success) {
@@ -436,6 +440,8 @@ class BillingController {
     required bool debug,
     required int currentPage,
     required int rowsPerPage,
+    required String sortField,
+    required bool sortAsc,
   }) async {
     const String functionName = 'loadBillingData';
     final String logFunctionName = '$_logClassName.$functionName';
@@ -501,9 +507,9 @@ class BillingController {
       pHeaderParamsRequests.localRequest = ConstRequests.viewRequest.typeId;
       pHeaderParamsRequests.offset = resolvedOffset;
       pHeaderParamsRequests.pageSize = safeRowsPerPage;
-      pHeaderParamsRequests.sortField = 'FechaCpbte';
+      pHeaderParamsRequests.sortField = sortField;
       pHeaderParamsRequests.sortIndex = 0;
-      pHeaderParamsRequests.sortAsc = false;
+      pHeaderParamsRequests.sortAsc = sortAsc;
       pHeaderParamsRequests.search = "";
       pHeaderParamsRequests.table = tEnteDataModel.cEncRecord.iDefaultTable();
 
