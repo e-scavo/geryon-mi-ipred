@@ -1,16 +1,16 @@
 {
   "appName": "Mi IP·RED",
-  "generatedAt": "2026-04-03T16:04:58.887090",
+  "generatedAt": "2026-04-05T21:20:32.007166",
   "version": {
     "major": 1,
     "minor": 0,
     "patch": 0,
-    "build": 86,
+    "build": 87,
     "codeName": "gorrión",
-    "pubspecVersion": "1.0.0+86"
+    "pubspecVersion": "1.0.0+87"
   },
   "playStoreRoot": "distribution/play_store",
-  "publicationRoot": "distribution/play_store\\releases\\1.0.0+86",
+  "publicationRoot": "distribution/play_store\\releases\\1.0.0+87",
   "status": "fail",
   "requiredGroupsPassed": false,
   "optionalGroupsPassed": false,
