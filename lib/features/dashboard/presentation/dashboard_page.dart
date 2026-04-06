@@ -6,10 +6,10 @@ import 'package:geryon_web_app_ws_v2/common_vars.dart';
 import 'package:geryon_web_app_ws_v2/core/utils/utils.dart';
 import 'package:geryon_web_app_ws_v2/features/billing/presentation/billing_widget.dart';
 import 'package:geryon_web_app_ws_v2/features/dashboard/controllers/dashboard_controller.dart';
+import 'package:geryon_web_app_ws_v2/features/payment_methods/presentation/overlays/payment_methods_dialog_route.dart';
 import 'package:geryon_web_app_ws_v2/shared/widgets/loading_generic.dart';
 import 'package:geryon_web_app_ws_v2/models/ServiceProvider/login_data_user_message_model.dart';
 import 'package:geryon_web_app_ws_v2/shared/layouts/frame_with_scroll.dart';
-import 'package:geryon_web_app_ws_v2/shared/widgets/copyable_list_tile.dart';
 import 'package:geryon_web_app_ws_v2/shared/widgets/feature_empty_state.dart';
 import 'package:geryon_web_app_ws_v2/shared/widgets/feature_error_state.dart';
 import 'package:geryon_web_app_ws_v2/shared/widgets/info_card.dart';
@@ -246,62 +246,10 @@ class _DashboardContent extends StatelessWidget {
     BuildContext context,
     ServiceProviderLoginDataUserMessageModel userData,
   ) {
-    var today = DateTime.now();
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text("Medios de pago"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              CopyableListTile(
-                icon: Icons.account_circle,
-                label: "Alias",
-                value: userData.roelaAliasCuentaBancaria.isEmpty
-                    ? 'No disponible'
-                    : userData.roelaAliasCuentaBancaria,
-              ),
-              CopyableListTile(
-                icon: Icons.account_circle,
-                label: "Pago Fácil / Pago Mis Cuentas",
-                value: userData.codigoPMCnPF.isEmpty
-                    ? 'No disponible'
-                    : userData.codigoPMCnPF,
-              ),
-              CopyableListTile(
-                icon: Icons.account_circle,
-                label: "Código de barras",
-                value: userData.codigoBarrasPMCnPF.isEmpty
-                    ? 'No disponible'
-                    : userData.codigoBarrasPMCnPF,
-              ),
-              ListTile(
-                leading: const Icon(Icons.credit_card),
-                title: Text(
-                  "Saldo a pagar: ${userData.saldoActual.asStringWithPrecSpanish(2)}",
-                ),
-              ),
-              ListTile(
-                leading: const Icon(Icons.calendar_today),
-                title: Text("Último pago: ${userData.ultFechaPago.toES()}"),
-              ),
-              ListTile(
-                leading: const Icon(Icons.calendar_today),
-                title: Text(
-                  "Vencimiento: 10/${today.month.toString().padLeft(2, "0")}/${today.year}",
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("Cerrar"),
-            ),
-          ],
-        );
-      },
+    Navigator.of(context).push(
+      ScreenPoPUpPaymentMethodsDialog(
+        userData: userData,
+      ),
     );
   }
 

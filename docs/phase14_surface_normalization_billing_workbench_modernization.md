@@ -461,3 +461,49 @@ Se deja explícitamente fuera del alcance:
 - exportación
 
 El estado actual es apto para uso real y preparado para futuras extensiones.
+
+### Phase 14.3 — Payment Methods Surface Modernization
+
+Opened.
+
+Focus:
+
+- audit the current payment methods surface that still lives inside dashboard
+- keep the feature explicitly informational and backend-driven
+- normalize structural ownership under `lib/features/payment_methods/`
+- avoid introducing checkout, transaction state, or payment-gateway semantics
+- align the surface with the already consolidated feature/shared organization
+
+## Baseline Opened by Phase 14.3
+
+The repository now has a justified next surface-normalization target after the formal closure of Billing Workbench UX and interaction work.
+
+That target is the current payment methods dialog surface, which:
+
+- is active in product behavior
+- is currently triggered from dashboard
+- is still implemented inline inside dashboard presentation
+- is fed by backend-provided payment information
+- is informational only and not an in-app payment flow
+
+### Phase 14.3.2.1 — Payment Methods Feature Boundary & Overlay Extraction
+
+Implemented.
+
+Focus:
+
+- create the first canonical `payment_methods` feature boundary
+- extract the payment methods dialog into a dedicated overlay owner
+- add a dedicated popup route for the surface
+- keep the dashboard as trigger-only for `Ver medios de pago`
+- preserve the current backend-driven informational behavior without introducing transaction semantics
+
+## Final Baseline After Phase 14.3.2.1
+
+After Phase 14.3.2.1, the repository now has the first normalized ownership cut for Payment Methods:
+
+- the payment methods dialog now has a canonical home under `lib/features/payment_methods/presentation/overlays/`
+- the payment methods popup route now has a canonical feature-local import path
+- dashboard no longer owns the inline dialog implementation details
+- the visible feature contract remains informational and backend-driven
+- the project is now ready for further payment-method surface normalization without confusing the feature with an in-app checkout flow

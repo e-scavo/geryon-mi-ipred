@@ -691,3 +691,14 @@ Subphases:
 - Billing Workbench UX & Interaction Layer finalizada
 - Se consolida paginación, sorting, search y feedback UX
 - Se cierra formalmente la línea 14.2
+
+## Phase 14.3
+
+- Phase 14.3 opened as Payment Methods Surface Modernization after the formal closure of Phase 14.2
+- the current payment methods surface remains informational, backend-driven, and external-payment oriented
+- Phase 14.3.2.1 completed the first structural extraction cut by creating the payment methods feature boundary and moving the dialog ownership out of dashboard
+
+### Phase 14.3 — Payment Methods Surface Modernization
+
+Subphases:
+- `docs/phase14_surface_normalization_billing_workbench_modernization_14_3_2_1_payment_methods_feature_boundary_overlay_extraction.md`
