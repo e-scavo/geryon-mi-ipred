@@ -90,28 +90,24 @@ class PaymentMethodsDialog extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: const Icon(Icons.credit_card),
-                    title: Text(
-                      'Saldo actual: ${AppFormatters.currency(userData.saldoActual)}',
+                  CopyableListTile(
+                    icon: Icons.credit_card,
+                    label: 'Saldo actual',
+                    value: AppFormatters.currency(userData.saldoActual),
+                  ),
+                  const SizedBox(height: 12),
+                  CopyableListTile(
+                    icon: Icons.calendar_today,
+                    label: 'Último pago',
+                    value: AppFormatters.date(
+                      userData.ultFechaPago.toDateModel(),
                     ),
                   ),
                   const SizedBox(height: 12),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: const Icon(Icons.calendar_today),
-                    title: Text(
-                      'Último pago: ${AppFormatters.date(userData.ultFechaPago.toDateModel())}',
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: const Icon(Icons.calendar_today),
-                    title: Text(
-                      'Vencimiento: ${AppFormatters.dueDateFromReference(today)}',
-                    ),
+                  CopyableListTile(
+                    icon: Icons.calendar_today,
+                    label: 'Vencimiento',
+                    value: AppFormatters.dueDateFromReference(today),
                   ),
                 ],
               ),
