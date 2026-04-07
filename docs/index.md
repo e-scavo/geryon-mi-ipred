@@ -704,6 +704,7 @@ Subphases:
 - `docs/phase14_surface_normalization_billing_workbench_modernization_14_3_2_1_payment_methods_feature_boundary_overlay_extraction.md`
 - `docs/phase14_surface_normalization_billing_workbench_modernization_14_3_2_2_payment_methods_dashboard_integration_boundary_cleanup.md`
 - `docs/phase14_surface_normalization_billing_workbench_modernization_14_3_2_3_payment_methods_surface_fine_tuning_residual_structural_decisions.md`
+- `docs/phase14_surface_normalization_billing_workbench_modernization_14_3_2_4_payment_methods_structural_normalization_formal_closure.md`
 
 
 ## Phase 14.3.2.2
@@ -717,3 +718,11 @@ Subphases:
 - Phase 14.3.2.3 completed as shared-card semantic fine-tuning and residual structural decision closure for Payment Methods
 - `InfoCard` now supports an optional action icon instead of forcing a payment-specific icon through its generic shared contract
 - `barcode_widget.dart` remains intentionally outside the active Payment Methods surface because the current flow is still a backend-driven information-and-copy dialog
+
+## Phase 14.3.2.4
+
+- Phase 14.3.2.4 completed as formal closure of Payment Methods structural normalization
+- the feature boundary, overlay ownership, dashboard launcher boundary, and shared-card semantics are now considered clean and stable
+- Payment Methods remains intentionally informational, backend-driven, and external-payment oriented
+- no in-app payment, transaction-state, provider, gateway, or forced barcode-rendering layer was introduced
+

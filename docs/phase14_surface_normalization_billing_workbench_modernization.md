@@ -549,3 +549,57 @@ After Phase 14.3.2.3, the Payment Methods normalization line is structurally cle
 - `barcode_widget.dart` was intentionally not integrated because the current product surface still displays the barcode value as backend-driven text and there is no active visual-barcode requirement in this exact flow
 - the Payment Methods feature remains informational, backend-driven, and external-payment oriented
 - the repository is now ready for formal closure of the 14.3.2 line without forcing premature checkout or barcode-visualization work
+
+## Phase 14.3.2.4 — Payment Methods Structural Normalization Formal Closure
+
+### Objective
+
+Formally close the Payment Methods structural-normalization line opened in Phase 14.3 after validating that the feature boundary, overlay ownership, dashboard integration boundary, and shared-widget semantics are now aligned with the project’s modern structure.
+
+### Implementation Characteristics
+
+This closure does not introduce new runtime behavior.
+It consolidates the now-validated architectural decisions produced across 14.3.2.1, 14.3.2.2, and 14.3.2.3:
+
+- the Payment Methods surface is now feature-owned under `lib/features/payment_methods/`
+- dashboard no longer owns the dialog implementation or popup-opening mechanics
+- the feature launcher now lives on the Payment Methods side of the boundary
+- the shared `InfoCard` contract is no longer implicitly payment-specific
+- the existing payment-information dialog remains informational, backend-driven, and external-payment oriented
+- `barcode_widget.dart` remains intentionally outside the active flow because the current feature contract does not require barcode rendering as a first-class surface element
+
+### Final Baseline After Phase 14.3.2.4
+
+After Phase 14.3.2.4, the repository now has a complete and formally closed Payment Methods normalization baseline:
+
+- Payment Methods is no longer an inline dashboard-owned dialog surface
+- the feature has a clear presentation/overlay ownership boundary
+- dashboard consumes the feature through a feature-owned launcher instead of through local popup logic
+- the current behavior remains unchanged from a product perspective: users still see backend-provided payment information for external payment channels
+- the feature is structurally ready for future evolution without prematurely introducing checkout, transaction-state, provider, or gateway semantics
+
+### Explicit Non-Goals Kept Closed
+
+This formal closure also records what was intentionally not introduced:
+
+- no in-app payment flow
+- no checkout semantics
+- no provider/state layer dedicated to payment processing
+- no backend contract redesign
+- no artificial presentation adapter where the current backend-fed data path is already sufficient
+- no forced integration of dormant or currently unnecessary payment-visualization components
+
+### Result
+
+Phase 14.3.2 is now formally closed.
+
+The Payment Methods surface has been:
+
+- audited
+- structurally extracted
+- boundary-cleaned
+- semantically fine-tuned
+- documented as an informational feature rather than as a transactional subsystem
+
+This leaves the repository in a cleaner state and prevents future work from having to reopen dashboard ownership questions before evolving the payment experience further.
+
