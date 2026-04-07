@@ -15,8 +15,7 @@ import 'package:geryon_web_app_ws_v2/shared/overlays/error_dialog_route.dart';
 import 'package:geryon_web_app_ws_v2/models/error_handler.dart';
 import 'package:geryon_web_app_ws_v2/models/tbl_ClientesV2/additionalparams.dart';
 import 'package:geryon_web_app_ws_v2/shared/widgets/system_error_surface.dart';
-import 'package:geryon_web_app_ws_v2/shared/window/window_model.dart';
-import 'package:geryon_web_app_ws_v2/shared/window/window_widget.dart';
+import 'package:geryon_web_app_ws_v2/shared/overlays/app_overlay_panel.dart';
 
 class CommonDownloadLocallyScreen<T extends CommonModel<T>>
     extends ConsumerStatefulWidget {
@@ -577,15 +576,13 @@ Por favor verifique para poder continuar y vuelva a intentar la operación.
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  WindowWidget(
-                    windowModel: WindowModel(
-                      title: wTitle,
-                      titleColorBackground: wColor,
+                  AppOverlayPanel(
+                    title: wTitle,
+                    titleColorBackground: wColor,
+                    constraints: constraints,
+                    headerWidget: buildWindowHeader(),
+                    bodyWidget: buildWindowBody(
                       constraints: constraints,
-                      headerWidget: buildWindowHeader(),
-                      bodyWidget: buildWindowBody(
-                        constraints: constraints,
-                      ),
                     ),
                   ),
                 ],
@@ -1090,31 +1087,28 @@ class ScreenPoPUpCommonDownloadLocallyScreen<T extends CommonModel<T>>
   @override
   Widget buildPage(BuildContext context, Animation<double> animation,
       Animation<double> secondaryAnimation) {
-    return Center(
-        child: Material(
-      type: MaterialType.transparency,
-      child: SingleChildScrollView(
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.black12.withSafeOpacity(0.5),
-          ),
-          width: screenMaxWidth,
-          height: screenMaxHeight,
-          child: SizedBox(
-            height: 63.75,
-            width: 85,
-            child: CommonDownloadLocallyScreen<T>(
-              pScreenMaxWidth: screenMaxWidth,
-              pScreenMaxHeight: screenMaxHeight,
-              pGlobalRequest: pGlobalRequest,
-              pActionRequest: pActionRequest,
-              pLocalActionRequest: pLocalActionRequest,
-              pParams: pParams,
-              autoStart: autoStart,
-            ),
+    final Size mediaSize = MediaQuery.sizeOf(context);
+    final double effectiveWidth = (mediaSize.width - 32).clamp(320.0, 520.0);
+    final double effectiveHeight = (mediaSize.height - 32).clamp(220.0, 320.0);
+
+    screenMaxWidth = effectiveWidth;
+    screenMaxHeight = effectiveHeight;
+
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Center(
+          child: CommonDownloadLocallyScreen<T>(
+            pScreenMaxWidth: screenMaxWidth,
+            pScreenMaxHeight: screenMaxHeight,
+            pGlobalRequest: pGlobalRequest,
+            pActionRequest: pActionRequest,
+            pLocalActionRequest: pLocalActionRequest,
+            pParams: pParams,
+            autoStart: autoStart,
           ),
         ),
-      ), // Your ConsumerStatefulWidget
-    ));
+      ),
+    );
   }
 }
