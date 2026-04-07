@@ -21,24 +21,21 @@ class InfoCard extends StatelessWidget {
     final theme = Theme.of(context);
     final bool hasAction = onAction != null && actionLabel != null;
     final double screenWidth = MediaQuery.of(context).size.width;
+    final bool isCompact = screenWidth < 600;
 
-    final double cardWidth = screenWidth < 600 ? double.infinity : 250;
-    final double minHeight = hasAction ? 122 : 110;
+    final double cardWidth = isCompact ? double.infinity : 250;
+    final double minHeight = hasAction ? 128 : 112;
 
     return Card(
       elevation: 2,
+      margin: EdgeInsets.zero,
       surfaceTintColor: theme.colorScheme.surface,
       child: SizedBox(
         width: cardWidth,
         child: ConstrainedBox(
-          constraints: BoxConstraints(
-            minHeight: minHeight,
-          ),
+          constraints: BoxConstraints(minHeight: minHeight),
           child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 24,
-              vertical: 20,
-            ),
+            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: hasAction
@@ -52,20 +49,22 @@ class InfoCard extends StatelessWidget {
                     Text(
                       title,
                       style: theme.textTheme.labelMedium?.copyWith(
-                        color: Colors.grey[700],
+                        color: theme.colorScheme.onSurfaceVariant,
                       ),
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 8),
                     Text(
                       value,
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ],
                 ),
                 if (hasAction) ...[
-                  const SizedBox(height: 18),
+                  const SizedBox(height: 16),
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
