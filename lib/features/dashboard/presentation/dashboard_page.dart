@@ -242,17 +242,6 @@ class _DashboardContent extends StatelessWidget {
     "CreditosVT",
   ];
 
-  void _showPaymentDialog(
-    BuildContext context,
-    ServiceProviderLoginDataUserMessageModel userData,
-  ) {
-    Navigator.of(context).push(
-      ScreenPoPUpPaymentMethodsDialog(
-        userData: userData,
-      ),
-    );
-  }
-
   Widget _buildBillingSection({
     required BoxConstraints constraints,
     required String type,
@@ -338,7 +327,10 @@ class _DashboardContent extends StatelessWidget {
                   title: "Saldo",
                   value: data.saldoActual.asStringWithPrecSpanish(2),
                   actionLabel: "Ver medios de pago",
-                  onAction: () => _showPaymentDialog(context, data),
+                  onAction: () => showPaymentMethodsDialog(
+                    context,
+                    userData: data,
+                  ),
                 ),
                 InfoCard(
                   title: "Último pago",

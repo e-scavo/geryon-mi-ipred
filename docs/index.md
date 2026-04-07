@@ -702,3 +702,11 @@ Subphases:
 
 Subphases:
 - `docs/phase14_surface_normalization_billing_workbench_modernization_14_3_2_1_payment_methods_feature_boundary_overlay_extraction.md`
+- `docs/phase14_surface_normalization_billing_workbench_modernization_14_3_2_2_payment_methods_dashboard_integration_boundary_cleanup.md`
+
+
+## Phase 14.3.2.2
+
+- Phase 14.3.2.2 completed as dashboard integration boundary cleanup for the Payment Methods surface
+- dashboard now opens the Payment Methods dialog through the feature-owned launcher API
+- the feature remains informational, backend-driven, and external-payment oriented
