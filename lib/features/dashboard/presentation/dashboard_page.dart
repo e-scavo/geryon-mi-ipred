@@ -12,6 +12,7 @@ import 'package:geryon_web_app_ws_v2/models/ServiceProvider/login_data_user_mess
 import 'package:geryon_web_app_ws_v2/shared/layouts/frame_with_scroll.dart';
 import 'package:geryon_web_app_ws_v2/shared/widgets/feature_empty_state.dart';
 import 'package:geryon_web_app_ws_v2/shared/widgets/feature_error_state.dart';
+import 'package:geryon_web_app_ws_v2/shared/formatters/app_formatters.dart';
 import 'package:geryon_web_app_ws_v2/shared/widgets/info_card.dart';
 
 class DashboardPage extends ConsumerWidget {
@@ -324,8 +325,8 @@ class _DashboardContent extends StatelessWidget {
               children: [
                 InfoCard(title: "Documento", value: myDNI),
                 InfoCard(
-                  title: "Saldo",
-                  value: data.saldoActual.asStringWithPrecSpanish(2),
+                  title: "Saldo actual",
+                  value: AppFormatters.currency(data.saldoActual),
                   actionLabel: "Ver medios de pago",
                   actionIcon: Icons.account_balance_outlined,
                   onAction: () => showPaymentMethodsDialog(
@@ -335,9 +336,12 @@ class _DashboardContent extends StatelessWidget {
                 ),
                 InfoCard(
                   title: "Último pago",
-                  value: data.ultFechaPago.toES(),
+                  value: AppFormatters.date(data.ultFechaPago.toDateModel()),
                 ),
-                InfoCard(title: "Estado", value: data.estado),
+                InfoCard(
+                  title: "Estado",
+                  value: AppFormatters.visibleText(data.estado),
+                ),
               ],
             ),
             const SizedBox(height: 28),

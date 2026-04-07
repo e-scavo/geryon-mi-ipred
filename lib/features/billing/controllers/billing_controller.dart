@@ -15,6 +15,7 @@ import 'package:geryon_web_app_ws_v2/models/ServiceProvider/failure_boundary_sta
 import 'package:geryon_web_app_ws_v2/models/ServiceProvider/failure_recovery_expectation_model.dart';
 import 'package:geryon_web_app_ws_v2/models/error_handler.dart';
 import 'package:geryon_web_app_ws_v2/models/tbl_ComprobantesVT/model.dart';
+import 'package:geryon_web_app_ws_v2/shared/formatters/app_formatters.dart';
 
 class BillingFeatureState {
   final String threadHashID;
@@ -733,9 +734,9 @@ Error: ${e.toString()}
               'CodClie': e.codClie,
               'RazonSocial': e.razonSocialCodClie,
               'NroCpbte': e.nroCpbte,
-              'FechaCpbte': e.fechaCpbte.toES(),
+              'FechaCpbte': AppFormatters.date(e.fechaCpbte),
               'ImporteTotalConImpuestos':
-                  e.importeTotalConImpuestos.asStringWithPrecSpanish(2),
+                  AppFormatters.currency(e.importeTotalConImpuestos),
             })
         .toList(growable: false);
   }

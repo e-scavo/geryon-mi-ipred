@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:geryon_web_app_ws_v2/core/utils/utils.dart';
+import 'package:geryon_web_app_ws_v2/shared/formatters/app_formatters.dart';
 import 'package:geryon_web_app_ws_v2/models/ServiceProvider/login_data_user_message_model.dart';
 import 'package:geryon_web_app_ws_v2/shared/overlays/app_overlay_panel.dart';
 import 'package:geryon_web_app_ws_v2/shared/widgets/copyable_list_tile.dart';
@@ -11,10 +11,6 @@ class PaymentMethodsDialog extends StatelessWidget {
     super.key,
     required this.userData,
   });
-
-  String _resolveAvailableValue(String value) {
-    return value.isEmpty ? 'No disponible' : value;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -75,41 +71,46 @@ class PaymentMethodsDialog extends StatelessWidget {
                   CopyableListTile(
                     icon: Icons.account_circle,
                     label: 'Alias',
-                    value: _resolveAvailableValue(
-                        userData.roelaAliasCuentaBancaria),
+                    value: AppFormatters.visibleText(
+                      userData.roelaAliasCuentaBancaria,
+                    ),
                   ),
                   const SizedBox(height: 12),
                   CopyableListTile(
                     icon: Icons.account_circle,
                     label: 'Pago Fácil / Pago Mis Cuentas',
-                    value: _resolveAvailableValue(userData.codigoPMCnPF),
+                    value: AppFormatters.visibleText(userData.codigoPMCnPF),
                   ),
                   const SizedBox(height: 12),
                   CopyableListTile(
                     icon: Icons.account_circle,
                     label: 'Código de barras',
-                    value: _resolveAvailableValue(userData.codigoBarrasPMCnPF),
+                    value: AppFormatters.visibleText(
+                      userData.codigoBarrasPMCnPF,
+                    ),
                   ),
                   const SizedBox(height: 12),
                   ListTile(
                     contentPadding: EdgeInsets.zero,
                     leading: const Icon(Icons.credit_card),
                     title: Text(
-                      'Saldo a pagar: ${userData.saldoActual.asStringWithPrecSpanish(2)}',
+                      'Saldo actual: ${AppFormatters.currency(userData.saldoActual)}',
                     ),
                   ),
                   const SizedBox(height: 12),
                   ListTile(
                     contentPadding: EdgeInsets.zero,
                     leading: const Icon(Icons.calendar_today),
-                    title: Text('Último pago: ${userData.ultFechaPago.toES()}'),
+                    title: Text(
+                      'Último pago: ${AppFormatters.date(userData.ultFechaPago.toDateModel())}',
+                    ),
                   ),
                   const SizedBox(height: 12),
                   ListTile(
                     contentPadding: EdgeInsets.zero,
                     leading: const Icon(Icons.calendar_today),
                     title: Text(
-                      'Vencimiento: 10/${today.month.toString().padLeft(2, '0')}/${today.year}',
+                      'Vencimiento: ${AppFormatters.dueDateFromReference(today)}',
                     ),
                   ),
                 ],
