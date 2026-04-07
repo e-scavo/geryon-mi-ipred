@@ -327,6 +327,7 @@ class _DashboardContent extends StatelessWidget {
                   title: "Saldo",
                   value: data.saldoActual.asStringWithPrecSpanish(2),
                   actionLabel: "Ver medios de pago",
+                  actionIcon: Icons.account_balance_outlined,
                   onAction: () => showPaymentMethodsDialog(
                     context,
                     userData: data,

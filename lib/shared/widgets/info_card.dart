@@ -5,6 +5,7 @@ class InfoCard extends StatelessWidget {
   final String value;
   final VoidCallback? onAction;
   final String? actionLabel;
+  final IconData? actionIcon;
 
   const InfoCard({
     super.key,
@@ -12,6 +13,7 @@ class InfoCard extends StatelessWidget {
     required this.value,
     this.onAction,
     this.actionLabel,
+    this.actionIcon,
   });
 
   @override
@@ -68,7 +70,10 @@ class InfoCard extends StatelessWidget {
                     width: double.infinity,
                     child: ElevatedButton.icon(
                       onPressed: onAction,
-                      icon: const Icon(Icons.payment, size: 18),
+                      icon: Icon(
+                        actionIcon ?? Icons.payment,
+                        size: 18,
+                      ),
                       label: Text(
                         actionLabel!,
                         maxLines: 1,

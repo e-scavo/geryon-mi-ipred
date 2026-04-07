@@ -507,3 +507,45 @@ After Phase 14.3.2.1, the repository now has the first normalized ownership cut 
 - dashboard no longer owns the inline dialog implementation details
 - the visible feature contract remains informational and backend-driven
 - the project is now ready for further payment-method surface normalization without confusing the feature with an in-app checkout flow
+
+
+### Phase 14.3.2.2 — Payment Methods Dashboard Integration Boundary Cleanup
+
+Implemented.
+
+Focus:
+
+- remove the remaining Payment Methods popup-opening ownership from dashboard
+- provide a feature-owned launcher API under the payment methods boundary
+- keep the visible dialog content unchanged
+- preserve the informational and backend-driven meaning of the surface
+
+## Final Baseline After Phase 14.3.2.2
+
+After Phase 14.3.2.2, the repository now has a correctly closed integration boundary for Payment Methods:
+
+- dashboard now triggers the feature through `showPaymentMethodsDialog(...)`
+- dashboard no longer owns `Navigator.of(context).push(...)` for this surface
+- the Payment Methods feature now owns both the overlay content and the canonical opening entry point
+- the feature remains informational, backend-driven, and explicitly oriented to external payment rather than in-app checkout
+
+### Phase 14.3.2.3 — Surface Fine-Tuning & Residual Structural Decisions
+
+Implemented.
+
+Focus:
+
+- remove the residual payment-specific semantic bias from the shared `InfoCard` action button contract
+- keep the current Payment Methods surface stable while allowing a more neutral shared action icon API
+- make an explicit and conservative decision about `barcode_widget.dart` based on real active usage in the ZIP
+- avoid introducing visual or transactional scope creep
+
+## Final Baseline After Phase 14.3.2.3
+
+After Phase 14.3.2.3, the Payment Methods normalization line is structurally cleaner without expanding the feature beyond its current meaning:
+
+- `InfoCard` now supports an optional `actionIcon`, so the shared widget no longer hardcodes a payment-specific action symbol as part of its generic contract
+- dashboard now uses an informational bank/account-style action icon for `Ver medios de pago`, which better matches an external-payment data surface
+- `barcode_widget.dart` was intentionally not integrated because the current product surface still displays the barcode value as backend-driven text and there is no active visual-barcode requirement in this exact flow
+- the Payment Methods feature remains informational, backend-driven, and external-payment oriented
+- the repository is now ready for formal closure of the 14.3.2 line without forcing premature checkout or barcode-visualization work
