@@ -603,3 +603,160 @@ The Payment Methods surface has been:
 
 This leaves the repository in a cleaner state and prevents future work from having to reopen dashboard ownership questions before evolving the payment experience further.
 
+### Phase 14.4 — Cross-Surface Consistency & UX Hardening
+
+Implemented and formally closed.
+
+Focus:
+
+- audit the now-normalized active customer-facing surfaces together instead of in isolation
+- remove residual UX drift across dashboard, billing, and payment methods
+- unify overlays without introducing a new navigation or state-management model
+- normalize visible data presentation for currency, dates, and user-facing labels
+- tighten shared-widget consistency and small interaction feedback details
+
+## Baseline Opened by Phase 14.4
+
+After the formal closure of Payment Methods structural normalization, the repository no longer had a structural ownership problem in the active surfaces.
+What remained was a final consistency problem visible only when the main surfaces were read together:
+
+- dashboard, billing, and payment methods did not yet read as one fully harmonized customer-facing layer
+- overlays were functional but not yet fully standardized against the same visual contract
+- visible formatting for dates, currency, and fallback labels still depended on local decisions
+- shared widgets still carried small density and interaction differences
+- a few remaining UX details still felt correct individually but uneven when experienced as a whole
+
+### Phase 14.4.1 — Cross-Surface Audit
+
+Implemented.
+
+Focus:
+
+- inspect dashboard, billing, and payment methods together as one active product surface
+- classify spacing, hierarchy, overlay, formatting, and shared-widget inconsistencies
+- define the smallest safe hardening path that would not reopen architecture or backend work
+
+### Phase 14.4.2 — Overlay Standardization
+
+Implemented.
+
+Focus:
+
+- align billing and payment-methods overlays to the same presentation structure
+- normalize header, body, padding, close-action, and visual rhythm
+- preserve the current popup behavior while removing residual surface drift
+
+## Final Baseline After Phase 14.4.2
+
+After Phase 14.4.2, the repository now has a consistent overlay baseline for the main informational surfaces that still rely on popup presentation:
+
+- billing document-download surfaces and payment-methods informational surfaces now read as part of the same design system
+- overlay ownership remains local to the corresponding feature boundaries
+- no new modal framework, routing redesign, or provider layer was introduced
+
+### Phase 14.4.3 — Data Presentation Consistency
+
+Implemented.
+
+Focus:
+
+- centralize visible formatting decisions for customer-facing currency and dates
+- reduce label drift across dashboard, billing, and payment methods
+- keep backend-fed values intact while making the visible presentation stable
+
+## Final Baseline After Phase 14.4.3
+
+After Phase 14.4.3, the active customer-facing surfaces now rely on a more coherent visible-formatting baseline:
+
+- currency presentation is no longer scattered across local UI decisions
+- date presentation is more predictable across the main financial surfaces
+- user-facing fallback text and labels are less likely to drift between features
+
+### Phase 14.4.4 — Shared Widgets Consistency Pass
+
+Implemented.
+
+Focus:
+
+- normalize the shared visual contract of `InfoCard` and `CopyableListTile`
+- keep their public contracts stable
+- eliminate the residual row-layout inconsistency detected inside the Payment Methods overlay
+
+## Final Baseline After Phase 14.4.4
+
+After Phase 14.4.4, the current ZIP now confirms that the most visible shared presentation blocks align more cleanly with the surface-normalization baseline:
+
+- `InfoCard` keeps its existing API while following a clearer spacing and hierarchy rhythm
+- `CopyableListTile` keeps its feature compatibility while offering more consistent copy feedback and row composition
+- the Payment Methods overlay no longer mixes incompatible row contracts for visually related information
+
+### Phase 14.4.5 — Micro UX Improvements (SAFE)
+
+Implemented.
+
+Focus:
+
+- improve small interaction signals without changing feature meaning
+- make copy feedback clearer and less noisy
+- improve billing search and pagination clarity in a safe, non-structural way
+
+## Final Baseline After Phase 14.4.5
+
+After Phase 14.4.5, the repository now has a safer day-to-day interaction baseline without expanding product scope:
+
+- copy feedback is clearer in the surfaces that ask users to reuse backend-provided payment data
+- billing search and pagination controls communicate their intent more explicitly
+- desktop/web affordances such as tooltip clarity and pointer-level interaction feel more deliberate
+
+## Phase 14.4.6 — Formal Closure
+
+### Objective
+
+Formally close the cross-surface consistency and UX-hardening line opened after the structural closure of Payment Methods, ensuring that the active customer-facing surfaces now read as one coherent product layer.
+
+### Implementation Characteristics
+
+This closure does not introduce a new product capability.
+It consolidates the already validated results of 14.4.1 through 14.4.5:
+
+- dashboard, billing, and payment methods were audited together instead of as isolated screens
+- informational overlays now follow a more consistent visual and structural contract
+- visible formatting for money, dates, and fallbacks is more coherent across surfaces
+- `InfoCard` and `CopyableListTile` now sit on a safer shared consistency baseline
+- small UX details were hardened without changing the meaning or backend behavior of the existing features
+
+### Final Baseline After Phase 14.4.6
+
+After Phase 14.4.6, the repository now has a fully closed Phase 14 baseline:
+
+- the remaining active legacy-to-modern surface normalization line is complete
+- billing workbench is not only functional but interactionally stable
+- Payment Methods is not only structurally correct but visually aligned with the rest of the product
+- dashboard, billing, and payment methods now feel substantially closer to one coherent customer-facing experience
+- no architectural regressions or scope-creep features were introduced to achieve that result
+
+### Explicit Non-Goals Kept Closed
+
+This formal closure also records what was intentionally not introduced:
+
+- no in-app payment flow
+- no backend contract redesign
+- no Riverpod or navigation redesign
+- no large responsive framework or token-system rewrite
+- no visual redesign that would alter the established product identity
+- no feature-scope expansion hidden behind UX hardening work
+
+### Result
+
+Phase 14 is now formally closed.
+
+The repository has been left with:
+
+- normalized active widget ownership
+- a stable billing workbench surface
+- a properly feature-owned Payment Methods surface
+- consistent overlay behavior in the active informational flows
+- more coherent visible data presentation across the main customer-facing surfaces
+- safer shared-widget and micro-interaction consistency for ongoing maintenance
+
+The next justified step should therefore start from a closed Phase 14 baseline rather than from unresolved surface-normalization debt.

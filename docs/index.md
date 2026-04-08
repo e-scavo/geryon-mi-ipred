@@ -726,3 +726,50 @@ Subphases:
 - Payment Methods remains intentionally informational, backend-driven, and external-payment oriented
 - no in-app payment, transaction-state, provider, gateway, or forced barcode-rendering layer was introduced
 
+## Phase 14.4
+
+- Phase 14.4 completed as Cross-Surface Consistency & UX Hardening
+- the current ZIP now confirms a closed consistency pass across dashboard, billing, and payment methods
+- no architecture, navigation, Riverpod, or backend-contract redesign was introduced as part of this line
+
+### Phase 14.4 — Cross-Surface Consistency & UX Hardening
+
+Subphases:
+- `docs/phase14_surface_normalization_billing_workbench_modernization_14_4_cross_surface_consistency_ux_hardening_formal_closure.md`
+
+## Final Phase 14 documentary state
+
+The current ZIP now confirms that Phase 14 is fully closed through:
+
+- Phase 14.1
+- Phase 14.1.1
+- Phase 14.2.1.1
+- Phase 14.2.1.2
+- Phase 14.2.1.3
+- Phase 14.2.2.1
+- Phase 14.2.2.2
+- Phase 14.2.2.3
+- Phase 14.2.2.4
+- Phase 14.3.2.1
+- Phase 14.3.2.2
+- Phase 14.3.2.3
+- Phase 14.3.2.4
+- Phase 14.4.1
+- Phase 14.4.2
+- Phase 14.4.3
+- Phase 14.4.4
+- Phase 14.4.5
+- Phase 14.4.6
+
+Phase 14 is now considered closed as a repository-level baseline.
+
+This means the project is no longer carrying visible debt in the active customer-facing surfaces around:
+
+- legacy active widget ownership
+- billing workbench interaction fit
+- payment-methods structural ownership
+- overlay inconsistency between the main informational surfaces
+- visible date / currency / label drift across dashboard, billing, and payment methods
+- small but persistent shared-widget and copy-feedback inconsistencies
+
+The next justified step should not reopen Phase 14 architecture or surface-normalization decisions without a new product requirement.
