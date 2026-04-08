@@ -684,7 +684,8 @@ pero se obtuvo: ${rReturnedRawData.data.runtimeType}
           rReturnedRawDataData.data.totalFilteredRecords;
 
       developer.log(
-        'Datos cargados correctamente: ${tEnteDataModel.cData.length} registros',
+        'Datos cargados correctamente: ${tEnteDataModel.cData.length} registros'
+        ' Total records: ${tEnteDataModel.totalRecords} - Total filtered records: ${tEnteDataModel.totalFilteredRecords}',
         name: logFunctionName,
       );
 
