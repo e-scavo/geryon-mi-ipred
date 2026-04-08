@@ -2,6 +2,7 @@ import 'dart:developer' as developer;
 
 import 'package:flutter/material.dart';
 import 'package:geryon_web_app_ws_v2/common_vars.dart';
+import 'package:geryon_web_app_ws_v2/models/CommonDateModel/common_date_model.dart';
 import 'package:geryon_web_app_ws_v2/models/CommonDateTimeModel/date_model.dart';
 import 'package:geryon_web_app_ws_v2/models/error_handler.dart';
 
@@ -446,6 +447,10 @@ class CommonDateTimeModel {
       );
     }
     return rValue != "";
+  }
+
+  CommonDateModel toDateModel() {
+    return CommonDateModel.fromDateTime(date);
   }
 
   dispose() {

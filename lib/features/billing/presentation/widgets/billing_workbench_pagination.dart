@@ -76,10 +76,15 @@ class BillingWorkbenchPagination extends StatelessWidget {
       runSpacing: 8,
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
-        OutlinedButton.icon(
-          onPressed: !isRefreshing && currentPage > 1 ? onPreviousPage : null,
-          icon: const Icon(Icons.chevron_left),
-          label: const Text('Anterior'),
+        Tooltip(
+          message: currentPage > 1
+              ? 'Ir a la página anterior'
+              : 'No hay página anterior',
+          child: OutlinedButton.icon(
+            onPressed: !isRefreshing && currentPage > 1 ? onPreviousPage : null,
+            icon: const Icon(Icons.chevron_left),
+            label: const Text('Anterior'),
+          ),
         ),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -89,17 +94,22 @@ class BillingWorkbenchPagination extends StatelessWidget {
             border: Border.all(color: Colors.grey.shade300),
           ),
           child: Text(
-            'Página $currentPage / $totalPages',
+            'Página $currentPage de $totalPages',
             style: theme.textTheme.labelMedium?.copyWith(
               fontWeight: FontWeight.w700,
             ),
           ),
         ),
-        OutlinedButton.icon(
-          onPressed:
-              !isRefreshing && currentPage < totalPages ? onNextPage : null,
-          icon: const Icon(Icons.chevron_right),
-          label: const Text('Siguiente'),
+        Tooltip(
+          message: currentPage < totalPages
+              ? 'Ir a la página siguiente'
+              : 'No hay más páginas',
+          child: OutlinedButton.icon(
+            onPressed:
+                !isRefreshing && currentPage < totalPages ? onNextPage : null,
+            icon: const Icon(Icons.chevron_right),
+            label: const Text('Siguiente'),
+          ),
         ),
       ],
     );

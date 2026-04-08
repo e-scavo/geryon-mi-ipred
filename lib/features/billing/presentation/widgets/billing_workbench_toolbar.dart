@@ -156,10 +156,11 @@ class _BillingWorkbenchToolbarState extends State<BillingWorkbenchToolbar> {
       width: widget.compact ? double.infinity : 280,
       child: TextField(
         controller: _searchController,
+        onTapOutside: (_) => FocusScope.of(context).unfocus(),
         textInputAction: TextInputAction.search,
         onSubmitted: (_) => _submitSearch(),
         decoration: InputDecoration(
-          hintText: 'Buscar comprobante',
+          hintText: 'Buscar por Nº de comprobante',
           prefixIcon: const Icon(Icons.search),
           suffixIcon: _searchController.text.trim().isEmpty
               ? null
@@ -194,33 +195,36 @@ class _BillingWorkbenchToolbarState extends State<BillingWorkbenchToolbar> {
             icon: const Icon(Icons.filter_alt_off_outlined),
             label: const Text('Limpiar'),
           ),
-        DropdownButtonHideUnderline(
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey.shade300),
-              borderRadius: BorderRadius.circular(12),
-              color: Colors.white,
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: DropdownButton<int>(
-                value: widget.rowsPerPage,
+        Tooltip(
+          message: 'Cantidad de filas visibles por página',
+          child: DropdownButtonHideUnderline(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey.shade300),
                 borderRadius: BorderRadius.circular(12),
-                items: widget.availableRowsPerPage
-                    .map(
-                      (value) => DropdownMenuItem<int>(
-                        value: value,
-                        child: Text('$value filas'),
-                      ),
-                    )
-                    .toList(growable: false),
-                onChanged: widget.isRefreshing
-                    ? null
-                    : (value) {
-                        if (value != null) {
-                          widget.onRowsPerPageChanged(value);
-                        }
-                      },
+                color: Colors.white,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: DropdownButton<int>(
+                  value: widget.rowsPerPage,
+                  borderRadius: BorderRadius.circular(12),
+                  items: widget.availableRowsPerPage
+                      .map(
+                        (value) => DropdownMenuItem<int>(
+                          value: value,
+                          child: Text('$value filas'),
+                        ),
+                      )
+                      .toList(growable: false),
+                  onChanged: widget.isRefreshing
+                      ? null
+                      : (value) {
+                          if (value != null) {
+                            widget.onRowsPerPageChanged(value);
+                          }
+                        },
+                ),
               ),
             ),
           ),
@@ -257,7 +261,7 @@ class _BillingWorkbenchToolbarState extends State<BillingWorkbenchToolbar> {
                 const SizedBox(width: 16),
                 Flexible(
                   child: Align(
-                    alignment: Alignment.centerRight,
+                    alignment: Alignment.topRight,
                     child: controls,
                   ),
                 ),
