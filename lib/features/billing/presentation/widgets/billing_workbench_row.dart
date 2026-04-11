@@ -5,6 +5,8 @@ class BillingWorkbenchRow extends StatefulWidget {
   final Map<String, dynamic> item;
   final List<BillingWorkbenchColumn> columns;
   final VoidCallback onDownload;
+  final VoidCallback onCopy;
+  final VoidCallback onShare;
   final double tableWidth;
   final bool alternate;
 
@@ -13,6 +15,8 @@ class BillingWorkbenchRow extends StatefulWidget {
     required this.item,
     required this.columns,
     required this.onDownload,
+    required this.onCopy,
+    required this.onShare,
     required this.tableWidth,
     required this.alternate,
   });
@@ -31,6 +35,39 @@ class _BillingWorkbenchRowState extends State<BillingWorkbenchRow> {
       default:
         return widget.item[key]?.toString() ?? '';
     }
+  }
+
+  Widget _buildActionIcon({
+    required ThemeData theme,
+    required bool compactHover,
+    required IconData icon,
+    required String tooltip,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkResponse(
+        radius: 20,
+        onTap: onTap,
+        child: Tooltip(
+          message: tooltip,
+          child: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: compactHover
+                  ? theme.colorScheme.primary.withValues(alpha: 0.08)
+                  : Colors.transparent,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(
+              icon,
+              size: 19,
+              color: theme.colorScheme.primary,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -57,35 +94,38 @@ class _BillingWorkbenchRowState extends State<BillingWorkbenchRow> {
           ),
           child: Row(
             children: widget.columns.map((column) {
-              if (column.key == 'download') {
+              if (column.key == 'actions') {
                 return SizedBox(
                   width: column.width,
                   child: Align(
                     alignment: column.alignment,
-                    child: Material(
-                      color: Colors.transparent,
-                      child: InkResponse(
-                        radius: 20,
-                        onTap: widget.onDownload,
-                        child: Tooltip(
-                          message: 'Descargar comprobante',
-                          child: Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: _hovered
-                                  ? theme.colorScheme.primary
-                                      .withValues(alpha: 0.08)
-                                  : Colors.transparent,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Icon(
-                              Icons.download_outlined,
-                              size: 20,
-                              color: theme.colorScheme.primary,
-                            ),
-                          ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _buildActionIcon(
+                          theme: theme,
+                          compactHover: _hovered,
+                          icon: Icons.download_outlined,
+                          tooltip: 'Descargar comprobante',
+                          onTap: widget.onDownload,
                         ),
-                      ),
+                        const SizedBox(width: 4),
+                        _buildActionIcon(
+                          theme: theme,
+                          compactHover: _hovered,
+                          icon: Icons.copy_all_outlined,
+                          tooltip: 'Copiar datos del comprobante',
+                          onTap: widget.onCopy,
+                        ),
+                        const SizedBox(width: 4),
+                        _buildActionIcon(
+                          theme: theme,
+                          compactHover: _hovered,
+                          icon: Icons.share_outlined,
+                          tooltip: 'Compartir comprobante',
+                          onTap: widget.onShare,
+                        ),
+                      ],
                     ),
                   ),
                 );

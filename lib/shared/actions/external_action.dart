@@ -6,29 +6,33 @@ class ExternalAction {
     required BuildContext context,
     required String url,
   }) async {
+    final messenger = ScaffoldMessenger.of(context);
     final uri = Uri.tryParse(url);
 
     if (uri == null) {
-      _showError(context, 'URL inválida');
+      _showError(messenger, 'URL inválida');
       return;
     }
 
     try {
-      final success =
-          await launchUrl(uri, mode: LaunchMode.externalApplication);
+      final success = await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication,
+      );
 
       if (!success) {
-        _showError(context, 'No se pudo abrir el enlace');
+        _showError(messenger, 'No se pudo abrir el enlace');
       }
     } catch (_) {
-      _showError(context, 'Error al abrir el enlace');
+      _showError(messenger, 'Error al abrir el enlace');
     }
   }
 
-  static void _showError(BuildContext context, String message) {
-    if (!context.mounted) return;
-
-    ScaffoldMessenger.of(context).showSnackBar(
+  static void _showError(
+    ScaffoldMessengerState messenger,
+    String message,
+  ) {
+    messenger.showSnackBar(
       SnackBar(
         content: Text(message),
         behavior: SnackBarBehavior.floating,

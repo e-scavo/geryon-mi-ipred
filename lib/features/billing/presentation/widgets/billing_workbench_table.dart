@@ -15,6 +15,10 @@ class BillingWorkbenchTable extends StatefulWidget {
   final bool isRefreshing;
   final ValueChanged<BillingWorkbenchColumn>? onSortRequested;
   final ValueChanged<Map<String, dynamic>> onDownload;
+  final Future<void> Function(BuildContext context, Map<String, dynamic> item)
+      onCopy;
+  final Future<void> Function(BuildContext context, Map<String, dynamic> item)
+      onShare;
 
   const BillingWorkbenchTable({
     super.key,
@@ -26,6 +30,8 @@ class BillingWorkbenchTable extends StatefulWidget {
     this.isRefreshing = false,
     this.onSortRequested,
     required this.onDownload,
+    required this.onCopy,
+    required this.onShare,
   });
 
   @override
@@ -127,6 +133,14 @@ class _BillingWorkbenchTableState extends State<BillingWorkbenchTable> {
                                   alternate: index.isOdd,
                                   onDownload: () =>
                                       widget.onDownload(widget.rows[index]),
+                                  onCopy: () => widget.onCopy(
+                                    context,
+                                    widget.rows[index],
+                                  ),
+                                  onShare: () => widget.onShare(
+                                    context,
+                                    widget.rows[index],
+                                  ),
                                 ),
                               ),
                           ],

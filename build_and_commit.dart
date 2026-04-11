@@ -264,6 +264,13 @@ Future<ReleaseResult> _prepareDistArtifacts({
     _joinPath(
         distRoot, 'web', '$_artifactSlug-web-${version.asPubspecVersion}'),
   );
+  final releaseWebZip = File(
+    _joinPath(
+      distRoot,
+      'web',
+      '$_artifactSlug-web-${version.asPubspecVersion}.zip',
+    ),
+  );
   final releaseApkDir = Directory(_joinPath(distRoot, 'android', 'apk'));
   final releaseAabDir = Directory(_joinPath(distRoot, 'android', 'aab'));
 
@@ -280,15 +287,35 @@ Future<ReleaseResult> _prepareDistArtifacts({
       await releaseWebDir.delete(recursive: true);
     }
 
-    // Se copia la web ya compilada a una carpeta versionada y predecible.
-    await _copyDirectory(sourceWebDir, releaseWebDir,
-        deleteDestinationFirst: true);
+    if (cleanDistRequested && await releaseWebZip.exists()) {
+      await releaseWebZip.delete();
+    }
+
+    await _copyDirectory(
+      sourceWebDir,
+      releaseWebDir,
+      deleteDestinationFirst: true,
+    );
+
     createdArtifacts.add({
       'target': 'web',
       'type': 'directory',
       'path': releaseWebDir.path,
     });
     stdout.writeln('📦 Web estructurada en: ${releaseWebDir.path}');
+
+    await _zipDirectory(
+      sourceDir: releaseWebDir,
+      zipFile: releaseWebZip,
+    );
+
+    createdArtifacts.add({
+      'target': 'web',
+      'type': 'zip',
+      'path': releaseWebZip.path,
+      'sizeBytes': await releaseWebZip.length(),
+    });
+    stdout.writeln('🗜️ Web ZIP estructurado en: ${releaseWebZip.path}');
   }
 
   if (buildApk) {
@@ -394,6 +421,58 @@ Future<void> _copyDirectory(
       await File(newPath).create(recursive: true);
       await entity.copy(newPath);
     }
+  }
+}
+
+Future<void> _zipDirectory({
+  required Directory sourceDir,
+  required File zipFile,
+}) async {
+  if (!await sourceDir.exists()) {
+    stderr.writeln(
+        '❌ No existe el directorio fuente para comprimir: ${sourceDir.path}');
+    exit(1);
+  }
+
+  await zipFile.parent.create(recursive: true);
+
+  if (await zipFile.exists()) {
+    await zipFile.delete();
+  }
+
+  if (Platform.isWindows) {
+    final sourcePath = sourceDir.absolute.path.replaceAll("'", "''");
+    final zipPath = zipFile.absolute.path.replaceAll("'", "''");
+
+    final command = '''
+Compress-Archive -Path '$sourcePath\\*' -DestinationPath '$zipPath' -Force
+''';
+
+    final result = await Process.run(
+      'powershell',
+      ['-NoProfile', '-Command', command],
+    );
+
+    if (result.exitCode != 0) {
+      stderr.writeln(result.stderr);
+      stderr.writeln(
+          '❌ No se pudo generar el ZIP web con PowerShell: ${zipFile.path}');
+      exit(result.exitCode);
+    }
+
+    return;
+  }
+
+  final result = await Process.run(
+    'zip',
+    ['-r', zipFile.absolute.path, '.'],
+    workingDirectory: sourceDir.absolute.path,
+  );
+
+  if (result.exitCode != 0) {
+    stderr.writeln(result.stderr);
+    stderr.writeln('❌ No se pudo generar el ZIP web: ${zipFile.path}');
+    exit(result.exitCode);
   }
 }
 

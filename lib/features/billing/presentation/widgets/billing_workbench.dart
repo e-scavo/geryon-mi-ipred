@@ -12,6 +12,8 @@ import 'package:geryon_web_app_ws_v2/features/billing/presentation/widgets/billi
 import 'package:geryon_web_app_ws_v2/features/billing/presentation/widgets/billing_workbench_table.dart';
 import 'package:geryon_web_app_ws_v2/features/billing/presentation/widgets/billing_workbench_toolbar.dart';
 import 'package:geryon_web_app_ws_v2/models/CommonDownloadLocally/model.dart';
+import 'package:geryon_web_app_ws_v2/shared/actions/copy_action.dart';
+import 'package:geryon_web_app_ws_v2/shared/actions/share_action.dart';
 
 class BillingWorkbench extends StatelessWidget {
   final BoxConstraints constraints;
@@ -77,9 +79,9 @@ class BillingWorkbench extends StatelessWidget {
           sortField: 'ImporteTotalConImpuestos',
         ),
         BillingWorkbenchColumn(
-          key: 'download',
-          label: 'Acción',
-          width: 110,
+          key: 'actions',
+          label: 'Acciones',
+          width: 180,
           alignment: Alignment.center,
         ),
       ];
@@ -119,6 +121,47 @@ class BillingWorkbench extends StatelessWidget {
     return fallback;
   }
 
+  String _safeText(dynamic value, {String fallback = '-'}) {
+    final String normalized = value?.toString().trim() ?? '';
+    if (normalized.isEmpty) {
+      return fallback;
+    }
+    return normalized;
+  }
+
+  String _formatVoucherNumber(Map<String, dynamic> item) {
+    final dynamic rawNumber = item['NroCpbte'];
+    if (rawNumber == null) {
+      return '-';
+    }
+
+    final int? parsed = int.tryParse(rawNumber.toString());
+    if (parsed == null) {
+      return rawNumber.toString();
+    }
+
+    return parsed.toString().padLeft(9, '0');
+  }
+
+  String _buildCopyPayload(Map<String, dynamic> item) {
+    return '''
+Comprobante: ${_formatVoucherNumber(item)}
+Fecha: ${_safeText(item['FechaCpbte'])}
+Monto: ${_safeText(item['ImporteTotalConImpuestos'])}
+Clase: ${_safeText(item['ClaseCpbte'])}
+'''
+        .trim();
+  }
+
+  String _buildSharePayload(Map<String, dynamic> item) {
+    return '''
+Comprobante ${_formatVoucherNumber(item)}
+Fecha: ${_safeText(item['FechaCpbte'])}
+Monto: ${_safeText(item['ImporteTotalConImpuestos'])}
+'''
+        .trim();
+  }
+
   Future<void> _downloadVoucher(Map<String, dynamic> item) async {
     developer.log(
       'Descargando comprobante: ${item['ClaseCpbte']} - ${item['CodEmp']} - ${item['NroCpbte']}',
@@ -141,18 +184,54 @@ class BillingWorkbench extends StatelessWidget {
 
     if (navigatorKey.currentState != null) {
       await navigatorKey.currentState!.push(
-          ScreenPoPUpCommonDownloadLocallyScreen<CommonDownloadLocallyModel>(
-        pGlobalRequest: ConstRequests.viewRequest,
-        pActionRequest: ConstRequests.viewRequest,
-        pLocalActionRequest: ConstRequests.downloadRequest,
-        pParams: <CommonDownloadLocallyModel>[voucher],
-        autoStart: true,
-      ));
+        ScreenPoPUpCommonDownloadLocallyScreen<CommonDownloadLocallyModel>(
+          pGlobalRequest: ConstRequests.viewRequest,
+          pActionRequest: ConstRequests.viewRequest,
+          pLocalActionRequest: ConstRequests.downloadRequest,
+          pParams: <CommonDownloadLocallyModel>[voucher],
+          autoStart: true,
+        ),
+      );
     }
 
     developer.log(
       'Comprobante descargado: ${item['ClaseCpbte']} - ${item['CodEmp']} - ${item['NroCpbte']}',
       name: 'BillingWorkbench._downloadVoucher',
+    );
+  }
+
+  Future<void> _copyVoucher(
+    BuildContext context,
+    Map<String, dynamic> item,
+  ) async {
+    final String payload = _buildCopyPayload(item);
+
+    developer.log(
+      'Copiando resumen de comprobante: ${item['NroCpbte']}',
+      name: 'BillingWorkbench._copyVoucher',
+    );
+
+    await CopyAction.copy(
+      context: context,
+      value: payload,
+      successMessage: 'Resumen del comprobante copiado',
+    );
+  }
+
+  Future<void> _shareVoucher(
+    BuildContext context,
+    Map<String, dynamic> item,
+  ) async {
+    final String payload = _buildSharePayload(item);
+
+    developer.log(
+      'Preparando share de comprobante: ${item['NroCpbte']}',
+      name: 'BillingWorkbench._shareVoucher',
+    );
+
+    await ShareAction.share(
+      context: context,
+      content: payload,
     );
   }
 
@@ -209,6 +288,12 @@ class BillingWorkbench extends StatelessWidget {
           onSortRequested: _handleSortRequested,
           onDownload: (item) {
             _downloadVoucher(item);
+          },
+          onCopy: (context, item) async {
+            await _copyVoucher(context, item);
+          },
+          onShare: (context, item) async {
+            await _shareVoucher(context, item);
           },
           isRefreshing: isRefreshing,
         ),
