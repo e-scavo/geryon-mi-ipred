@@ -158,6 +158,25 @@ Result:
 - `Get:Status` always carries `GERYON_General` when built with that channel
 - obsolete handshake completions are isolated by runtime generation
 
+### 009 — Fresh Transport Handshake after Runtime Reset
+
+Document:
+
+- `docs/tasks/009_fresh_transport_handshake_after_runtime_reset.md`
+
+Status:
+
+- completed
+
+Result:
+
+- logout and manual retry no longer wait for a new handshake on an already-open WebSocket
+- ServiceProvider explicitly requires a fresh transport whenever recovery resets the session token
+- web and IO transports expose the same intentional `resetConnection()` contract
+- expected close events from a retired transport do not start a parallel runtime recovery
+- delayed close events are isolated by concrete socket identity
+- canonical initialization resumes only after the newly established transport completes handshake and channel subscription
+
 ## Next Identifier
 
-- `009`
+- `010`

@@ -57,6 +57,12 @@ class WebSocketClient extends ChangeNotifier {
 
   Future<ErrorHandler> init() => _impl.init();
   Future<ErrorHandler> listen() => _impl.listen();
+  Future<ErrorHandler> resetConnection({
+    String reason = 'runtime recovery',
+  }) =>
+      _impl.resetConnection(
+        reason: reason,
+      );
   Future<ErrorHandler> sendMessageV2({
     required String jsonMessage,
     required String messageID,

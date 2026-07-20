@@ -113,6 +113,7 @@ class ServiceProvider extends ChangeNotifier {
   Completer<ErrorHandler?>? _handshakeCompleter;
   int? _handshakeGeneration;
   static const Duration _handshakeTimeout = Duration(seconds: 15);
+  bool _requiresFreshTransportHandshake = false;
   ModelGeneralPoPUpLoadingProgress<dynamic>? _activeLoadingRoute;
   Completer<dynamic>? _activeLoadingCompleter;
   Future<dynamic>? _activeLoadingFuture;
@@ -993,6 +994,7 @@ class ServiceProvider extends ChangeNotifier {
 
     if (policyDecision.shouldResetSessionToken) {
       sessionTokenID = '';
+      _requiresFreshTransportHandshake = true;
     }
 
     if (policyDecision.shouldOpenLoadingPopup) {
@@ -1977,6 +1979,27 @@ class ServiceProvider extends ChangeNotifier {
           initStage = ServiceProviderInitStages.connecting;
           updateListeners(calledFrom: functionName);
 
+          if (_requiresFreshTransportHandshake) {
+            final ErrorHandler resetResult = await wssClient.resetConnection(
+              reason:
+                  'ServiceProvider generation $_runtimeGeneration requires a fresh handshake',
+            );
+            developer.log(
+              'Fresh transport reset result => $resetResult generation=$_runtimeGeneration',
+              name: '$logClassName - $logFunctionName',
+            );
+            if (resetResult.errorCode != 0) {
+              initStage = ServiceProviderInitStages.errorConnecting;
+              initStageError = resetResult;
+              isReady = false;
+              isProgress = false;
+              canRetry = true;
+              updateListeners(calledFrom: functionName);
+              return resetResult;
+            }
+            _requiresFreshTransportHandshake = false;
+          }
+
           _prepareHandshakeWait(functionName: functionName);
 
           final ErrorHandler wss = await wssClient.init();
@@ -2083,6 +2106,7 @@ class ServiceProvider extends ChangeNotifier {
       initStageError = statusCheck;
       isReady = false;
       isNew = true;
+      _requiresFreshTransportHandshake = true;
       connRetry++;
       updateListeners(calledFrom: functionName);
 

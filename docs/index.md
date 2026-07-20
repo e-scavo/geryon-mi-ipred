@@ -797,6 +797,7 @@ Canonical entry points:
 - `docs/tasks/006_logout_reentry_stale_queued_response_isolation.md`
 - `docs/tasks/007_logout_final_response_completion_contract.md`
 - `docs/tasks/008_handshake_completion_channel_serialization.md`
+- `docs/tasks/009_fresh_transport_handshake_after_runtime_reset.md`
 
 Latest Phase X implementation:
 
@@ -815,5 +816,7 @@ Latest Phase X implementation:
 - asynchronous tracked callbacks are awaited so logout recovery observes final response state before continuing to login
 - canonical initialization now waits for WebSocket handshake and channel subscription completion before sending backend status requests
 - request serialization always preserves the channel required by non-subscription actions, independently of the transient `isNew` transport state
+- logout and manual retry now retire the old WebSocket before waiting for a new-session handshake
+- intentional and obsolete socket close events cannot start a parallel recovery over the replacement transport
 
-The next Phase X intervention must use task identifier `009`.
+The next Phase X intervention must use task identifier `010`.

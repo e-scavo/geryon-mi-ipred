@@ -14,6 +14,7 @@ class WebSocketClientPlatform extends ChangeNotifier {
   final bool debug;
 
   WebSocket? _socket;
+  bool _intentionalClose = false;
   late Stream stream;
 
   late Function listenCallbackOnData;
@@ -27,6 +28,46 @@ class WebSocketClientPlatform extends ChangeNotifier {
     required this.listenCallbackOnDone,
     this.debug = false,
   });
+
+  Future<ErrorHandler> resetConnection({
+    String reason = 'runtime recovery',
+  }) async {
+    const String functionName = 'resetConnection';
+    const String logFunctionName = '.::$functionName::.';
+
+    try {
+      final WebSocket? socket = _socket;
+      _intentionalClose = true;
+      _socket = null;
+
+      if (socket != null && socket.closeCode == null) {
+        developer.log(
+          'Closing WebSocket intentionally before a fresh handshake. reason=$reason',
+          name: '$logClassName - $logFunctionName',
+        );
+        await socket.close(WebSocketStatus.normalClosure, reason);
+      }
+
+      return ErrorHandler(
+        errorCode: 0,
+        errorDsc: 'WebSocket connection reset successfully',
+        className: className,
+        functionName: functionName,
+        propertyName: 'Reason',
+        propertyValue: reason,
+      );
+    } catch (e, stacktrace) {
+      return ErrorHandler(
+        errorCode: 41,
+        errorDsc: e.toString(),
+        className: className,
+        functionName: functionName,
+        propertyName: 'Reason',
+        propertyValue: reason,
+        stacktrace: stacktrace,
+      );
+    }
+  }
 
   Future<ErrorHandler> init() async {
     const String functionName = 'init';
@@ -48,13 +89,22 @@ class WebSocketClientPlatform extends ChangeNotifier {
         );
       }
 
+      _intentionalClose = false;
       _socket = await WebSocket.connect(wssURI);
-      _socket!.done.then((_) {
+      final WebSocket activeSocket = _socket!;
+      activeSocket.done.then((_) {
         developer.log(
           '🔚 WebSocket closed',
           name: '$logClassName - $logFunctionName',
         );
-        listenCallbackOnDone();
+        if (identical(_socket, activeSocket) && !_intentionalClose) {
+          listenCallbackOnDone();
+        } else {
+          developer.log(
+            'Intentional WebSocket close ignored by runtime recovery callback.',
+            name: '$logClassName - $logFunctionName',
+          );
+        }
       });
 
       developer.log(
@@ -97,7 +147,8 @@ class WebSocketClientPlatform extends ChangeNotifier {
         );
       }
 
-      _socket!.listen(
+      final WebSocket activeSocket = _socket!;
+      activeSocket.listen(
         (dynamic data) async {
           developer.log(
             '📥 Message received: $data',
@@ -141,7 +192,14 @@ class WebSocketClientPlatform extends ChangeNotifier {
             '🔚 WebSocket closed',
             name: '$logClassName - $logFunctionName',
           );
-          listenCallbackOnDone();
+          if (identical(_socket, activeSocket) && !_intentionalClose) {
+            listenCallbackOnDone();
+          } else {
+            developer.log(
+              'Intentional WebSocket close ignored by runtime recovery callback.',
+              name: '$logClassName - $logFunctionName',
+            );
+          }
         },
         cancelOnError: true,
       );
