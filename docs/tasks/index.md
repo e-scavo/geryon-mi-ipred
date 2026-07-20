@@ -122,6 +122,24 @@ Result:
 - queued/processing acknowledgements may omit `ChannelName` without corrupting ServiceProvider state
 - final application messages retain the strict channel validation contract
 
+### 007 — Logout Final Response Completion Contract
+
+Document:
+
+- `docs/tasks/007_logout_final_response_completion_contract.md`
+
+Status:
+
+- completed
+
+Result:
+
+- final tracked responses may omit `ChannelName` when a valid non-empty `MessageID` provides canonical correlation
+- the same validation contract now covers queued, processing, and final tracked responses
+- asynchronous tracked callbacks are awaited before incoming-message processing is considered complete
+- callback exceptions remain inside the tracker execution error boundary
+- logout recovery can advance from backend status completion to the globally owned login continuation
+
 ## Next Identifier
 
-- `007`
+- `008`

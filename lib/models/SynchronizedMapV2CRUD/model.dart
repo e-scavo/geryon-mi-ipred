@@ -79,7 +79,7 @@ class SynchronizedMapV2CRUD<K, V extends CallbackCapable> {
     }
     try {
       if (hasCallback(key)) {
-        _map[key]!.callbackFunction!(
+        await _map[key]!.callbackFunction!(
           pFromCallback: true,
           pMessageID: pMessageID,
           pParams: paramCallBack,
