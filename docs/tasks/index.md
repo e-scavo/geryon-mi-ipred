@@ -32,6 +32,24 @@ Result:
 - admission, architecture, analysis, documentation, validation, and delivery contracts are defined
 - the initial repository baseline is recorded without modifying application behavior
 
+### 002 — Login Popup Global Exclusion and Runtime Generation
+
+Document:
+
+- `docs/tasks/002_login_popup_global_exclusion_runtime_generation.md`
+
+Status:
+
+- completed
+
+Result:
+
+- ServiceProvider is the global owner of the interactive login route and continuation
+- repeated login requirements reuse the same active future instead of opening another popup
+- runtime recovery invalidates and removes obsolete login presentations before loading/rebootstrap
+- recovery generations prevent stale login continuations from mutating a newer runtime cycle
+- loading startup now waits for configuration on every platform and closes through deferred navigation
+
 ## Next Identifier
 
-- `002`
+- `003`

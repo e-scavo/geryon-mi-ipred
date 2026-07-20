@@ -790,5 +790,13 @@ Canonical entry points:
 
 - `docs/tasks/index.md`
 - `docs/tasks/001_phase_x_cross_phase_corrections_baseline.md`
+- `docs/tasks/002_login_popup_global_exclusion_runtime_generation.md`
 
-The next Phase X intervention must use task identifier `002`.
+Latest Phase X implementation:
+
+- global single-login route ownership was consolidated in ServiceProvider
+- runtime generation invalidates obsolete login continuations during recovery
+- startup initialization now waits for configuration on all supported platforms
+- loading/login navigation is deferred outside synchronous provider transitions
+
+The next Phase X intervention must use task identifier `003`.

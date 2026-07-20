@@ -7,7 +7,6 @@ import 'package:geryon_web_app_ws_v2/models/CommonDateTimeModel/model.dart';
 import 'package:geryon_web_app_ws_v2/models/ServiceProvider/data_model.dart';
 import 'package:geryon_web_app_ws_v2/models/ServiceProvider/init_stages_enum_model.dart';
 import 'package:geryon_web_app_ws_v2/models/ServiceProvider/startup_auth_continuation_coordinator_model.dart';
-import 'package:geryon_web_app_ws_v2/core/utils/utils.dart';
 
 class ModelGeneralLoadingProgress extends ConsumerStatefulWidget {
   const ModelGeneralLoadingProgress({
@@ -23,7 +22,8 @@ class _ModelGeneralLoadingProgressState
     extends ConsumerState<ModelGeneralLoadingProgress> {
   static final String _className = '_ModelGeneralLoadingProgressState';
   static final String logClassName = '.::$_className::.';
-  bool? isProcessRunning;
+  bool _initializationRequested = false;
+  bool _closeScheduled = false;
 
   late final ProviderSubscription<ServiceProvider> _subscription;
 
@@ -59,18 +59,9 @@ class _ModelGeneralLoadingProgressState
         }
 
         if (coordinatorState.shouldCloseLoadingPopup && mounted) {
-          if (Navigator.canPop(context)) {
-            Navigator.of(context).pop(
-              coordinatorState.shouldCompleteStartupBoundary,
-            );
-          } else {
-            if (debug) {
-              developer.log(
-                'ServiceProviderNotifier: [4] - Navigator cannot pop, staying on the current page.',
-                name: '$logClassName - $logLocalFunc',
-              );
-            }
-          }
+          _scheduleCloseLoadingPopup(
+            coordinatorState.shouldCompleteStartupBoundary,
+          );
         } else if (coordinatorState.shouldTriggerReboot) {
           if (debug) {
             developer.log(
@@ -83,15 +74,63 @@ class _ModelGeneralLoadingProgressState
       },
     );
 
-    if (Utils.isPlatform == "Web") {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        final appStatus = ref.read(notifierServiceProvider);
-        isProcessRunning = true;
-        if (!appStatus.isReady) {
-          appStatus.init();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _startBootstrap();
+    });
+  }
+
+  Future<void> _startBootstrap() async {
+    const String functionName = '_startBootstrap';
+    if (_initializationRequested) {
+      return;
+    }
+    _initializationRequested = true;
+
+    try {
+      await ref.read(serviceProviderConfigProvider.future);
+      if (!mounted) {
+        return;
+      }
+
+      final appStatus = ref.read(notifierServiceProvider);
+      if (!appStatus.isReady && !appStatus.isProgress) {
+        await appStatus.init();
+      }
+    } catch (error, stacktrace) {
+      developer.log(
+        'Startup bootstrap failed before ServiceProvider initialization. '
+        'error=$error stacktrace=$stacktrace',
+        name: '$logClassName - .::$functionName::.',
+        error: error,
+        stackTrace: stacktrace,
+      );
+    }
+  }
+
+  void _scheduleCloseLoadingPopup(bool startupBoundaryCompleted) {
+    if (_closeScheduled) {
+      return;
+    }
+    _closeScheduled = true;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+
+      final navigator = Navigator.of(context);
+      if (ModalRoute.of(context)?.isCurrent == true && navigator.canPop()) {
+        navigator.pop(startupBoundaryCompleted);
+        return;
+      }
+
+      _closeScheduled = false;
+      Future<void>.delayed(const Duration(milliseconds: 50), () {
+        if (mounted) {
+          _scheduleCloseLoadingPopup(startupBoundaryCompleted);
         }
       });
-    }
+    });
   }
 
   @override

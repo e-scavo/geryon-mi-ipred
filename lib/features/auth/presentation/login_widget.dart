@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geryon_web_app_ws_v2/common_vars.dart';
 import 'package:geryon_web_app_ws_v2/features/auth/controllers/login_controller.dart';
 import 'package:geryon_web_app_ws_v2/shared/widgets/loading_generic.dart';
 import 'package:geryon_web_app_ws_v2/shared/widgets/feature_error_state.dart';
@@ -99,9 +100,7 @@ class _LoginPageWidgetState extends ConsumerState<LoginPageWidget> {
       return;
     }
 
-    if (Navigator.canPop(context)) {
-      Navigator.pop(context, result.response);
-    }
+    ref.read(notifierServiceProvider).completeActiveLogin(result.response);
   }
 
   @override

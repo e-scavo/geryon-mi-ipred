@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:developer' as developer;
 
@@ -103,6 +104,12 @@ class ServiceProvider extends ChangeNotifier {
   late ServiceProviderRuntimeRecoveryTrigger? _lastRecoveryTrigger;
   late ServiceProviderRuntimeDiagnosticEvent? _lastDiagnosticEvent;
 
+  int _runtimeGeneration = 0;
+  PopUpLoginWidget<ErrorHandler>? _activeLoginRoute;
+  Completer<dynamic>? _activeLoginCompleter;
+  Future<dynamic>? _activeLoginFuture;
+  int? _activeLoginGeneration;
+
   late ServiceProviderLoginDataUserMessageModel? loggedUser;
 
   ServiceProvider({
@@ -147,6 +154,186 @@ class ServiceProvider extends ChangeNotifier {
       calledFrom: 'Constructor',
     );
   }
+
+  int get runtimeGeneration => _runtimeGeneration;
+
+  bool get hasActiveLoginPopup => _activeLoginFuture != null;
+
+  void _scheduleNavigatorAction(
+    VoidCallback action, {
+    required String calledFrom,
+  }) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      try {
+        action();
+      } catch (error, stacktrace) {
+        developer.log(
+          'Navigator action failed. generation=$_runtimeGeneration '
+          'stage=$initStage recovery=$isRecoveryInProgress error=$error',
+          name: '$logClassName - .::$calledFrom::.',
+          error: error,
+          stackTrace: stacktrace,
+        );
+      }
+    });
+  }
+
+  Future<dynamic> _requestInteractiveLogin({
+    required ServiceProviderAuthRequirement authRequirement,
+    required String calledFrom,
+  }) {
+    final Future<dynamic>? existingFuture = _activeLoginFuture;
+    if (existingFuture != null) {
+      developer.log(
+        'Reusing active login popup. generation=$_activeLoginGeneration '
+        'currentGeneration=$_runtimeGeneration stage=$initStage',
+        name: '$logClassName - .::$calledFrom::.',
+      );
+      return existingFuture;
+    }
+
+    final int loginGeneration = _runtimeGeneration;
+    final completer = Completer<dynamic>();
+    final route = PopUpLoginWidget<ErrorHandler>();
+
+    _activeLoginGeneration = loginGeneration;
+    _activeLoginCompleter = completer;
+    _activeLoginRoute = route;
+    _activeLoginFuture = completer.future;
+
+    developer.log(
+      'Scheduling login popup. requirement=${authRequirement.kind.name} '
+      'generation=$loginGeneration stage=$initStage recovery=$isRecoveryInProgress',
+      name: '$logClassName - .::$calledFrom::.',
+    );
+
+    _scheduleNavigatorAction(() {
+      if (_activeLoginRoute != route ||
+          _activeLoginGeneration != loginGeneration ||
+          loginGeneration != _runtimeGeneration) {
+        if (!completer.isCompleted) {
+          completer.complete(null);
+        }
+        return;
+      }
+
+      final navigator = navigatorKey.currentState;
+      if (navigator == null) {
+        if (!completer.isCompleted) {
+          completer.complete(null);
+        }
+        _clearActiveLoginReferences(
+          route: route,
+          generation: loginGeneration,
+        );
+        return;
+      }
+
+      navigator.push(route).whenComplete(() {
+        if (!completer.isCompleted) {
+          completer.complete(null);
+        }
+        _clearActiveLoginReferences(
+          route: route,
+          generation: loginGeneration,
+        );
+      });
+    }, calledFrom: calledFrom);
+
+    return completer.future;
+  }
+
+  void _clearActiveLoginReferences({
+    required PopUpLoginWidget<ErrorHandler> route,
+    required int generation,
+  }) {
+    if (_activeLoginRoute != route || _activeLoginGeneration != generation) {
+      return;
+    }
+    _activeLoginRoute = null;
+    _activeLoginCompleter = null;
+    _activeLoginFuture = null;
+    _activeLoginGeneration = null;
+  }
+
+  void completeActiveLogin(dynamic result) {
+    final completer = _activeLoginCompleter;
+    final route = _activeLoginRoute;
+    final generation = _activeLoginGeneration;
+
+    if (completer == null || route == null || generation == null) {
+      developer.log(
+        'Ignoring login completion because no globally owned login popup exists. '
+        'generation=$_runtimeGeneration stage=$initStage',
+        name: '$logClassName - .::completeActiveLogin::.',
+      );
+      return;
+    }
+
+    if (generation != _runtimeGeneration) {
+      developer.log(
+        'Ignoring stale login completion. loginGeneration=$generation '
+        'currentGeneration=$_runtimeGeneration stage=$initStage',
+        name: '$logClassName - .::completeActiveLogin::.',
+      );
+      return;
+    }
+
+    if (!completer.isCompleted) {
+      completer.complete(result);
+    }
+
+    _scheduleNavigatorAction(() {
+      final navigator = route.navigator;
+      if (navigator == null) {
+        _clearActiveLoginReferences(route: route, generation: generation);
+        return;
+      }
+
+      if (route.isCurrent) {
+        navigator.pop(result);
+      } else {
+        navigator.removeRoute(route);
+      }
+    }, calledFrom: 'completeActiveLogin');
+  }
+
+  void _invalidateActiveLogin({
+    required String calledFrom,
+  }) {
+    _runtimeGeneration++;
+
+    final completer = _activeLoginCompleter;
+    final route = _activeLoginRoute;
+    final generation = _activeLoginGeneration;
+
+    developer.log(
+      'Invalidating active login continuation. previousGeneration=$generation '
+      'currentGeneration=$_runtimeGeneration stage=$initStage '
+      'recovery=$isRecoveryInProgress',
+      name: '$logClassName - .::$calledFrom::.',
+    );
+
+    if (completer != null && !completer.isCompleted) {
+      completer.complete(null);
+    }
+
+    if (route != null && generation != null) {
+      _scheduleNavigatorAction(() {
+        final navigator = route.navigator;
+        if (navigator != null) {
+          navigator.removeRoute(route);
+        }
+        _clearActiveLoginReferences(route: route, generation: generation);
+      }, calledFrom: calledFrom);
+    } else {
+      _activeLoginRoute = null;
+      _activeLoginCompleter = null;
+      _activeLoginFuture = null;
+      _activeLoginGeneration = null;
+    }
+  }
+
   void _resetAuthenticatedRuntimeState({
     bool clearLoggedUser = true,
     bool notify = false,
@@ -710,6 +897,8 @@ class ServiceProvider extends ChangeNotifier {
       functionName: calledFrom,
     );
 
+    _invalidateActiveLogin(calledFrom: calledFrom);
+
     isRecoveryInProgress = true;
     activeRecoveryTrigger = trigger;
     isNew = true;
@@ -728,9 +917,12 @@ class ServiceProvider extends ChangeNotifier {
 
     if (policyDecision.shouldOpenLoadingPopup && !isProgress) {
       isProgress = true;
-      if (navigatorKey.currentState != null) {
-        navigatorKey.currentState?.push(ModelGeneralPoPUpLoadingProgress());
-      }
+      _scheduleNavigatorAction(() {
+        final navigator = navigatorKey.currentState;
+        if (navigator != null) {
+          navigator.push(ModelGeneralPoPUpLoadingProgress());
+        }
+      }, calledFrom: calledFrom);
     }
 
     updateListeners(calledFrom: calledFrom);
@@ -1861,8 +2053,26 @@ class ServiceProvider extends ChangeNotifier {
           name: '$logClassName - $logFunctionName',
         );
 
-        final dynamic rawLoginResult = await navigatorKey.currentState
-            ?.push(PopUpLoginWidget<ErrorHandler>());
+        final int loginGeneration = _runtimeGeneration;
+        final dynamic rawLoginResult = await _requestInteractiveLogin(
+          authRequirement: authRequirement,
+          calledFrom: functionName,
+        );
+
+        if (loginGeneration != _runtimeGeneration) {
+          developer.log(
+            'Discarding stale login continuation. loginGeneration=$loginGeneration '
+            'currentGeneration=$_runtimeGeneration stage=$initStage '
+            'recovery=$isRecoveryInProgress',
+            name: '$logClassName - $logFunctionName',
+          );
+          return ErrorHandler(
+            errorCode: 0,
+            errorDsc: 'Stale login continuation discarded.',
+            className: className,
+            functionName: functionName,
+          );
+        }
 
         developer.log(
           'Auth requirement 3 => ${authRequirement.kind.name} / $navigatorKey ${navigatorKey.currentState} $rawLoginResult',
