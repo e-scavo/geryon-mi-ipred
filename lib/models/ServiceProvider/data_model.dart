@@ -109,6 +109,7 @@ class ServiceProvider extends ChangeNotifier {
   Completer<dynamic>? _activeLoginCompleter;
   Future<dynamic>? _activeLoginFuture;
   int? _activeLoginGeneration;
+  Future<ErrorHandler?>? _initializationFuture;
 
   late ServiceProviderLoginDataUserMessageModel? loggedUser;
 
@@ -1693,6 +1694,16 @@ class ServiceProvider extends ChangeNotifier {
     const String functionName = '_onDone';
     const String logFunctionName = '.::$functionName::.';
 
+    if (_initializationFuture != null) {
+      developer.log(
+        'Transport done callback ignored as a recovery trigger because the canonical initialization is already active. '
+        'generation=$_runtimeGeneration stage=$initStage retry=$connRetry/$maxConnRetry '
+        'recovery=$isRecoveryInProgress',
+        name: '$logClassName - $logFunctionName',
+      );
+      return;
+    }
+
     if (debug) {
       developer.log(
         'OnDone => Conexión con el servidor backend perdida. Intentando reconectar...',
@@ -1731,58 +1742,70 @@ class ServiceProvider extends ChangeNotifier {
     requestTransportRecovery();
   }
 
-  Future<ErrorHandler?> init() async {
-    const String functionName = 'init';
-    const logFunctionName = '.::$functionName::.';
-    if (debug) {
+  Future<ErrorHandler?> init() {
+    final Future<ErrorHandler?>? activeInitialization = _initializationFuture;
+    if (activeInitialization != null) {
       developer.log(
-        'Initializing ServiceProvider...',
-        name: '$logClassName - $logFunctionName',
+        'Reusing canonical ServiceProvider initialization. '
+        'generation=$_runtimeGeneration stage=$initStage retry=$connRetry/$maxConnRetry '
+        'recovery=$isRecoveryInProgress',
+        name: '$logClassName - .::init::.',
       );
+      return activeInitialization;
     }
-    if (isNew) {
-      if (debug) {
-        developer.log(
-          'ServiceProvider is new, proceeding with initialization.',
-          name: '$logClassName - $logFunctionName',
-        );
+
+    final Future<ErrorHandler?> initialization = _runInitialization();
+    _initializationFuture = initialization;
+
+    initialization.whenComplete(() {
+      if (identical(_initializationFuture, initialization)) {
+        _initializationFuture = null;
       }
-      try {
-        isProgress = true;
-        initStageError = ErrorHandler(byDefault: true);
-        initStage = ServiceProviderInitStages.connecting;
-        updateListeners(calledFrom: functionName);
-        ErrorHandler wss = await wssClient.init();
-        developer.log(
-          '${LogIcons.arrowLeft} WebSocketClient $wss',
-          name: '$logClassName - $logFunctionName',
-        );
-        if (wss.errorCode != 0) {
-          if (debug) {
-            developer.log(
-              '${LogIcons.arrowLeft} WebSocketClient initialization error: ${wss.toString()}',
-              name: '$logClassName - $logFunctionName',
-            );
-          }
-          initStageAdditionalMsg = 'Error #${wss.errorCode}. ${wss.errorDsc}';
-          initStageError = wss;
-          connRetry++;
+    });
+
+    return initialization;
+  }
+
+  Future<ErrorHandler?> _runInitialization() async {
+    const String functionName = 'init';
+    const String logFunctionName = '.::$functionName::.';
+
+    developer.log(
+      'Canonical ServiceProvider initialization started. '
+      'generation=$_runtimeGeneration stage=$initStage retry=$connRetry/$maxConnRetry '
+      'recovery=$isRecoveryInProgress',
+      name: '$logClassName - $logFunctionName',
+    );
+
+    while (true) {
+      if (isNew) {
+        try {
+          isProgress = true;
+          initStageError = ErrorHandler(byDefault: true);
+          initStage = ServiceProviderInitStages.connecting;
           updateListeners(calledFrom: functionName);
-          if (connRetry <= maxConnRetry) {
-            if (debug) {
+
+          final ErrorHandler wss = await wssClient.init();
+          developer.log(
+            '${LogIcons.arrowLeft} WebSocketClient $wss',
+            name: '$logClassName - $logFunctionName',
+          );
+
+          if (wss.errorCode != 0) {
+            initStageAdditionalMsg = 'Error #${wss.errorCode}. ${wss.errorDsc}';
+            initStageError = wss;
+            connRetry++;
+            updateListeners(calledFrom: functionName);
+
+            if (connRetry <= maxConnRetry) {
               developer.log(
-                'Retrying connection... Attempt $connRetry of $maxConnRetry',
+                'Canonical connection retry scheduled. attempt=$connRetry/$maxConnRetry '
+                'generation=$_runtimeGeneration recovery=$isRecoveryInProgress',
                 name: '$logClassName - $logFunctionName',
               );
+              continue;
             }
-            return await init();
-          } else {
-            if (debug) {
-              developer.log(
-                'Max connection retries reached. Giving up.',
-                name: '$logClassName - $logFunctionName',
-              );
-            }
+
             initStage = ServiceProviderInitStages.errorConnecting;
             initStageError = ErrorHandler(
               errorCode: 10000,
@@ -1790,90 +1813,96 @@ class ServiceProvider extends ChangeNotifier {
                   'Max connection retries reached. Please check your network connection and try again later.',
               className: className,
               functionName: functionName,
+              stacktrace: StackTrace.current,
             );
             isReady = false;
             isProgress = false;
+            canRetry = true;
             updateListeners(calledFrom: functionName);
             return initStageError;
           }
-        }
-        if (debug) {
+
           developer.log(
             '${LogIcons.check} WebSocketClient initialized successfully.',
             name: '$logClassName - $logFunctionName',
           );
-        }
-        return null;
-      } catch (e, stacktrace) {
-        if (debug) {
+        } catch (error, stacktrace) {
+          initStageError = error is ErrorHandler
+              ? error
+              : ErrorHandler(
+                  errorCode: 1,
+                  errorDsc: error.toString(),
+                  className: className,
+                  functionName: functionName,
+                  stacktrace: stacktrace,
+                );
+          initStage = ServiceProviderInitStages.errorConnecting;
+          isReady = false;
+          isProgress = false;
+          canRetry = true;
           developer.log(
-            'Error during initialization: $e',
+            'Canonical initialization failed with an exception. '
+            'generation=$_runtimeGeneration stage=$initStage '
+            'recovery=$isRecoveryInProgress error=$error',
             name: '$logClassName - $logFunctionName',
+            error: error,
+            stackTrace: stacktrace,
           );
+          updateListeners(calledFrom: functionName);
+          return initStageError;
         }
-        // Handle initialization error
-        if (e is ErrorHandler) {
-          initStageError = e;
-        } else {
-          // If it's not an ErrorHandler, create a new one
-          initStageError = ErrorHandler(
-            errorCode: 1,
-            errorDsc: e.toString(),
-            className: className,
-            functionName: functionName,
-            stacktrace: stacktrace,
-          );
-        }
-        return initStageError;
+      } else {
+        updateListeners(calledFrom: functionName);
       }
-    } else {
-      if (debug) {
+
+      final ErrorHandler statusCheck = await getBackendStatus();
+      if (statusCheck.errorCode == 0) {
+        connRetry = 0;
+        canRetry = false;
         developer.log(
-          'ServiceProvider is not new, skipping initialization.',
+          'Canonical ServiceProvider initialization completed successfully. '
+          'generation=$_runtimeGeneration stage=$initStage recovery=$isRecoveryInProgress',
           name: '$logClassName - $logFunctionName',
         );
-      }
-      updateListeners(calledFrom: functionName);
-      // return ErrorHandler(
-      //   errorCode: 10001,
-      //   errorDsc:
-      //       'ServiceProvider is not new, skipping initialization. NO DEBERÍA ESTAR AQUÍ NUNCA',
-      //   propertyName: 'isNew',
-      //   propertyValue: isNew.toString(),
-      //   className: className,
-      //   functionName: functionName,
-      //   stacktrace: StackTrace.current,
-      // );
-    }
-    // Chequeamos el status del backend
-    ErrorHandler statusCheck = await getBackendStatus();
-    if (statusCheck.errorCode != 0) {
-      if (debug) {
-        developer.log(
-          'Error checking backend status: ${statusCheck.toString()}',
-          name: '$logClassName - $logFunctionName',
+        return ErrorHandler(
+          errorCode: 0,
+          errorDsc: 'ServiceProvider initialized successfully.',
+          className: className,
+          functionName: functionName,
         );
       }
+
       initStage = ServiceProviderInitStages.errorRequestingBackend;
       initStageError = statusCheck;
       isReady = false;
-      //isProgress = false;
       isNew = true;
+      connRetry++;
       updateListeners(calledFrom: functionName);
-      return await init();
-    }
-    if (debug) {
+
+      if (connRetry <= maxConnRetry) {
+        developer.log(
+          'Canonical backend validation retry scheduled. attempt=$connRetry/$maxConnRetry '
+          'generation=$_runtimeGeneration recovery=$isRecoveryInProgress '
+          'error=${statusCheck.errorCode}',
+          name: '$logClassName - $logFunctionName',
+        );
+        continue;
+      }
+
+      initStage = ServiceProviderInitStages.errorRequestingBackend;
+      isProgress = false;
+      canRetry = true;
       developer.log(
-        'Backend status checked successfully.',
+        'Canonical initialization stopped after the retry limit. '
+        'generation=$_runtimeGeneration stage=$initStage retry=$connRetry/$maxConnRetry '
+        'recovery=$isRecoveryInProgress error=${statusCheck.errorCode}',
         name: '$logClassName - $logFunctionName',
+        error: statusCheck,
+        stackTrace: statusCheck.stacktrace,
       );
+      updateListeners(calledFrom: functionName);
+      return statusCheck;
     }
-    return ErrorHandler(
-      errorCode: 0,
-      errorDsc: 'ServiceProvider initialized successfully.',
-      className: className,
-      functionName: functionName,
-    );
   }
 
   void _applyBackendStatusSuccessState({

@@ -206,7 +206,7 @@ class _ModelGeneralLoadingProgressState
                 ),
               ),
             if (appStatus.connRetry > 0 &&
-                appStatus.connRetry <= 5 &&
+                appStatus.connRetry <= appStatus.maxConnRetry &&
                 (appStatus.initStage == ServiceProviderInitStages.connecting ||
                     appStatus.initStage ==
                         ServiceProviderInitStages.reConnecting))

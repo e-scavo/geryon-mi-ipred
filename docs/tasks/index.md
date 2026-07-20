@@ -50,6 +50,24 @@ Result:
 - recovery generations prevent stale login continuations from mutating a newer runtime cycle
 - loading startup now waits for configuration on every platform and closes through deferred navigation
 
+### 003 — Canonical Initialization Single-Flight and Retry Limit
+
+Document:
+
+- `docs/tasks/003_canonical_initialization_single_flight_retry_limit.md`
+
+Status:
+
+- completed
+
+Result:
+
+- all startup, handshake, and recovery callers reuse one active ServiceProvider initialization Future
+- WebSocket and backend-validation retries execute inside one bounded canonical loop
+- `_onDone()` cannot create a parallel recovery while initialization already owns the failed attempt
+- automatic attempts stop at `maxConnRetry` and expose manual retry instead of continuing indefinitely
+- loading retry presentation reads the ServiceProvider retry contract instead of a hardcoded value
+
 ## Next Identifier
 
-- `003`
+- `004`
