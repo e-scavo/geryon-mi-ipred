@@ -116,7 +116,14 @@ class _LoginPageWidgetState extends ConsumerState<LoginPageWidget> {
     final bool isBusy = _loginState.isLoading;
     final theme = Theme.of(context);
 
-    Widget buildLoginCard() {
+    Widget buildLoginCard({
+      required bool compact,
+    }) {
+      final EdgeInsets cardPadding = compact
+          ? const EdgeInsets.symmetric(horizontal: 20, vertical: 20)
+          : const EdgeInsets.symmetric(horizontal: 28, vertical: 28);
+      final double logoWidth = compact ? 148 : 184;
+
       return ConstrainedBox(
         constraints: const BoxConstraints(
           maxWidth: 500,
@@ -125,10 +132,7 @@ class _LoginPageWidgetState extends ConsumerState<LoginPageWidget> {
           elevation: 2,
           surfaceTintColor: theme.colorScheme.surface,
           child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 28,
-              vertical: 28,
-            ),
+            padding: cardPadding,
             child: IgnorePointer(
               ignoring: isBusy,
               child: Column(
@@ -136,9 +140,10 @@ class _LoginPageWidgetState extends ConsumerState<LoginPageWidget> {
                 children: [
                   Image.asset(
                     'assets/logo-ipred-color.png',
-                    scale: 2.5,
+                    width: logoWidth,
+                    fit: BoxFit.contain,
                   ),
-                  const SizedBox(height: 18),
+                  SizedBox(height: compact ? 14 : 18),
                   Text(
                     'Ingresá con tu DNI o CUIT',
                     textAlign: TextAlign.center,
@@ -146,7 +151,7 @@ class _LoginPageWidgetState extends ConsumerState<LoginPageWidget> {
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  SizedBox(height: compact ? 8 : 10),
                   Text(
                     'Accedé a tu panel de cliente y a tus comprobantes disponibles.',
                     textAlign: TextAlign.center,
@@ -156,7 +161,7 @@ class _LoginPageWidgetState extends ConsumerState<LoginPageWidget> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  SizedBox(height: compact ? 18 : 24),
                   ShakeTextField(
                     key: _shakeKey,
                     controller: _dniController,
@@ -166,7 +171,7 @@ class _LoginPageWidgetState extends ConsumerState<LoginPageWidget> {
                     textInputAction: TextInputAction.done,
                     onSubmitted: isBusy ? null : (_) => _login(),
                   ),
-                  const SizedBox(height: 18),
+                  SizedBox(height: compact ? 12 : 18),
                   Row(
                     children: [
                       Checkbox(
@@ -193,7 +198,7 @@ class _LoginPageWidgetState extends ConsumerState<LoginPageWidget> {
                     ],
                   ),
                   if (_loginState.hasError) ...[
-                    const SizedBox(height: 18),
+                    SizedBox(height: compact ? 12 : 18),
                     FeatureErrorState(
                       title: _loginState.errorTitle ?? 'No pudimos ingresar',
                       message: _loginState.errorMessage ??
@@ -203,9 +208,10 @@ class _LoginPageWidgetState extends ConsumerState<LoginPageWidget> {
                       icon: _loginState.hasValidationError
                           ? Icons.edit_note_outlined
                           : Icons.error_outline,
+                      compact: compact,
                     ),
                   ],
-                  const SizedBox(height: 18),
+                  SizedBox(height: compact ? 12 : 18),
                   SizedBox(
                     width: double.infinity,
                     child: FilledButton(
@@ -258,15 +264,31 @@ class _LoginPageWidgetState extends ConsumerState<LoginPageWidget> {
     }
 
     return Scaffold(
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(36),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              buildLoginCard(),
-            ],
-          ),
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final bool compact =
+                constraints.maxHeight < 760 || constraints.maxWidth < 600;
+            final EdgeInsets viewportPadding = EdgeInsets.symmetric(
+              horizontal: compact ? 16 : 36,
+              vertical: compact ? 16 : 36,
+            );
+
+            return SingleChildScrollView(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              padding: viewportPadding,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: constraints.maxHeight > viewportPadding.vertical
+                      ? constraints.maxHeight - viewportPadding.vertical
+                      : 0.0,
+                ),
+                child: Center(
+                  child: buildLoginCard(compact: compact),
+                ),
+              ),
+            );
+          },
         ),
       ),
     );

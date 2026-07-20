@@ -8,6 +8,7 @@ class FeatureErrorState extends StatelessWidget {
   final IconData icon;
   final EdgeInsetsGeometry padding;
   final double maxWidth;
+  final bool compact;
 
   const FeatureErrorState({
     super.key,
@@ -18,6 +19,7 @@ class FeatureErrorState extends StatelessWidget {
     this.icon = Icons.error_outline,
     this.padding = const EdgeInsets.all(20),
     this.maxWidth = 560,
+    this.compact = false,
   });
 
   @override
@@ -35,19 +37,19 @@ class FeatureErrorState extends StatelessWidget {
             elevation: 2,
             surfaceTintColor: theme.colorScheme.surface,
             child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 24,
-                vertical: 24,
+              padding: EdgeInsets.symmetric(
+                horizontal: compact ? 18 : 24,
+                vertical: compact ? 16 : 24,
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
                     icon,
-                    size: 40,
+                    size: compact ? 32 : 40,
                     color: theme.colorScheme.error,
                   ),
-                  const SizedBox(height: 18),
+                  SizedBox(height: compact ? 12 : 18),
                   Text(
                     title,
                     textAlign: TextAlign.center,
@@ -55,14 +57,14 @@ class FeatureErrorState extends StatelessWidget {
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  SizedBox(height: compact ? 8 : 10),
                   Text(
                     message,
                     textAlign: TextAlign.center,
                     style: theme.textTheme.bodyMedium,
                   ),
                   if (canRetry) ...[
-                    const SizedBox(height: 18),
+                    SizedBox(height: compact ? 12 : 18),
                     OutlinedButton.icon(
                       onPressed: onRetry,
                       icon: const Icon(Icons.refresh),

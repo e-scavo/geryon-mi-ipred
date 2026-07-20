@@ -798,6 +798,7 @@ Canonical entry points:
 - `docs/tasks/007_logout_final_response_completion_contract.md`
 - `docs/tasks/008_handshake_completion_channel_serialization.md`
 - `docs/tasks/009_fresh_transport_handshake_after_runtime_reset.md`
+- `docs/tasks/010_login_vertical_viewport_overflow_stabilization.md`
 
 Latest Phase X implementation:
 
@@ -818,5 +819,7 @@ Latest Phase X implementation:
 - request serialization always preserves the channel required by non-subscription actions, independently of the transient `isNew` transport state
 - logout and manual retry now retire the old WebSocket before waiting for a new-session handshake
 - intentional and obsolete socket close events cannot start a parallel recovery over the replacement transport
+- login validation and authentication errors now remain accessible in reduced-height viewports through a centered-when-possible, scrollable responsive boundary
+- compact login and error-state density is applied only when viewport constraints require it, without altering authentication ownership or continuation flow
 
-The next Phase X intervention must use task identifier `010`.
+The next Phase X intervention must use task identifier `011`.

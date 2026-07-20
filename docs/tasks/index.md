@@ -177,6 +177,24 @@ Result:
 - delayed close events are isolated by concrete socket identity
 - canonical initialization resumes only after the newly established transport completes handshake and channel subscription
 
+### 010 — Login Vertical Viewport Overflow Stabilization
+
+Document:
+
+- `docs/tasks/010_login_vertical_viewport_overflow_stabilization.md`
+
+Status:
+
+- completed
+
+Result:
+
+- the login surface now owns a scrollable vertical viewport instead of a fixed centered column
+- the card remains centered when it fits and becomes naturally scrollable when validation content exceeds the available height
+- reduced-height and narrow viewports use compact padding, logo sizing, spacing, and error-state density
+- browser DevTools, mobile keyboards, and short windows no longer make the submit action inaccessible
+- `FeatureErrorState` keeps its existing default presentation and exposes compact density only as an opt-in contract
+
 ## Next Identifier
 
-- `010`
+- `011`
