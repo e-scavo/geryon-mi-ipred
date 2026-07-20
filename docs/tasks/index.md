@@ -86,6 +86,24 @@ Result:
 - manual retries cannot stack new modal barriers over the existing retry surface
 - loading ownership is cleared only when the exact owned route completes
 
+### 005 — Progress and Login Theme Normalization
+
+Document:
+
+- `docs/tasks/005_progress_login_theme_normalization.md`
+
+Status:
+
+- completed
+
+Result:
+
+- the global startup/recovery progress surface now derives colors and typography from the active application theme
+- retry copy, action styling, progress indicators, and state messaging are normalized and accessible
+- progress content is presented in a responsive Material card without changing ServiceProvider ownership
+- the login action, DNI/CUIT field, keyboard submission, spinner, and route semantics are aligned with the same Material 3 contract
+- no parallel startup, recovery, loading, or login coordinator was introduced
+
 ## Next Identifier
 
-- `005`
+- `006`

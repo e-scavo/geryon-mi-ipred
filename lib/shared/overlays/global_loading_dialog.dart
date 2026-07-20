@@ -20,8 +20,11 @@ class ModelGeneralLoadingProgress extends ConsumerStatefulWidget {
 
 class _ModelGeneralLoadingProgressState
     extends ConsumerState<ModelGeneralLoadingProgress> {
-  static final String _className = '_ModelGeneralLoadingProgressState';
-  static final String logClassName = '.::$_className::.';
+  static const String _className = '_ModelGeneralLoadingProgressState';
+  static const String logClassName = '.::$_className::.';
+  static const double _maxContentWidth = 420;
+  static const double _logoWidth = 190;
+
   bool _initializationRequested = false;
   bool _closeScheduled = false;
 
@@ -34,10 +37,10 @@ class _ModelGeneralLoadingProgressState
     _subscription = ref.listenManual<ServiceProvider>(
       notifierServiceProvider,
       (prev, next) {
-        final String functionName = 'LISTEN';
-        final String logLocalFunc = '.::$functionName::.';
-        var today = CommonDateTimeModel.fromNow();
-        var dataPrev =
+        const String functionName = 'LISTEN';
+        const String logLocalFunc = '.::$functionName::.';
+        final today = CommonDateTimeModel.fromNow();
+        final dataPrev =
             prev != null ? prev.runtimeType.toString() : next.runtimeType;
         if (debug) {
           developer.log(
@@ -133,6 +136,47 @@ class _ModelGeneralLoadingProgressState
     });
   }
 
+  bool _isConnectionStage(ServiceProvider appStatus) {
+    return appStatus.initStage == ServiceProviderInitStages.connecting ||
+        appStatus.initStage == ServiceProviderInitStages.reConnecting ||
+        appStatus.initStage == ServiceProviderInitStages.errorConnecting ||
+        appStatus.initStage == ServiceProviderInitStages.errorReConnecting;
+  }
+
+  bool _isErrorStage(ServiceProvider appStatus) {
+    return appStatus.initStage == ServiceProviderInitStages.errorConnecting ||
+        appStatus.initStage == ServiceProviderInitStages.errorReConnecting;
+  }
+
+  String _resolveTitle(ServiceProvider appStatus) {
+    if (_isErrorStage(appStatus) || appStatus.canRetry) {
+      return 'No pudimos conectar con el servicio';
+    }
+    if (appStatus.initStage == ServiceProviderInitStages.reConnecting) {
+      return 'Restableciendo conexión';
+    }
+    return 'Conectando con el servicio';
+  }
+
+  String _resolveMessage(ServiceProvider appStatus) {
+    final additionalMessage = appStatus.initStageAdditionalMsg?.trim();
+    if (additionalMessage != null &&
+        additionalMessage.isNotEmpty &&
+        !_isErrorStage(appStatus)) {
+      return additionalMessage;
+    }
+
+    if (_isErrorStage(appStatus) || appStatus.canRetry) {
+      return 'Verificá tu conexión. La aplicación seguirá intentando y también podés reintentar ahora.';
+    }
+
+    if (appStatus.connRetry > 0 && _isConnectionStage(appStatus)) {
+      return 'Intento de conexión ${appStatus.connRetry}.';
+    }
+
+    return 'Aguardá unos instantes mientras preparamos tu panel.';
+  }
+
   @override
   void dispose() {
     _subscription.close();
@@ -142,6 +186,9 @@ class _ModelGeneralLoadingProgressState
   @override
   Widget build(BuildContext context) {
     final appStatus = ref.watch(notifierServiceProvider);
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isError = _isErrorStage(appStatus) || appStatus.canRetry;
 
     const String functionName = 'build';
     const String logLocalFunc = '.::$functionName::.';
@@ -153,90 +200,93 @@ class _ModelGeneralLoadingProgressState
       developer.log(
         '$logClassName - $logLocalFunc - ServiceStatus: PROGRESS progressLoading: ${appStatus.initStage}-${appStatus.initStageError}',
       );
-      developer.log(
-        '$logClassName - $logLocalFunc - ServiceStatus: PROGRESS progressLoading: errorRequestingBackend ${appStatus.initStage}-${appStatus.initStageError}',
-      );
-      developer.log(
-        '$logClassName - $logLocalFunc - ServiceStatus: PROGRESS progressLoading: checkBool: ${appStatus.initStageAdditionalMsg != null && appStatus.initStage != ServiceProviderInitStages.errorConnecting && appStatus.initStage != ServiceProviderInitStages.errorReConnecting}',
-      );
-      developer.log(
-        '$logClassName - $logLocalFunc - ServiceStatus: PROGRESS progressLoading: checkBool2: ${appStatus.initStageAdditionalMsg}-${appStatus.initStage}',
-      );
     }
-    return Visibility(
-      visible: true,
+
+    return SafeArea(
       child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.asset(
-              'assets/images/full_logo.png',
-              fit: BoxFit.contain,
-              width: 200,
-            ),
-            if (appStatus.initStageAdditionalMsg != null &&
-                appStatus.initStage !=
-                    ServiceProviderInitStages.errorConnecting &&
-                appStatus.initStage !=
-                    ServiceProviderInitStages.errorReConnecting)
-              SizedBox(
-                height: 10,
-                width: 200,
-                child: Text(
-                  appStatus.initStageAdditionalMsg!,
-                  style: const TextStyle(
-                    fontSize: 8,
-                    color: Colors.black45,
-                  ),
-                  textAlign: TextAlign.center,
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: _maxContentWidth),
+            child: Card(
+              elevation: 6,
+              color: colorScheme.surface,
+              surfaceTintColor: colorScheme.surfaceTint,
+              clipBehavior: Clip.antiAlias,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 32,
+                  vertical: 30,
                 ),
-              ),
-            const SizedBox(height: 3),
-            if (appStatus.initStage ==
-                    ServiceProviderInitStages.errorConnecting ||
-                appStatus.initStage ==
-                    ServiceProviderInitStages.errorReConnecting)
-              const SizedBox(
-                height: 20,
-                width: 20,
-                child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.black38),
-                  backgroundColor: Colors.transparent,
-                  strokeWidth: 1.5,
-                ),
-              ),
-            if (appStatus.connRetry > 0 &&
-                appStatus.connRetry <= appStatus.maxConnRetry &&
-                (appStatus.initStage == ServiceProviderInitStages.connecting ||
-                    appStatus.initStage ==
-                        ServiceProviderInitStages.reConnecting))
-              Padding(
-                padding: const EdgeInsets.fromLTRB(0.00, 2.00, 0.00, 5.00),
-                child: Text('Retry #${appStatus.connRetry}'),
-              ),
-            if (appStatus.initStage ==
-                    ServiceProviderInitStages.errorConnecting ||
-                appStatus.initStage ==
-                    ServiceProviderInitStages.errorReConnecting ||
-                appStatus.canRetry)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black87,
-                      foregroundColor: Colors.white38,
-                      shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(2.5))),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Image.asset(
+                      'assets/images/full_logo.png',
+                      fit: BoxFit.contain,
+                      width: _logoWidth,
+                      semanticLabel: 'IP·RED',
                     ),
-                    onPressed: () {
-                      appStatus.requestManualRecovery();
-                    },
-                    child: const Text('Retry'),
-                  ),
-                ],
+                    const SizedBox(height: 22),
+                    Text(
+                      _resolveTitle(appStatus),
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color:
+                            isError ? colorScheme.error : colorScheme.onSurface,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      _resolveMessage(appStatus),
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    const SizedBox(height: 22),
+                    if (appStatus.isProgress || _isConnectionStage(appStatus))
+                      SizedBox(
+                        width: 28,
+                        height: 28,
+                        child: CircularProgressIndicator(
+                          color:
+                              isError ? colorScheme.error : colorScheme.primary,
+                          strokeWidth: 2.6,
+                        ),
+                      ),
+                    if (appStatus.connRetry > 0 &&
+                        _isConnectionStage(appStatus)) ...[
+                      const SizedBox(height: 12),
+                      Text(
+                        appStatus.maxConnRetry > 0
+                            ? 'Intento ${appStatus.connRetry} de ${appStatus.maxConnRetry}'
+                            : 'Intento ${appStatus.connRetry}',
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.labelMedium?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                    if (isError) ...[
+                      const SizedBox(height: 22),
+                      SizedBox(
+                        width: double.infinity,
+                        child: FilledButton.icon(
+                          onPressed: appStatus.isProgress
+                              ? null
+                              : appStatus.requestManualRecovery,
+                          icon: const Icon(Icons.refresh),
+                          label: const Text('Reintentar'),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
               ),
-          ],
+            ),
+          ),
         ),
       ),
     );

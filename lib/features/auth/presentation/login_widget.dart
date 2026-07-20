@@ -160,7 +160,11 @@ class _LoginPageWidgetState extends ConsumerState<LoginPageWidget> {
                   ShakeTextField(
                     key: _shakeKey,
                     controller: _dniController,
+                    labelText: 'DNI o CUIT',
                     hintText: 'Ingresá tu DNI o CUIT',
+                    keyboardType: TextInputType.number,
+                    textInputAction: TextInputAction.done,
+                    onSubmitted: isBusy ? null : (_) => _login(),
                   ),
                   const SizedBox(height: 18),
                   Row(
@@ -180,8 +184,11 @@ class _LoginPageWidgetState extends ConsumerState<LoginPageWidget> {
                               },
                       ),
                       const SizedBox(width: 4),
-                      const Expanded(
-                        child: Text('Recordarme'),
+                      Expanded(
+                        child: Text(
+                          'Recordarme',
+                          style: theme.textTheme.bodyMedium,
+                        ),
                       ),
                     ],
                   ),
@@ -201,17 +208,18 @@ class _LoginPageWidgetState extends ConsumerState<LoginPageWidget> {
                   const SizedBox(height: 18),
                   SizedBox(
                     width: double.infinity,
-                    child: ElevatedButton(
+                    child: FilledButton(
                       onPressed: isBusy ? null : _login,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           if (isSubmitLoading) ...[
-                            const SizedBox(
+                            SizedBox(
                               width: 18,
                               height: 18,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2.2,
+                                color: theme.colorScheme.onPrimary,
                               ),
                             ),
                             const SizedBox(width: 10),
@@ -269,16 +277,16 @@ class PopUpLoginWidget<T> extends PopupRoute<T> {
   PopUpLoginWidget();
 
   @override
-  Color? get barrierColor => Colors.black.withAlpha(0x50);
+  Color? get barrierColor => Colors.black.withValues(alpha: 0.42);
 
   @override
   bool get barrierDismissible => false;
 
   @override
-  String? get barrierLabel => 'Dismissible Dialog';
+  String? get barrierLabel => 'Inicio de sesión requerido';
 
   @override
-  Duration get transitionDuration => const Duration(milliseconds: 300);
+  Duration get transitionDuration => const Duration(milliseconds: 220);
 
   @override
   Widget buildPage(

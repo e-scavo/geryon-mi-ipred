@@ -2,12 +2,20 @@ import 'package:flutter/material.dart';
 
 class ShakeTextField extends StatefulWidget {
   final TextEditingController controller;
+  final String? labelText;
   final String? hintText;
+  final TextInputType? keyboardType;
+  final TextInputAction? textInputAction;
+  final ValueChanged<String>? onSubmitted;
 
   const ShakeTextField({
     super.key,
     required this.controller,
+    this.labelText,
     this.hintText,
+    this.keyboardType,
+    this.textInputAction,
+    this.onSubmitted,
   });
 
   @override
@@ -16,8 +24,8 @@ class ShakeTextField extends StatefulWidget {
 
 class ShakeTextFieldState extends State<ShakeTextField>
     with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _offsetAnimation;
+  late final AnimationController _controller;
+  late final Animation<double> _offsetAnimation;
 
   @override
   void initState() {
@@ -51,11 +59,19 @@ class ShakeTextFieldState extends State<ShakeTextField>
     return AnimatedBuilder(
       animation: _offsetAnimation,
       builder: (context, child) {
-        return Container(
-          transform: Matrix4.translationValues(_offsetAnimation.value, 0, 0),
+        return Transform.translate(
+          offset: Offset(_offsetAnimation.value, 0),
           child: TextField(
             controller: widget.controller,
-            decoration: InputDecoration(hintText: widget.hintText),
+            keyboardType: widget.keyboardType,
+            textInputAction: widget.textInputAction,
+            onSubmitted: widget.onSubmitted,
+            autofillHints: const [AutofillHints.username],
+            decoration: InputDecoration(
+              labelText: widget.labelText,
+              hintText: widget.hintText,
+              prefixIcon: const Icon(Icons.badge_outlined),
+            ),
           ),
         );
       },

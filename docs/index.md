@@ -793,6 +793,7 @@ Canonical entry points:
 - `docs/tasks/002_login_popup_global_exclusion_runtime_generation.md`
 - `docs/tasks/003_canonical_initialization_single_flight_retry_limit.md`
 - `docs/tasks/004_global_loading_popup_route_exclusion.md`
+- `docs/tasks/005_progress_login_theme_normalization.md`
 
 Latest Phase X implementation:
 
@@ -803,5 +804,6 @@ Latest Phase X implementation:
 - ServiceProvider now also owns the unique global loading route and its completion Future
 - startup and runtime recovery reuse the active loading popup instead of stacking modal routes
 - manual retries remain inside the same popup after the automatic retry limit is reached
+- progress and login surfaces now share the application Material 3 color, typography, action, accessibility, and modal presentation contracts
 
-The next Phase X intervention must use task identifier `005`.
+The next Phase X intervention must use task identifier `006`.
