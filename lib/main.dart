@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geryon_web_app_ws_v2/common_vars.dart';
 import 'package:geryon_web_app_ws_v2/core/utils/utils.dart';
 import 'package:geryon_web_app_ws_v2/features/dashboard/presentation/dashboard_page.dart';
-import 'package:geryon_web_app_ws_v2/shared/overlays/global_loading_dialog_route.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -140,8 +139,9 @@ class _MyStartingPageState extends ConsumerState<MyStartingPage> {
       name: '$logClassName - $logFunctionName',
     );
 
-    final rStatus =
-        await Navigator.of(context).push(ModelGeneralPoPUpLoadingProgress());
+    final rStatus = await appStatus.requestGlobalLoadingPopup(
+      calledFrom: functionName,
+    );
 
     developer.log(
       'rStatus: $rStatus',
@@ -152,7 +152,7 @@ class _MyStartingPageState extends ConsumerState<MyStartingPage> {
       return;
     }
 
-    if (!rStatus) {
+    if (rStatus != true) {
       return;
     }
 

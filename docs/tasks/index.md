@@ -68,6 +68,24 @@ Result:
 - automatic attempts stop at `maxConnRetry` and expose manual retry instead of continuing indefinitely
 - loading retry presentation reads the ServiceProvider retry contract instead of a hardcoded value
 
+### 004 — Global Loading Popup Route Exclusion
+
+Document:
+
+- `docs/tasks/004_global_loading_popup_route_exclusion.md`
+
+Status:
+
+- completed
+
+Result:
+
+- ServiceProvider globally owns the loading route and its completion Future
+- startup and runtime recovery reuse the same active loading popup
+- `isProgress` no longer acts as an unreliable proxy for Navigator route existence
+- manual retries cannot stack new modal barriers over the existing retry surface
+- loading ownership is cleared only when the exact owned route completes
+
 ## Next Identifier
 
-- `004`
+- `005`

@@ -792,14 +792,16 @@ Canonical entry points:
 - `docs/tasks/001_phase_x_cross_phase_corrections_baseline.md`
 - `docs/tasks/002_login_popup_global_exclusion_runtime_generation.md`
 - `docs/tasks/003_canonical_initialization_single_flight_retry_limit.md`
+- `docs/tasks/004_global_loading_popup_route_exclusion.md`
 
 Latest Phase X implementation:
 
 - global single-login route ownership remains consolidated in ServiceProvider
 - runtime generation continues to invalidate obsolete login continuations during recovery
-- ServiceProvider initialization is now single-flight across startup, handshake, and recovery callers
+- ServiceProvider initialization remains single-flight across startup, handshake, and recovery callers
 - WebSocket and backend-validation attempts share one bounded retry loop
-- transport-done callbacks cannot start parallel recovery while canonical initialization is active
-- automatic execution stops at the configured limit and exposes manual retry
+- ServiceProvider now also owns the unique global loading route and its completion Future
+- startup and runtime recovery reuse the active loading popup instead of stacking modal routes
+- manual retries remain inside the same popup after the automatic retry limit is reached
 
-The next Phase X intervention must use task identifier `004`.
+The next Phase X intervention must use task identifier `005`.

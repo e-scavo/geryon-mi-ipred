@@ -110,6 +110,9 @@ class ServiceProvider extends ChangeNotifier {
   Future<dynamic>? _activeLoginFuture;
   int? _activeLoginGeneration;
   Future<ErrorHandler?>? _initializationFuture;
+  ModelGeneralPoPUpLoadingProgress<dynamic>? _activeLoadingRoute;
+  Completer<dynamic>? _activeLoadingCompleter;
+  Future<dynamic>? _activeLoadingFuture;
 
   late ServiceProviderLoginDataUserMessageModel? loggedUser;
 
@@ -159,6 +162,79 @@ class ServiceProvider extends ChangeNotifier {
   int get runtimeGeneration => _runtimeGeneration;
 
   bool get hasActiveLoginPopup => _activeLoginFuture != null;
+
+  bool get hasActiveLoadingPopup => _activeLoadingFuture != null;
+
+  Future<dynamic> requestGlobalLoadingPopup({
+    required String calledFrom,
+  }) {
+    final Future<dynamic>? existingFuture = _activeLoadingFuture;
+    if (existingFuture != null) {
+      developer.log(
+        'Reusing globally owned loading popup. generation=$_runtimeGeneration '
+        'stage=$initStage retry=$connRetry/$maxConnRetry '
+        'recovery=$isRecoveryInProgress',
+        name: '$logClassName - .::$calledFrom::.',
+      );
+      return existingFuture;
+    }
+
+    final completer = Completer<dynamic>();
+    final route = ModelGeneralPoPUpLoadingProgress<dynamic>();
+
+    _activeLoadingCompleter = completer;
+    _activeLoadingRoute = route;
+    _activeLoadingFuture = completer.future;
+
+    developer.log(
+      'Scheduling globally owned loading popup. generation=$_runtimeGeneration '
+      'stage=$initStage retry=$connRetry/$maxConnRetry '
+      'recovery=$isRecoveryInProgress',
+      name: '$logClassName - .::$calledFrom::.',
+    );
+
+    _scheduleNavigatorAction(() {
+      if (_activeLoadingRoute != route) {
+        if (!completer.isCompleted) {
+          completer.complete(false);
+        }
+        return;
+      }
+
+      final navigator = navigatorKey.currentState;
+      if (navigator == null) {
+        if (!completer.isCompleted) {
+          completer.complete(false);
+        }
+        _clearActiveLoadingReferences(route: route);
+        return;
+      }
+
+      navigator.push<dynamic>(route).then((result) {
+        if (!completer.isCompleted) {
+          completer.complete(result);
+        }
+      }).whenComplete(() {
+        if (!completer.isCompleted) {
+          completer.complete(false);
+        }
+        _clearActiveLoadingReferences(route: route);
+      });
+    }, calledFrom: calledFrom);
+
+    return completer.future;
+  }
+
+  void _clearActiveLoadingReferences({
+    required ModelGeneralPoPUpLoadingProgress<dynamic> route,
+  }) {
+    if (_activeLoadingRoute != route) {
+      return;
+    }
+    _activeLoadingRoute = null;
+    _activeLoadingCompleter = null;
+    _activeLoadingFuture = null;
+  }
 
   void _scheduleNavigatorAction(
     VoidCallback action, {
@@ -916,14 +992,9 @@ class ServiceProvider extends ChangeNotifier {
       sessionTokenID = '';
     }
 
-    if (policyDecision.shouldOpenLoadingPopup && !isProgress) {
+    if (policyDecision.shouldOpenLoadingPopup) {
       isProgress = true;
-      _scheduleNavigatorAction(() {
-        final navigator = navigatorKey.currentState;
-        if (navigator != null) {
-          navigator.push(ModelGeneralPoPUpLoadingProgress());
-        }
-      }, calledFrom: calledFrom);
+      requestGlobalLoadingPopup(calledFrom: calledFrom);
     }
 
     updateListeners(calledFrom: calledFrom);
