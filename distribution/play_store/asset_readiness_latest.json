@@ -1,20 +1,20 @@
 {
   "appName": "Mi IP·RED",
-  "generatedAt": "2026-04-07T22:01:25.961962",
+  "generatedAt": "2026-07-20T15:10:26.197286",
   "version": {
     "major": 1,
     "minor": 0,
     "patch": 0,
-    "build": 88,
+    "build": 89,
     "codeName": "gorrión",
-    "pubspecVersion": "1.0.0+88"
+    "pubspecVersion": "1.0.0+89"
   },
   "playStoreRoot": "distribution/play_store",
-  "publicationRoot": "distribution/play_store\\releases\\1.0.0+88",
+  "publicationRoot": "distribution/play_store\\releases\\1.0.0+89",
   "status": "fail",
   "requiredGroupsPassed": false,
   "optionalGroupsPassed": false,
-  "allowMissingOptional": false,
+  "allowMissingOptional": true,
   "groups": [
     {
       "name": "phone_screenshots",

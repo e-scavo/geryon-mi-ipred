@@ -546,6 +546,7 @@ class BillingController {
       pHeaderParamsRequests.realLocalRequest = localRequest.typeId;
       pHeaderParamsRequests.globalRequest = ConstRequests.viewRequest.typeId;
       pHeaderParamsRequests.localRequest = ConstRequests.viewRequest.typeId;
+      pHeaderParamsRequests.actionRequest = "CustomerRequest";
       pHeaderParamsRequests.offset = resolvedOffset;
       pHeaderParamsRequests.pageSize = safeRowsPerPage;
       pHeaderParamsRequests.sortField = sortField;
@@ -576,9 +577,12 @@ class BillingController {
           ),
         );
       }
+      Map<String, dynamic> pSpecificParams = {
+        "ClaseCpbteVT": billingType,
+      };
 
       tEnteDataModel.threadParams = {
-        'DBVersion': 2,
+        'DBVersion': 10,
         'SelectBy': 'KeyCliente',
         'CodEmp': tEnteDataModel.cEmpresa.codEmp,
         'TipoCliente': currentClient.tipoCliente,
@@ -586,6 +590,7 @@ class BillingController {
         'ClaseCpbte': billingType,
         'ClaseCpbteVT': billingType,
         'IsEmpresaAggregated': true,
+        'SpecificParams': pSpecificParams,
       };
 
       developer.log(
