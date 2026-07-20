@@ -140,6 +140,24 @@ Result:
 - callback exceptions remain inside the tracker execution error boundary
 - logout recovery can advance from backend status completion to the globally owned login continuation
 
+### 008 — Handshake Completion and Channel Serialization
+
+Document:
+
+- `docs/tasks/008_handshake_completion_channel_serialization.md`
+
+Status:
+
+- completed
+
+Result:
+
+- canonical initialization now waits for the WebSocket handshake and channel subscription before requesting backend status
+- the handshake callback no longer recursively re-enters `init()`
+- outgoing channel serialization is controlled by the request action contract instead of the mutable `isNew` transport flag
+- `Get:Status` always carries `GERYON_General` when built with that channel
+- obsolete handshake completions are isolated by runtime generation
+
 ## Next Identifier
 
-- `008`
+- `009`

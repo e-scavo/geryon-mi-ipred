@@ -796,6 +796,7 @@ Canonical entry points:
 - `docs/tasks/005_progress_login_theme_normalization.md`
 - `docs/tasks/006_logout_reentry_stale_queued_response_isolation.md`
 - `docs/tasks/007_logout_final_response_completion_contract.md`
+- `docs/tasks/008_handshake_completion_channel_serialization.md`
 
 Latest Phase X implementation:
 
@@ -812,5 +813,7 @@ Latest Phase X implementation:
 - queued/processing acknowledgements may omit their channel without being misclassified as malformed final messages
 - tracked runtime responses now use `MessageID` as their canonical correlation key even when a final response omits `ChannelName`
 - asynchronous tracked callbacks are awaited so logout recovery observes final response state before continuing to login
+- canonical initialization now waits for WebSocket handshake and channel subscription completion before sending backend status requests
+- request serialization always preserves the channel required by non-subscription actions, independently of the transient `isNew` transport state
 
-The next Phase X intervention must use task identifier `008`.
+The next Phase X intervention must use task identifier `009`.

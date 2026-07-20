@@ -110,6 +110,9 @@ class ServiceProvider extends ChangeNotifier {
   Future<dynamic>? _activeLoginFuture;
   int? _activeLoginGeneration;
   Future<ErrorHandler?>? _initializationFuture;
+  Completer<ErrorHandler?>? _handshakeCompleter;
+  int? _handshakeGeneration;
+  static const Duration _handshakeTimeout = Duration(seconds: 15);
   ModelGeneralPoPUpLoadingProgress<dynamic>? _activeLoadingRoute;
   Completer<dynamic>? _activeLoadingCompleter;
   Future<dynamic>? _activeLoadingFuture;
@@ -1067,7 +1070,7 @@ class ServiceProvider extends ChangeNotifier {
   Future<ErrorHandler?> _continueInitializationAfterHandshake({
     required String functionName,
   }) async {
-    ErrorHandler rSubscribe = await subscribeChannel();
+    final ErrorHandler rSubscribe = await subscribeChannel();
     if (rSubscribe.errorCode != 0) {
       initStage = ServiceProviderInitStages.errorRequestingBackend;
       initStageError = rSubscribe;
@@ -1077,7 +1080,87 @@ class ServiceProvider extends ChangeNotifier {
       return rSubscribe;
     }
 
-    return await init();
+    return null;
+  }
+
+  void _prepareHandshakeWait({
+    required String functionName,
+  }) {
+    final Completer<ErrorHandler?>? previousCompleter = _handshakeCompleter;
+    if (previousCompleter != null && !previousCompleter.isCompleted) {
+      previousCompleter.complete(
+        ErrorHandler(
+          errorCode: 10008,
+          errorDsc: 'The previous WebSocket handshake was invalidated.',
+          className: className,
+          functionName: functionName,
+          stacktrace: StackTrace.current,
+        ),
+      );
+    }
+
+    _handshakeCompleter = Completer<ErrorHandler?>();
+    _handshakeGeneration = _runtimeGeneration;
+  }
+
+  void _completeHandshakeWait({
+    required ErrorHandler? result,
+    required int generation,
+    required String functionName,
+  }) {
+    final Completer<ErrorHandler?>? completer = _handshakeCompleter;
+    if (completer == null || completer.isCompleted) {
+      return;
+    }
+
+    if (_handshakeGeneration != generation ||
+        generation != _runtimeGeneration) {
+      developer.log(
+        'Discarding obsolete handshake completion. '
+        'handshakeGeneration=$_handshakeGeneration messageGeneration=$generation '
+        'currentGeneration=$_runtimeGeneration stage=$initStage',
+        name: '$logClassName - .::$functionName::.',
+      );
+      return;
+    }
+
+    completer.complete(result);
+  }
+
+  Future<ErrorHandler?> _waitForHandshake({
+    required String functionName,
+  }) async {
+    final Completer<ErrorHandler?>? completer = _handshakeCompleter;
+    final int? generation = _handshakeGeneration;
+
+    if (completer == null || generation == null) {
+      return ErrorHandler(
+        errorCode: 10009,
+        errorDsc: 'The WebSocket handshake wait was not initialized.',
+        className: className,
+        functionName: functionName,
+        stacktrace: StackTrace.current,
+      );
+    }
+
+    try {
+      return await completer.future.timeout(_handshakeTimeout);
+    } on TimeoutException catch (error, stacktrace) {
+      return ErrorHandler(
+        errorCode: 10010,
+        errorDsc: 'Timed out waiting for the WebSocket handshake.',
+        className: className,
+        functionName: functionName,
+        stacktrace: stacktrace,
+        propertyName: 'runtimeGeneration',
+        propertyValue: generation.toString(),
+      );
+    } finally {
+      if (identical(_handshakeCompleter, completer)) {
+        _handshakeCompleter = null;
+        _handshakeGeneration = null;
+      }
+    }
   }
 
   ErrorHandler _buildTrackedMessageNotFoundError({
@@ -1631,6 +1714,8 @@ class ServiceProvider extends ChangeNotifier {
       return rTokenValidation;
     }
 
+    final int handshakeGeneration = _runtimeGeneration;
+
     _applySessionToken(
       tokenID: tokenID,
     );
@@ -1640,6 +1725,11 @@ class ServiceProvider extends ChangeNotifier {
     );
 
     if (rInit != null && rInit.errorCode != 0) {
+      _completeHandshakeWait(
+        result: rInit,
+        generation: handshakeGeneration,
+        functionName: functionName,
+      );
       if (debug) {
         developer.log(
           'OnData: Error continuing initialization after handshake: ${rInit.toString()}',
@@ -1649,6 +1739,12 @@ class ServiceProvider extends ChangeNotifier {
       return rInit;
     }
 
+    _completeHandshakeWait(
+      result: null,
+      generation: handshakeGeneration,
+      functionName: functionName,
+    );
+
     if (debug) {
       developer.log(
         'OnData: Channels subscribed successfully.',
@@ -1656,7 +1752,7 @@ class ServiceProvider extends ChangeNotifier {
       );
     }
 
-    return rInit;
+    return null;
   }
 
   bool _isTrackedCallbackDispatchStatus(String status) {
@@ -1881,6 +1977,8 @@ class ServiceProvider extends ChangeNotifier {
           initStage = ServiceProviderInitStages.connecting;
           updateListeners(calledFrom: functionName);
 
+          _prepareHandshakeWait(functionName: functionName);
+
           final ErrorHandler wss = await wssClient.init();
           developer.log(
             '${LogIcons.arrowLeft} WebSocketClient $wss',
@@ -1922,6 +2020,19 @@ class ServiceProvider extends ChangeNotifier {
             '${LogIcons.check} WebSocketClient initialized successfully.',
             name: '$logClassName - $logFunctionName',
           );
+
+          final ErrorHandler? handshakeResult = await _waitForHandshake(
+            functionName: functionName,
+          );
+          if (handshakeResult != null && handshakeResult.errorCode != 0) {
+            initStage = ServiceProviderInitStages.errorRequestingBackend;
+            initStageError = handshakeResult;
+            isReady = false;
+            isProgress = false;
+            canRetry = true;
+            updateListeners(calledFrom: functionName);
+            return handshakeResult;
+          }
         } catch (error, stacktrace) {
           initStageError = error is ErrorHandler
               ? error
@@ -3254,19 +3365,18 @@ class ServiceProvider extends ChangeNotifier {
     const String functionName = 'sendMessageV2';
     const String logClassName = '.::$functionName::';
     const int apiVersion = 2;
-    if (!isNew) {
-      if (pData['Action'] != "Subscribe_Channel") {
-        if (!pData.containsKey('ChannelName')) {
-          return ErrorHandler(
-            errorCode: 20000,
-            errorDsc: 'You must specify a valid channel name.',
-            propertyName: "ChannelName",
-            propertyValue: pData['ChannelName'] ?? 'Desconocido',
-            className: className,
-            functionName: functionName,
-            stacktrace: StackTrace.current,
-          );
-        }
+    if (pData['Action'] != "Subscribe_Channel") {
+      final dynamic channelName = pData['ChannelName'];
+      if (channelName is! String || channelName.isEmpty) {
+        return ErrorHandler(
+          errorCode: 20000,
+          errorDsc: 'You must specify a valid channel name.',
+          propertyName: "ChannelName",
+          propertyValue: channelName?.toString() ?? 'Desconocido',
+          className: className,
+          functionName: functionName,
+          stacktrace: StackTrace.current,
+        );
       }
     }
 
@@ -3276,7 +3386,7 @@ class ServiceProvider extends ChangeNotifier {
     pRequest['Platform'] = Utils.isPlatform;
     pRequest['TokenID'] = sessionTokenID;
     pRequest['Action'] = pData['Action'];
-    if (!isNew && pData['Action'] != "Subscribe_Channel") {
+    if (pData['Action'] != "Subscribe_Channel") {
       pRequest['ChannelName'] = pData['ChannelName'];
     }
     if (pData['ChannelsName'] != null) {
