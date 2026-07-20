@@ -773,3 +773,22 @@ This means the project is no longer carrying visible debt in the active customer
 - small but persistent shared-widget and copy-feedback inconsistencies
 
 The next justified step should not reopen Phase 14 architecture or surface-normalization decisions without a new product requirement.
+
+## Phase X — Independent Cross-Phase Corrections Lane
+
+The repository now includes a permanent documentary lane for corrections that are justified by the current ZIP but do not belong to the numbered phase in progress.
+
+Phase X:
+
+- does not replace or renumber the active roadmap
+- does not reopen closed phases by default
+- remains continuously available for startup, authentication, runtime recovery, compatibility, and other out-of-phase corrections
+- uses the current attached ZIP as the only implementation source of truth
+- requires partial-ZIP delivery and task-level documentation
+
+Canonical entry points:
+
+- `docs/tasks/index.md`
+- `docs/tasks/001_phase_x_cross_phase_corrections_baseline.md`
+
+The next Phase X intervention must use task identifier `002`.

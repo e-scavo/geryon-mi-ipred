@@ -8,7 +8,7 @@ if "%~1"=="" (
 
 set "ETAPA=%~1"
 set "PROJECT_DIR=%cd%"
-set "OUTPUT_FILE=%cd%\..\geryon-mi-ipred-%ETAPA%.zip"
+set "OUTPUT_FILE=%cd%\..\geryon-mi-ipred-seguimiento\geryon-mi-ipred-%ETAPA%.zip"
 set "TEMP_DIR=%temp%\geryon_mi_ipred_zip_%random%%random%"
 
 echo.
