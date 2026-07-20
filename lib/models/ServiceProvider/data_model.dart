@@ -818,7 +818,7 @@ class ServiceProvider extends ChangeNotifier {
   ServiceProviderRuntimeRecoveryPolicyDecision evaluateRuntimeRecoveryPolicy({
     required ServiceProviderRuntimeRecoveryTrigger trigger,
   }) {
-    const String functionName = 'evaluateRuntimeRecoveryPolicy';
+    // const String functionName = 'evaluateRuntimeRecoveryPolicy';
     final ServiceProviderFailureBoundaryState boundaryState =
         evaluateFailureBoundaryState();
 
@@ -884,7 +884,7 @@ class ServiceProvider extends ChangeNotifier {
           reasonCode: 'runtime_reset_recovery_allowed',
           description:
               'Runtime reset may re-enter controlled initialization from the current state.',
-          shouldOpenLoadingPopup: false,
+          shouldOpenLoadingPopup: true,
           shouldResetRetryCounter: true,
           shouldResetSessionToken: true,
         );
@@ -1545,6 +1545,31 @@ class ServiceProvider extends ChangeNotifier {
     required String functionName,
     required String logFunctionName,
   }) async {
+    final CommonRPCMessageResponse? trackedMessage =
+        _getTrackedMessageResponse(message.data.messageID);
+
+    if (trackedMessage == null) {
+      developer.log(
+        'Discarding late or untracked backend response. '
+        'messageID=${message.data.messageID} status=${message.data.status} '
+        'generation=$_runtimeGeneration stage=$initStage recovery=$isRecoveryInProgress',
+        name: '$logClassName - $logFunctionName',
+      );
+      return null;
+    }
+
+    if (trackedMessage.runtimeGeneration != _runtimeGeneration) {
+      developer.log(
+        'Discarding stale tracked backend response. '
+        'messageID=${message.data.messageID} status=${message.data.status} '
+        'messageGeneration=${trackedMessage.runtimeGeneration} '
+        'currentGeneration=$_runtimeGeneration stage=$initStage '
+        'recovery=$isRecoveryInProgress',
+        name: '$logClassName - $logFunctionName',
+      );
+      await wssMessagesTrackingV2.remove(message.data.messageID);
+      return null;
+    }
     if (message.data.messageID.isEmpty) {
       updateListeners(calledFrom: functionName);
       return ErrorHandler(
@@ -3273,9 +3298,10 @@ class ServiceProvider extends ChangeNotifier {
         messageID,
         CommonRPCMessageResponse.fromRPCCall(
           messageID: messageID,
+          runtimeGeneration: _runtimeGeneration,
           status: 'init',
           pParamsRequest: pRequest,
-          pShowWorkInPgress: pShowWorkInProgress,
+          pShowWorkInProgress: pShowWorkInProgress,
           pTimeOut: pTimeOut,
           callbackFunction: callBackFunction,
         ));

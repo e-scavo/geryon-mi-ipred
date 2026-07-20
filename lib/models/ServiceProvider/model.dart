@@ -150,9 +150,13 @@ class ServiceProviderModel {
         }
         tokenID = map['TokenID'];
       }
+      final String incomingStatus = map['Status']?.toString() ?? '';
+      final bool channelMayBeEmpty =
+          incomingStatus == 'queued' || incomingStatus == 'processing';
       if (map['ChannelName'] is! String ||
           (map['ChannelName'] is String &&
               !isNew &&
+              !channelMayBeEmpty &&
               (map['ChannelName'] as String).isEmpty)) {
         throw ErrorHandler(
           errorCode: 200101,

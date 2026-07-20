@@ -14,6 +14,7 @@ abstract class CallbackCapable {
 
 class CommonRPCMessageResponse implements CallbackCapable {
   final String messageID;
+  final int runtimeGeneration;
   String statusProxy;
   int recordOldHash;
   dynamic recordNew;
@@ -71,6 +72,7 @@ class CommonRPCMessageResponse implements CallbackCapable {
 
   CommonRPCMessageResponse._internal({
     required this.messageID,
+    required this.runtimeGeneration,
     required this.statusProxy,
     required this.pParamsRequest,
     required this.recordOldHash,
@@ -88,9 +90,10 @@ class CommonRPCMessageResponse implements CallbackCapable {
 
   factory CommonRPCMessageResponse.fromRPCCall({
     required String messageID,
+    int runtimeGeneration = 0,
     required String status,
     required Map<String, dynamic> pParamsRequest,
-    bool pShowWorkInPgress = false,
+    bool pShowWorkInProgress = false,
     Duration? pTimeOut,
     CommonRPCMessageResponseCallBack? callbackFunction,
   }) {
@@ -105,6 +108,7 @@ class CommonRPCMessageResponse implements CallbackCapable {
     }
     return CommonRPCMessageResponse._internal(
       messageID: messageID,
+      runtimeGeneration: runtimeGeneration,
       statusProxy: status,
       pParamsRequest: pParamsRequest,
       recordOldHash: recordOldHash,
@@ -112,7 +116,7 @@ class CommonRPCMessageResponse implements CallbackCapable {
       replyWithError: replyWithError,
       localError: localError,
       finalResponse: finalResponse,
-      showWorkInProgress: pShowWorkInPgress,
+      showWorkInProgress: pShowWorkInProgress,
       isWorkInProgress: false,
       timeOut: timeout,
       callbackProxyFunction: callbackFunction,
@@ -122,6 +126,7 @@ class CommonRPCMessageResponse implements CallbackCapable {
   Map<String, dynamic> toMap() {
     return {
       'messageID': messageID,
+      'runtimeGeneration': runtimeGeneration,
       'statusProxy': status,
       'statusHistory': statusHistory,
       'pParamsRequest': pParamsRequest,
@@ -147,6 +152,7 @@ class CommonRPCMessageResponse implements CallbackCapable {
   Map<String, dynamic> toJson() {
     return {
       'MessageID': messageID,
+      'RuntimeGeneration': runtimeGeneration,
       'StatusProxy': status,
       'StatusHistory': statusHistory,
       'PParamsRequest': pParamsRequest,
@@ -154,7 +160,7 @@ class CommonRPCMessageResponse implements CallbackCapable {
       'RecordNew': recordNew,
       'ReplyWithError': replyWithError,
       'LocalError': localError,
-      'DinalResponse': finalResponse,
+      'FinalResponse': finalResponse,
       'TimeCreated': timeCreated,
       'TimeSent': timeSent,
       'TimeQueued': timeQueued,
@@ -165,7 +171,7 @@ class CommonRPCMessageResponse implements CallbackCapable {
       'TimeOut': timeOut,
       'ShowWorkInProgress': showWorkInProgress,
       'IsWorkInProgress': isWorkInProgress,
-      'XallbackProxyFunction': callbackProxyFunction,
+      'CallbackProxyFunction': callbackProxyFunction,
     };
   }
 

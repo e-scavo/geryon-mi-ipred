@@ -794,6 +794,7 @@ Canonical entry points:
 - `docs/tasks/003_canonical_initialization_single_flight_retry_limit.md`
 - `docs/tasks/004_global_loading_popup_route_exclusion.md`
 - `docs/tasks/005_progress_login_theme_normalization.md`
+- `docs/tasks/006_logout_reentry_stale_queued_response_isolation.md`
 
 Latest Phase X implementation:
 
@@ -805,5 +806,8 @@ Latest Phase X implementation:
 - startup and runtime recovery reuse the active loading popup instead of stacking modal routes
 - manual retries remain inside the same popup after the automatic retry limit is reached
 - progress and login surfaces now share the application Material 3 color, typography, action, accessibility, and modal presentation contracts
+- logout now re-enters authentication through the unique global loading and login route owners
+- tracked backend responses are isolated by runtime generation and stale queued replies are discarded
+- queued/processing acknowledgements may omit their channel without being misclassified as malformed final messages
 
-The next Phase X intervention must use task identifier `006`.
+The next Phase X intervention must use task identifier `007`.

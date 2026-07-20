@@ -104,6 +104,24 @@ Result:
 - the login action, DNI/CUIT field, keyboard submission, spinner, and route semantics are aligned with the same Material 3 contract
 - no parallel startup, recovery, loading, or login coordinator was introduced
 
+### 006 — Logout Re-entry and Stale Queued Response Isolation
+
+Document:
+
+- `docs/tasks/006_logout_reentry_stale_queued_response_isolation.md`
+
+Status:
+
+- completed
+
+Result:
+
+- logout now re-enters startup/auth through the globally owned loading boundary
+- tracked requests record the runtime generation in which they were created
+- late, untracked, and obsolete-generation replies are discarded before callback dispatch
+- queued/processing acknowledgements may omit `ChannelName` without corrupting ServiceProvider state
+- final application messages retain the strict channel validation contract
+
 ## Next Identifier
 
-- `006`
+- `007`
