@@ -212,10 +212,27 @@ Result:
 - every active CommonDataModel/GenericDataModel backend request is finally enforced as `LocalParams.DBVersion = 10`
 - HeaderParamsRequest precedence can no longer accidentally remove or downgrade the mandatory DB version
 - ServiceProvider `Get:Status` and `Auth:Login` direct requests now carry DBVersion 10
-- transport-only `Subscribe_Channel` remains outside the database-version contract
+- Task 011 initially treated `Subscribe_Channel` as transport-only; backend evidence later disproved that assumption and Task 012 supersedes it
 - existing explicit Clientes, DetServiciosDATOSClientes, NAS, and billing callers use the canonical backend contract
 - repository-wide request-path audit found no active widget bypassing the canonical request owners
+### 012 — Mandatory DBVersion Transport Boundary and Error Surface
+
+Document:
+
+- `docs/tasks/012_mandatory_dbversion_transport_boundary_and_error_surface.md`
+
+Status:
+
+- completed
+
+Result:
+
+- `Subscribe_Channel` now explicitly carries `LocalParams.DBVersion = 10`
+- `ServiceProvider.sendMessageV2()` enforces DBVersion 10 at the final serialization boundary for every outgoing application action
+- missing, zero, or stale caller DBVersion values can no longer reach the backend through direct ServiceProvider requests
+- the global loading surface recognizes subscription/status/backend/login error stages in addition to transport connection errors
+- concrete backend `ErrorHandler.errorDsc` values are visible in the progress UI without exposing stack traces or raw diagnostics
+
 ## Next Identifier
 
-- `012`
-
+- `013`

@@ -1477,8 +1477,49 @@ class ServiceProvider extends ChangeNotifier {
     return {
       'Action': 'Subscribe_Channel',
       'ChannelsName': sChannels,
-      'pParams': <String, dynamic>{},
+      'pParams': <String, dynamic>{
+        'LocalParams': <String, dynamic>{
+          BackendContract.dbVersionKey: BackendContract.dbVersion,
+        },
+      },
     };
+  }
+
+  Map<String, dynamic> _normalizeMandatoryBackendParams(
+    dynamic rawParams, {
+    required String action,
+  }) {
+    // DBVersion=10 is now a transport-boundary invariant for every message
+    // emitted by ServiceProvider, including Subscribe_Channel. Individual
+    // request builders still declare the value when it is part of their
+    // explicit contract, but this final normalization prevents a future
+    // caller, widget, or recovery path from silently falling back to the Go
+    // zero value when LocalParams is absent or partially rebuilt.
+    final Map<String, dynamic> normalizedParams = rawParams is Map
+        ? Map<String, dynamic>.from(rawParams)
+        : <String, dynamic>{};
+
+    final dynamic rawLocalParams = normalizedParams['LocalParams'];
+    final Map<String, dynamic> normalizedLocalParams = rawLocalParams is Map
+        ? Map<String, dynamic>.from(rawLocalParams)
+        : <String, dynamic>{};
+
+    final dynamic previousDBVersion =
+        normalizedLocalParams[BackendContract.dbVersionKey];
+    normalizedLocalParams[BackendContract.dbVersionKey] =
+        BackendContract.dbVersion;
+    normalizedParams['LocalParams'] = normalizedLocalParams;
+
+    if (debug && previousDBVersion != BackendContract.dbVersion) {
+      developer.log(
+        'Canonicalized outgoing backend request DBVersion. '
+        'action=$action previous=$previousDBVersion '
+        'effective=${BackendContract.dbVersion}',
+        name: '$logClassName - .::_normalizeMandatoryBackendParams::.',
+      );
+    }
+
+    return normalizedParams;
   }
 
   Map<String, dynamic> _buildLoginRequest({
@@ -3424,7 +3465,10 @@ class ServiceProvider extends ChangeNotifier {
     }
     pRequest['MessageID'] = messageID;
     pRequest['APIVersion'] = apiVersion;
-    pRequest['ParamRequest'] = pData['pParams'];
+    pRequest['ParamRequest'] = _normalizeMandatoryBackendParams(
+      pData['pParams'],
+      action: pData['Action']?.toString() ?? '',
+    );
     if (debug) {
       developer.log(
         'Sending message with ID: $messageID, Action: ${pData['Action']}, Channels: ${pData['ChannelsName'] ?? 'N/A'}',

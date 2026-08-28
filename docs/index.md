@@ -799,6 +799,8 @@ Canonical entry points:
 - `docs/tasks/008_handshake_completion_channel_serialization.md`
 - `docs/tasks/009_fresh_transport_handshake_after_runtime_reset.md`
 - `docs/tasks/010_login_vertical_viewport_overflow_stabilization.md`
+- `docs/tasks/011_mandatory_dbversion_10_request_contract.md`
+- `docs/tasks/012_mandatory_dbversion_transport_boundary_and_error_surface.md`
 
 Latest Phase X implementation:
 
@@ -831,10 +833,24 @@ The customer frontend now treats DBVersion 10 as a mandatory backend contract ra
 - `CommonDataModel` initializes every data request with the same version.
 - direct ServiceProvider application requests (`Get:Status` and `Auth:Login`) carry the same DBVersion 10 contract.
 - existing explicit DBVersion callers were normalized to the shared contract.
-- `Subscribe_Channel` remains versionless because it is a transport operation, not a database-backed request.
+- Task 011 initially treated `Subscribe_Channel` as versionless; Task 012 supersedes that assumption after backend worker evidence showed the subscription path also requires DBVersion 10.
 
 Canonical document:
 
 - `docs/tasks/011_mandatory_dbversion_10_request_contract.md`
 
-The next Phase X intervention must use task identifier `012`.
+### Phase X Task 012 — Mandatory DBVersion Transport Boundary and Error Surface
+
+The backend evidence from the Task 011 build confirmed that `Subscribe_Channel` is also processed by the DBVersion-aware worker path. The frontend therefore now enforces the current database contract at the final ServiceProvider serialization boundary rather than relying only on individual request builders.
+
+- every outgoing ServiceProvider application request carries `ParamRequest.LocalParams.DBVersion = 10`
+- `Subscribe_Channel` explicitly declares the same canonical DBVersion
+- missing or stale caller values are normalized immediately before serialization
+- the global loading surface now recognizes subscription, status, backend-request, high-severity, and login-status failures as real error states
+- concrete backend error descriptions are surfaced in the progress UI while internal diagnostics remain in logs
+
+Canonical document:
+
+- `docs/tasks/012_mandatory_dbversion_transport_boundary_and_error_surface.md`
+
+The next Phase X intervention must use task identifier `013`.

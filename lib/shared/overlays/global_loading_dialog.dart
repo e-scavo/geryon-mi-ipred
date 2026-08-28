@@ -144,13 +144,34 @@ class _ModelGeneralLoadingProgressState
   }
 
   bool _isErrorStage(ServiceProvider appStatus) {
-    return appStatus.initStage == ServiceProviderInitStages.errorConnecting ||
-        appStatus.initStage == ServiceProviderInitStages.errorReConnecting;
+    switch (appStatus.initStage) {
+      case ServiceProviderInitStages.errorConnecting:
+      case ServiceProviderInitStages.errorReConnecting:
+      case ServiceProviderInitStages.errorSubscribingChannels:
+      case ServiceProviderInitStages.errorCheckingStatus:
+      case ServiceProviderInitStages.errorRequestingBackend:
+      case ServiceProviderInitStages.errorOnHighSeverity:
+      case ServiceProviderInitStages.errorCheckingLoginStatus:
+      case ServiceProviderInitStages.errorCustom:
+        return true;
+      default:
+        return (appStatus.initStageError?.errorCode ?? 0) != 0;
+    }
   }
 
   String _resolveTitle(ServiceProvider appStatus) {
     if (_isErrorStage(appStatus) || appStatus.canRetry) {
-      return 'No pudimos conectar con el servicio';
+      switch (appStatus.initStage) {
+        case ServiceProviderInitStages.errorSubscribingChannels:
+          return 'No pudimos preparar la conexión';
+        case ServiceProviderInitStages.errorCheckingStatus:
+        case ServiceProviderInitStages.errorRequestingBackend:
+          return 'El servicio respondió con un error';
+        case ServiceProviderInitStages.errorCheckingLoginStatus:
+          return 'No pudimos validar la sesión';
+        default:
+          return 'No pudimos conectar con el servicio';
+      }
     }
     if (appStatus.initStage == ServiceProviderInitStages.reConnecting) {
       return 'Restableciendo conexión';
@@ -159,15 +180,34 @@ class _ModelGeneralLoadingProgressState
   }
 
   String _resolveMessage(ServiceProvider appStatus) {
-    final additionalMessage = appStatus.initStageAdditionalMsg?.trim();
-    if (additionalMessage != null &&
-        additionalMessage.isNotEmpty &&
-        !_isErrorStage(appStatus)) {
+    final bool isError = _isErrorStage(appStatus) || appStatus.canRetry;
+    final String? errorDescription = appStatus.initStageError?.errorDsc?.trim();
+    final String? additionalMessage = appStatus.initStageAdditionalMsg?.trim();
+
+    // During bootstrap the previous implementation only surfaced connection
+    // errors. Backend/subscribe/status failures were correctly stored in
+    // initStageError but the loading surface replaced them with a generic
+    // message (or with the onData catch label), making the actual server
+    // response visible only in DevTools. Prefer the concrete ErrorHandler
+    // description for every error stage and keep stack traces/internal fields
+    // out of the customer-facing surface.
+    if (isError && errorDescription != null && errorDescription.isNotEmpty) {
+      final int errorCode = appStatus.initStageError?.errorCode ?? 0;
+      return errorCode != 0
+          ? 'Error #$errorCode: $errorDescription'
+          : errorDescription;
+    }
+
+    if (isError && additionalMessage != null && additionalMessage.isNotEmpty) {
       return additionalMessage;
     }
 
-    if (_isErrorStage(appStatus) || appStatus.canRetry) {
-      return 'Verificá tu conexión. La aplicación seguirá intentando y también podés reintentar ahora.';
+    if (isError) {
+      return 'No pudimos completar la operación con el servicio. Podés reintentar ahora.';
+    }
+
+    if (additionalMessage != null && additionalMessage.isNotEmpty) {
+      return additionalMessage;
     }
 
     if (appStatus.connRetry > 0 && _isConnectionStage(appStatus)) {

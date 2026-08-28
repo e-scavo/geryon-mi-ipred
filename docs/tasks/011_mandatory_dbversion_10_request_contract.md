@@ -1,5 +1,11 @@
 # Phase X — Task 011 — Mandatory DBVersion 10 Request Contract
 
+## Post-Task Amendment — Superseded by Task 012
+
+The original Task 011 audit classified `Subscribe_Channel` as a transport-only operation that did not require DBVersion. Backend runtime evidence from build 89 later proved that assumption incorrect: channel subscription work is dispatched through the DBVersion-aware GERYON worker path and therefore also requires `LocalParams.DBVersion = 10`.
+
+Task 012 supersedes only that part of this document and moves mandatory DBVersion enforcement to the final `ServiceProvider.sendMessageV2()` serialization boundary for every outgoing application action. The remaining Task 011 centralization work remains valid.
+
 ## Objective
 
 Make `DBVersion: 10` a mandatory backend-request contract for the Mi IP·RED Customers frontend after the backend migration to DBVersion 10.
