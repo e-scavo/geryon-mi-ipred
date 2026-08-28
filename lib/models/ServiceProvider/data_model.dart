@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:developer' as developer;
 
+import 'package:geryon_web_app_ws_v2/core/backend/backend_contract.dart';
 import 'package:geryon_web_app_ws_v2/models/ServiceProvider/startup_auth_continuation_coordinator_model.dart';
 import 'package:geryon_web_app_ws_v2/models/ServiceProvider/login_continuation_result_model.dart';
 import 'package:geryon_web_app_ws_v2/models/ServiceProvider/auth_requirement_model.dart';
@@ -1459,7 +1460,11 @@ class ServiceProvider extends ChangeNotifier {
     return {
       'ChannelName': 'GERYON_General',
       'Action': 'Get:Status',
-      'pParams': <String, dynamic>{},
+      'pParams': <String, dynamic>{
+        'LocalParams': <String, dynamic>{
+          BackendContract.dbVersionKey: BackendContract.dbVersion,
+        },
+      },
     };
   }
 
@@ -1496,6 +1501,7 @@ class ServiceProvider extends ChangeNotifier {
         'Location': '',
         'LocalParams': {
           'Target': "customers",
+          BackendContract.dbVersionKey: BackendContract.dbVersion,
         },
       },
     };

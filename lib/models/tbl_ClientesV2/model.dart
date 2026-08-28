@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geryon_web_app_ws_v2/common_vars.dart';
+import 'package:geryon_web_app_ws_v2/core/backend/backend_contract.dart';
 import 'package:geryon_web_app_ws_v2/enums/const_requests.dart';
 import 'package:geryon_web_app_ws_v2/models/CommonBooleanModel/model.dart';
 import 'package:geryon_web_app_ws_v2/models/CommonDateModel/common_date_model.dart';
@@ -2118,7 +2119,7 @@ Te compartimos el código de barras que necesitás para pagar tu servicio de for
       'CodEmp': codEmp,
       'IsEmpresaAggregated': true,
       'ActionRequest': "ViewRecord",
-      'DBVersion': 2,
+      BackendContract.dbVersionKey: BackendContract.dbVersion,
       'Search': searchText,
       //'ClaseCpbte': claseCpbte,
     };

@@ -1,5 +1,6 @@
 import 'dart:developer' as developer;
 import 'dart:developer';
+import 'package:geryon_web_app_ws_v2/core/backend/backend_contract.dart';
 
 import 'package:advanced_datatable/advanced_datatable_source.dart';
 import 'package:collection/collection.dart';
@@ -236,6 +237,7 @@ abstract class CommonDataModel<T extends CommonModel<T>>
     pLocalParams["Filters"] = [];
     pLocalParams["Search"] = "";
     pLocalParams["Target"] = "customers";
+    pLocalParams[BackendContract.dbVersionKey] = BackendContract.dbVersion;
     if (pLocalParamsRequest != null) {
       pLocalParamsRequest.forEach((key, value) {
         pLocalParams[key] = value;

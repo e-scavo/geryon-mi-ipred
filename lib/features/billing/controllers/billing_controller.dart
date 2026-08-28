@@ -3,6 +3,7 @@ import 'dart:developer' as developer;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geryon_web_app_ws_v2/common_vars.dart';
+import 'package:geryon_web_app_ws_v2/core/backend/backend_contract.dart';
 import 'package:geryon_web_app_ws_v2/enums/const_requests.dart';
 import 'package:geryon_web_app_ws_v2/models/CommonDataModel/whole_data_message.dart';
 import 'package:geryon_web_app_ws_v2/models/CommonDataModel/whole_message.dart';
@@ -582,7 +583,7 @@ class BillingController {
       };
 
       tEnteDataModel.threadParams = {
-        'DBVersion': 10,
+        BackendContract.dbVersionKey: BackendContract.dbVersion,
         'SelectBy': 'KeyCliente',
         'CodEmp': tEnteDataModel.cEmpresa.codEmp,
         'TipoCliente': currentClient.tipoCliente,

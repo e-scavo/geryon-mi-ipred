@@ -822,4 +822,19 @@ Latest Phase X implementation:
 - login validation and authentication errors now remain accessible in reduced-height viewports through a centered-when-possible, scrollable responsive boundary
 - compact login and error-state density is applied only when viewport constraints require it, without altering authentication ownership or continuation flow
 
-The next Phase X intervention must use task identifier `011`.
+### Phase X Task 011 — Mandatory DBVersion 10 Request Contract
+
+The customer frontend now treats DBVersion 10 as a mandatory backend contract rather than an optional per-screen parameter.
+
+- `BackendContract` is the single source of truth for the current DB version.
+- `CommonParamRequest` enforces DBVersion 10 after all local/header parameter precedence is resolved.
+- `CommonDataModel` initializes every data request with the same version.
+- direct ServiceProvider application requests (`Get:Status` and `Auth:Login`) carry the same DBVersion 10 contract.
+- existing explicit DBVersion callers were normalized to the shared contract.
+- `Subscribe_Channel` remains versionless because it is a transport operation, not a database-backed request.
+
+Canonical document:
+
+- `docs/tasks/011_mandatory_dbversion_10_request_contract.md`
+
+The next Phase X intervention must use task identifier `012`.

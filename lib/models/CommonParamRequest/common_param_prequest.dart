@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:equatable/equatable.dart';
+import 'package:geryon_web_app_ws_v2/core/backend/backend_contract.dart';
 import 'package:geryon_web_app_ws_v2/enums/const_requests.dart';
 import 'package:geryon_web_app_ws_v2/models/CommonParamRequest/header_request.dart';
 import 'package:geryon_web_app_ws_v2/models/error_handler.dart';
@@ -77,6 +78,12 @@ class CommonParamRequest extends Equatable {
         pLocalParams["Target"] = "customers";
       }
     }
+
+    // DBVersion belongs to the canonical LocalParams envelope. Enforce it
+    // here, after HeaderParamsRequest has had its documented precedence, so
+    // no model/widget can accidentally send the backend default (0).
+    pLocalParams[BackendContract.dbVersionKey] = BackendContract.dbVersion;
+
     Map<String, dynamic> pOptions = {};
     pOptions['requestTimeOut'] = pDuration;
     pOptions['responseDuration'] = const Duration(seconds: 0);

@@ -4,6 +4,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geryon_web_app_ws_v2/common_vars.dart';
+import 'package:geryon_web_app_ws_v2/core/backend/backend_contract.dart';
 import 'package:geryon_web_app_ws_v2/enums/const_requests.dart';
 import 'package:geryon_web_app_ws_v2/enums/tipo_instalacion_model.dart';
 import 'package:geryon_web_app_ws_v2/models/CommonClaseCpbteVT/model.dart';
@@ -1785,7 +1786,7 @@ class TableDetServicioDATOSClienteV2Model
       'CodClie': eCliente.codClie,
       'IsEmpresaAggregated': true,
       'ActionRequest': "ViewRecord",
-      'DBVersion': 2,
+      BackendContract.dbVersionKey: BackendContract.dbVersion,
       'Search': searchText,
       'ClaseCpbte': claseCpbteVT,
     };
@@ -2020,7 +2021,7 @@ class TableDetServicioDATOSClienteV2Model
         //     'TipoServicio': pEnteSelected.tipoServicio,
         //     'IsEmpresaAggregated': true,
         //     'ActionRequest': "ViewRecord",
-        //     'DBVersion': 2,
+        //     BackendContract.dbVersionKey: BackendContract.dbVersion,
         //     'Search': "",
         //     'ClaseCpbte': claseCpbte,
         //   };
@@ -2369,7 +2370,7 @@ class TableDetServicioDATOSClienteV2Model
             'CodPais': fEnteSelected.codPais,
             'IsEmpresaAggregated': true,
             'ActionRequest': "ViewRecord",
-            'DBVersion': 2,
+            BackendContract.dbVersionKey: BackendContract.dbVersion,
             'Search': "",
             'ClaseCpbte': claseCpbteVT,
           };

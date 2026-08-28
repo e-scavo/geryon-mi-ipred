@@ -195,6 +195,27 @@ Result:
 - browser DevTools, mobile keyboards, and short windows no longer make the submit action inaccessible
 - `FeatureErrorState` keeps its existing default presentation and exposes compact density only as an opt-in contract
 
+
+### 011 — Mandatory DBVersion 10 Request Contract
+
+Document:
+
+- `docs/tasks/011_mandatory_dbversion_10_request_contract.md`
+
+Status:
+
+- completed
+
+Result:
+
+- DBVersion 10 is centralized in `BackendContract` instead of duplicated as request-level magic numbers
+- every active CommonDataModel/GenericDataModel backend request is finally enforced as `LocalParams.DBVersion = 10`
+- HeaderParamsRequest precedence can no longer accidentally remove or downgrade the mandatory DB version
+- ServiceProvider `Get:Status` and `Auth:Login` direct requests now carry DBVersion 10
+- transport-only `Subscribe_Channel` remains outside the database-version contract
+- existing explicit Clientes, DetServiciosDATOSClientes, NAS, and billing callers use the canonical backend contract
+- repository-wide request-path audit found no active widget bypassing the canonical request owners
 ## Next Identifier
 
-- `011`
+- `012`
+
