@@ -233,6 +233,25 @@ Result:
 - the global loading surface recognizes subscription/status/backend/login error stages in addition to transport connection errors
 - concrete backend `ErrorHandler.errorDsc` values are visible in the progress UI without exposing stack traces or raw diagnostics
 
+### 013 — Billing Document Download Overlay Theme and Responsive Normalization
+
+Document:
+
+- `docs/tasks/013_billing_document_download_overlay_theme_responsive_normalization.md`
+
+Status:
+
+- completed
+
+Result:
+
+- the billing download popup is now physically bounded to a responsive modal size instead of expanding to the full viewport
+- the temporary `Header for ...` development placeholder was removed
+- progress, voucher information, errors, and actions now use the application Material 3 theme
+- the modal body scrolls when vertical space is reduced
+- `AppOverlayPanel` now derives its shared surface, border, typography, title, and shadow treatment from the active theme
+- download business logic and DBVersion 10 behavior remain unchanged
+
 ## Next Identifier
 
-- `013`
+- `014`

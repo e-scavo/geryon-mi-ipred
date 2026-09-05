@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class AppOverlayPanel extends StatelessWidget {
   final String title;
   final BoxConstraints constraints;
-  final Color titleColorBackground;
+  final Color? titleColorBackground;
   final Widget? headerWidget;
   final Widget? bodyWidget;
   final Widget? footerWidget;
@@ -13,7 +13,7 @@ class AppOverlayPanel extends StatelessWidget {
     super.key,
     required this.title,
     required this.constraints,
-    this.titleColorBackground = Colors.black45,
+    this.titleColorBackground,
     this.headerWidget,
     this.bodyWidget,
     this.footerWidget,
@@ -22,20 +22,36 @@ class AppOverlayPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final ColorScheme colorScheme = theme.colorScheme;
     final bool hasHeader = headerWidget != null;
     final bool hasFooter = footerWidget != null;
+    final Color effectiveTitleBackground =
+        titleColorBackground ?? colorScheme.primary;
+    final Color titleForeground =
+        effectiveTitleBackground == colorScheme.primary
+            ? colorScheme.onPrimary
+            : effectiveTitleBackground == colorScheme.secondary
+                ? colorScheme.onSecondary
+                : effectiveTitleBackground == colorScheme.error
+                    ? colorScheme.onError
+                    : ThemeData.estimateBrightnessForColor(
+                                effectiveTitleBackground) ==
+                            Brightness.dark
+                        ? Colors.white
+                        : Colors.black;
 
     return Material(
       color: Colors.transparent,
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: colorScheme.surface,
           borderRadius: BorderRadius.circular(12),
-          boxShadow: const [
+          boxShadow: [
             BoxShadow(
               blurRadius: 24,
-              offset: Offset(0, 12),
-              color: Color(0x24000000),
+              offset: const Offset(0, 12),
+              color: theme.shadowColor.withValues(alpha: 0.14),
             ),
           ],
         ),
@@ -48,7 +64,7 @@ class AppOverlayPanel extends StatelessWidget {
               Container(
                 height: 44,
                 width: double.infinity,
-                color: titleColorBackground,
+                color: effectiveTitleBackground,
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 child: Row(
                   children: [
@@ -57,8 +73,8 @@ class AppOverlayPanel extends StatelessWidget {
                         title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          color: titleForeground,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 0.2,
                         ),
@@ -68,9 +84,9 @@ class AppOverlayPanel extends StatelessWidget {
                       IconButton(
                         tooltip: 'Cerrar',
                         onPressed: onClose,
-                        icon: const Icon(
+                        icon: Icon(
                           Icons.close,
-                          color: Colors.white,
+                          color: titleForeground,
                         ),
                       )
                     else
@@ -81,13 +97,13 @@ class AppOverlayPanel extends StatelessWidget {
               Expanded(
                 child: Container(
                   width: double.infinity,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
+                  decoration: BoxDecoration(
+                    color: colorScheme.surface,
                     border: Border(
-                      top: BorderSide(color: Colors.black26),
-                      left: BorderSide(color: Colors.black26),
-                      right: BorderSide(color: Colors.black26),
-                      bottom: BorderSide(color: Colors.black26),
+                      top: BorderSide(color: colorScheme.outlineVariant),
+                      left: BorderSide(color: colorScheme.outlineVariant),
+                      right: BorderSide(color: colorScheme.outlineVariant),
+                      bottom: BorderSide(color: colorScheme.outlineVariant),
                     ),
                   ),
                   child: Column(

@@ -853,4 +853,19 @@ Canonical document:
 
 - `docs/tasks/012_mandatory_dbversion_transport_boundary_and_error_surface.md`
 
-The next Phase X intervention must use task identifier `013`.
+### Phase X Task 013 — Billing Document Download Overlay Theme and Responsive Normalization
+
+The canonical billing document download surface was normalized after the DBVersion 10 migration without changing its backend/file-download behavior.
+
+- the popup route now applies real responsive width/height constraints instead of allowing the panel to fill the viewport
+- the temporary `Header for ...` placeholder was removed
+- progress, status, voucher metadata, errors, and actions use the application Material 3 theme
+- the body remains usable in reduced-height windows through an internal scroll boundary
+- the shared `AppOverlayPanel` now derives surface, outline, typography, title, and shadow treatment from the active theme
+- progress/lifecycle cleanup prevents redundant state notifications and post-dispose delayed state mutation
+
+Canonical document:
+
+- `docs/tasks/013_billing_document_download_overlay_theme_responsive_normalization.md`
+
+The next Phase X intervention must use task identifier `014`.

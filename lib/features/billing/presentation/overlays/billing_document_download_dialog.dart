@@ -7,10 +7,9 @@ import 'package:geryon_web_app_ws_v2/enums/const_requests.dart';
 import 'package:geryon_web_app_ws_v2/models/CommonDateModel/common_date_model.dart';
 import 'package:geryon_web_app_ws_v2/models/CommonDownloadLocally/model.dart';
 import 'package:geryon_web_app_ws_v2/models/CommonModel/model.dart';
-import 'package:geryon_web_app_ws_v2/extensions/color.dart';
+import 'package:geryon_web_app_ws_v2/models/CommonParamRequest/header_request.dart';
 import 'package:geryon_web_app_ws_v2/models/CommonUtils/common_utils.dart';
 import 'package:geryon_web_app_ws_v2/models/GenericDataModel/data_model.dart';
-import 'package:geryon_web_app_ws_v2/shared/widgets/loading_generic.dart';
 import 'package:geryon_web_app_ws_v2/shared/overlays/error_dialog_route.dart';
 import 'package:geryon_web_app_ws_v2/models/error_handler.dart';
 import 'package:geryon_web_app_ws_v2/models/tbl_ClientesV2/additionalparams.dart';
@@ -61,8 +60,6 @@ class _CommonDownloadLocallyScreenState<T extends CommonModel<T>>
   late final ScrollController secondCatchScroller;
   late ConstRequests globalRequest;
   late ConstRequests localRequest;
-  late double screenMaxWidth;
-  late double screenMaxHeight;
   late AnimationController _progressController;
   late String _progressText;
   late String _progressTextInfo;
@@ -91,19 +88,11 @@ class _CommonDownloadLocallyScreenState<T extends CommonModel<T>>
     mainCatchScroller = ScrollController();
     secondScroller = ScrollController();
     secondCatchScroller = ScrollController();
-    screenMaxWidth = widget.pScreenMaxWidth - 8;
-    screenMaxHeight = widget.pScreenMaxHeight - 8;
     globalRequest = widget.pGlobalRequest;
     localRequest = widget.pActionRequest;
+    windowTitleCaption = _windowTitleForAction(widget.pLocalActionRequest);
 
-    _progressController = AnimationController(
-      /// [AnimationController]s can be created with `vsync: this` because of
-      /// [TickerProviderStateMixin].
-      vsync: this,
-      //duration: const Duration(seconds: 2),
-    )..addListener(() {
-        setState(() {});
-      });
+    _progressController = AnimationController(vsync: this);
 
     _progressText = "";
     _progressTextInfo = "";
@@ -121,8 +110,12 @@ class _CommonDownloadLocallyScreenState<T extends CommonModel<T>>
 
   @override
   void dispose() {
-    //
     periodoInstalaciones.dispose();
+    mainScroller.dispose();
+    mainCatchScroller.dispose();
+    secondScroller.dispose();
+    secondCatchScroller.dispose();
+    _progressController.dispose();
     super.dispose();
   }
 
@@ -189,15 +182,7 @@ class _CommonDownloadLocallyScreenState<T extends CommonModel<T>>
         );
       }
       setState(() {
-        switch (widget.pLocalActionRequest) {
-          case ConstRequests.downloadRequest:
-            windowTitleCaption = 'DESCARGA DE COMPROBANTES';
-            break;
-          case ConstRequests.sendEMailRequest:
-            windowTitleCaption = 'ENVÍO DE MAILS DE COMPROBANTES';
-            break;
-          default:
-        }
+        windowTitleCaption = _windowTitleForAction(widget.pLocalActionRequest);
         totalRecords = widget.pParams.length;
         selectedItems = widget.pParams;
         String t = "comprobante";
@@ -256,7 +241,7 @@ class _CommonDownloadLocallyScreenState<T extends CommonModel<T>>
   /// [of] is the total records retrieved from server
   ///
   runLoopProcess(int n, int of) async {
-    double cPct = (n.toDouble() + 1) / of.toDouble();
+    double cPct = n.toDouble() / of.toDouble();
     if (n < of) {
       var record = selectedItems[n];
       setState(() {
@@ -304,53 +289,81 @@ class _CommonDownloadLocallyScreenState<T extends CommonModel<T>>
           break;
         default:
       }
-
-      /// We call the procedure.
-      ///
-      Map<String, dynamic> pLocalParamsRequest = {
+      var pHeaderGlobalRequest = ConstRequests.viewRequest;
+      var pHeaderLocalRequest = ConstRequests.viewRequest;
+      var pActionRequest = ConstRequests.customRequest;
+      var pHeaderParamsRequests = HeaderParamsRequest();
+      pHeaderParamsRequests.realGlobalRequest =
+          ConstRequests.customRequest.typeId;
+      pHeaderParamsRequests.realLocalRequest =
+          ConstRequests.customRequest.typeId;
+      pHeaderParamsRequests.globalRequest = ConstRequests.viewRequest.typeId;
+      pHeaderParamsRequests.localRequest = ConstRequests.customRequest.typeId;
+      pHeaderParamsRequests.actionRequest = "CustomRequest";
+      pHeaderParamsRequests.offset = 0;
+      pHeaderParamsRequests.pageSize = 0;
+      // pHeaderParamsRequests.sortField = "KeyEmpresa";
+      pHeaderParamsRequests.sortIndex = 1;
+      pHeaderParamsRequests.sortAsc = false;
+      pHeaderParamsRequests.search = "";
+      pHeaderParamsRequests.table = table;
+      //"ActionRequest": "GraphDataPedidosVTByMonth",
+      pHeaderParamsRequests.localParams = {
+        'DBVersion': 10,
         "ActionRequest": actionRequest,
         "SubActionRequest": "Process",
         "Table": table,
         "CodEmp": record.codEmp,
         "NroCpbte": record.nroCpbte,
         "ShowOnlyFiltered": showOnlyFiltered,
+        "FilterEstados": [],
+        "FilterTAGs": [],
+        "FilterSaldos": [],
+        "FilterTiposServicios": [],
+        // "SelectBy": "KeyGraphDataGroupedByMonth",
         "AdditionalParams": AdditionalParams(
-          actionRequest: "MassiveText",
+          actionRequest: actionRequest,
           periodoFacturacion: CommonDateModel.fromDefault(),
           fechaEnvioMails: CommonDateModel.fromDefault(),
-          periodoInstalaciones: periodoInstalaciones,
-          tipoFacturacion: "Mensual:ByPerfilFacturacion",
-          tipoRegistracion: "Simulacion",
+          periodoInstalaciones: CommonDateModel.fromDefault(),
+          tipoFacturacion: "",
+          tipoRegistracion: "",
           codEmp: record.codEmp,
           tipoCliente: record.tipoCliente,
           codClie: record.codClie,
           nroCpbte: record.nroCpbte,
+          fromDate: CommonDateModel.fromDefault(),
+          toDate: CommonDateModel.fromDefault(),
         ),
+        // "SpecificParams": widget.pDataModel.specificParams,
       };
-      ErrorHandler rData;
-
-      rData = await tEnteDataModel.abmCalls(
-        pGlobalRequest: ConstRequests.viewRequest,
-        pLocalRequest: ConstRequests.customRequest,
-        pActionRequest: ConstRequests.customRequest,
-        pEnte: record as T,
+      var rData = await tEnteDataModel.abmCalls(
+        pGlobalRequest: pHeaderGlobalRequest,
+        pLocalRequest: pHeaderLocalRequest,
+        pActionRequest: pActionRequest,
         pTable: table,
+        pEnte: record as T,
         returnResults: true,
-        pLocalParamsRequest: pLocalParamsRequest,
+        pHeaderParamsRequest: pHeaderParamsRequests,
       );
       if (!mounted) {
-        return;
+        return ErrorHandler(
+          errorCode: 9900,
+          errorDsc: 'Widget no montado',
+          className: mainFunc,
+          functionName: "",
+          stacktrace: StackTrace.current,
+        );
       }
-
       if (rData.errorCode != 0) {
         /// Error. We show the message (normally)
         /// We wait for some X time before continuing.
         /// 1) We show the error
         setState(() {
           _progressText = '${n + 1} de $of (en error)';
-          _progressErrorTextInfo = '''Code: ${rData.errorCode}
-          Message: ${rData.errorDsc}
-          ''';
+          _progressErrorTextInfo = '''Código: ${rData.errorCode}
+Detalle: ${rData.errorDsc}
+''';
         });
 
         if (!silenceMode) {
@@ -369,6 +382,7 @@ class _CommonDownloadLocallyScreenState<T extends CommonModel<T>>
       } else {
         /// No error. We continue
         setState(() {
+          _progressController.value = (n + 1).toDouble() / of.toDouble();
           _progressText = '${n + 1} de $of (completado)';
           _progressTextInfo += '\r\nComprobante descargado';
           _progressErrorTextInfo = "";
@@ -382,8 +396,12 @@ class _CommonDownloadLocallyScreenState<T extends CommonModel<T>>
     } else {
       // if (n < of) {
       Future.delayed(const Duration(seconds: 1), () {
+        if (!mounted) {
+          return;
+        }
         setState(() {
           isAuto = false;
+          isProcessRunning = false;
           _progressText = '';
           _progressTextInfo = '';
           _progressErrorTextInfo = "";
@@ -393,13 +411,7 @@ class _CommonDownloadLocallyScreenState<T extends CommonModel<T>>
           totalRecords = 0;
           selectedItems = [];
           waitingFordata = true;
-          // _initWork(
-          //   autoStart: true,
-          // );
         });
-        if (!mounted) {
-          return;
-        }
         if (Navigator.canPop(context)) {
           Navigator.pop(context, null);
         }
@@ -447,147 +459,225 @@ Por favor verifique para poder continuar y vuelva a intentar la operación.
     }
   }
 
-  void _doCancelProcess() {
-    setState(() {
-      _cancelProcess = true;
-    });
+  // void _doCancelProcess() {
+  //   setState(() {
+  //     _cancelProcess = true;
+  //   });
+  // }
+
+  // /// This function validates fechaEnvioMails constraints
+  // ///
+  // Future<void> _validatePeriodoInstalaciones() async {
+  //   await periodoInstalaciones.selectDate(
+  //     context,
+  //     firstDate: DateTime(2024),
+  //   );
+  //   setState(() {
+  //     tEnteDataModel.pPeriodoInstalaciones =
+  //         CommonDateModel.fromDateTime(periodoInstalaciones.date);
+  //     tEnteDataModel.pPeriodoInstalaciones.formatType = "periodo";
+  //   });
+  //   _initWork();
+  // }
+
+  String _windowTitleForAction(ConstRequests request) {
+    switch (request) {
+      case ConstRequests.sendEMailRequest:
+        return 'ENVÍO DE COMPROBANTES';
+      case ConstRequests.downloadRequest:
+      default:
+        return 'DESCARGA DE COMPROBANTES';
+    }
   }
 
-  /// This function validates fechaEnvioMails constraints
-  ///
-  Future<void> _validatePeriodoInstalaciones() async {
-    await periodoInstalaciones.selectDate(
-      context,
-      firstDate: DateTime(2024),
+  String get _operationTitle {
+    switch (widget.pLocalActionRequest) {
+      case ConstRequests.sendEMailRequest:
+        return 'Enviando comprobante';
+      case ConstRequests.downloadRequest:
+      default:
+        return 'Preparando comprobante';
+    }
+  }
+
+  String get _operationIdleTitle {
+    switch (widget.pLocalActionRequest) {
+      case ConstRequests.sendEMailRequest:
+        return 'Comprobante listo para enviar';
+      case ConstRequests.downloadRequest:
+      default:
+        return 'Comprobante listo para descargar';
+    }
+  }
+
+  String get _primaryActionLabel {
+    switch (widget.pLocalActionRequest) {
+      case ConstRequests.sendEMailRequest:
+        return 'Enviar';
+      case ConstRequests.downloadRequest:
+      default:
+        return 'Descargar';
+    }
+  }
+
+  IconData get _operationIcon {
+    switch (widget.pLocalActionRequest) {
+      case ConstRequests.sendEMailRequest:
+        return Icons.mail_outline;
+      case ConstRequests.downloadRequest:
+      default:
+        return Icons.download_outlined;
+    }
+  }
+
+  Widget _buildOperationBody(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final ColorScheme colorScheme = theme.colorScheme;
+    final bool hasError = _progressErrorTextInfo.trim().isNotEmpty;
+    final bool isWorking = _loading || isProcessRunning;
+    final String info = _progressTextInfo.trim();
+    final String progress = _progressText.trim();
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(24, 22, 24, 24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (isWorking && !hasError)
+            SizedBox(
+              width: 44,
+              height: 44,
+              child: CircularProgressIndicator(
+                strokeWidth: 3,
+                color: colorScheme.primary,
+              ),
+            )
+          else
+            Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                color: (hasError ? colorScheme.error : colorScheme.primary)
+                    .withValues(alpha: 0.10),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                hasError ? Icons.error_outline : _operationIcon,
+                color: hasError ? colorScheme.error : colorScheme.primary,
+                size: 28,
+              ),
+            ),
+          const SizedBox(height: 16),
+          Text(
+            hasError
+                ? 'No pudimos completar la operación'
+                : isWorking
+                    ? _operationTitle
+                    : _operationIdleTitle,
+            textAlign: TextAlign.center,
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w700,
+              color: hasError ? colorScheme.error : colorScheme.onSurface,
+            ),
+          ),
+          if (progress.isNotEmpty) ...[
+            const SizedBox(height: 6),
+            Text(
+              progress,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.labelLarge?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+          if (_showProgress && totalRecords > 0) ...[
+            const SizedBox(height: 14),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(999),
+              child: LinearProgressIndicator(
+                value: _progressController.value.clamp(0.0, 1.0),
+                minHeight: 6,
+                backgroundColor: colorScheme.primary.withValues(alpha: 0.12),
+              ),
+            ),
+          ],
+          if (info.isNotEmpty) ...[
+            const SizedBox(height: 18),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              decoration: BoxDecoration(
+                color:
+                    colorScheme.surfaceContainerHighest.withValues(alpha: 0.55),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: colorScheme.outlineVariant),
+              ),
+              child: Text(
+                info,
+                textAlign: TextAlign.center,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                  height: 1.35,
+                ),
+              ),
+            ),
+          ],
+          if (hasError) ...[
+            const SizedBox(height: 14),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: colorScheme.errorContainer,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                _progressErrorTextInfo.trim(),
+                textAlign: TextAlign.center,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onErrorContainer,
+                ),
+              ),
+            ),
+          ],
+          if (!isWorking) ...[
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: totalRecords > 0 ? _doInitProcess : null,
+                icon: Icon(_operationIcon),
+                label: Text(_primaryActionLabel),
+              ),
+            ),
+          ],
+        ],
+      ),
     );
-    setState(() {
-      tEnteDataModel.pPeriodoInstalaciones =
-          CommonDateModel.fromDateTime(periodoInstalaciones.date);
-      tEnteDataModel.pPeriodoInstalaciones.formatType = "periodo";
-    });
-    _initWork();
   }
 
   @override
   Widget build(BuildContext context) {
-    const String locFunc = ".::BUILD::";
-    double maxScreenWidth = MediaQuery.of(context).size.width;
-    double maxScreenHeight = MediaQuery.of(context).size.height;
-    if (debug) {
-      developer.log(
-          '$mainFunc - $locFunc - maxScreenWidth:$maxScreenWidth[$screenMaxWidth] - maxScreenHeight:$maxScreenHeight[$screenMaxHeight]');
-    }
-    Widget buildWindowHeader() {
-      return Placeholder(
-        fallbackHeight: 50,
-        child: Text('Header for $windowTitleCaption'),
-      );
-    }
-
-    Widget buildWindowBody({
-      required BoxConstraints constraints,
-    }) {
-      if (widget.autoStart) {
-        isAuto = true;
-      }
-      return Column(
-        children: [
-          if (isAuto)
-            SizedBox(
-              height: 5,
-            ),
-          if (isAuto)
-            LoadingGeneric(
-              loadingText: "Descargando...",
-            ),
-          if (!isAuto)
-            SizedBox(
-              height: 5,
-            ),
-          SizedBox(
-            height: 50,
-            width: screenMaxWidth,
-            child: RichText(
-              textAlign: TextAlign.center,
-              text: TextSpan(
-                text: _progressTextInfo,
-                style: const TextStyle(
-                  color: Colors.black54,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ),
-          ),
-          if (!isAuto || !isProcessRunning)
-            SizedBox(
-              width: screenMaxWidth * 0.5,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(4, 0, 4, 0),
-                child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(
-                              5.0), // Adjust the radius as needed
-                        ),
-                        elevation: 5),
-                    child: const Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.download),
-                        Text(
-                          'DESCARGAR',
-                          style: TextStyle(fontSize: 12),
-                        ),
-                      ],
-                    ),
-                    onPressed: () async {
-                      _doInitProcess();
-                    }),
-              ),
-            ),
-        ],
-      );
-    }
+    const String locFunc = 'build';
+    final ThemeData theme = Theme.of(context);
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        const String locFunc = 'LayoutBuilder';
-        const String logLocFunc = '.::$locFunc::.';
-        double windowWidth = constraints.maxWidth;
-        double windowHeight = constraints.maxHeight;
         if (debug) {
           developer.log(
-            '$mainFunc - $logLocFunc - windowWidth:$windowWidth - windowHeight:$windowHeight',
+            '$mainFunc - $locFunc - '
+            'windowWidth:${constraints.maxWidth} - '
+            'windowHeight:${constraints.maxHeight}',
             name: 'CommonDownloadLocallyScreen',
           );
         }
+
         try {
-          var wTitle = windowTitleCaption;
-          var wColor = Colors.redAccent;
-          return Container(
-            decoration: const BoxDecoration(
-              borderRadius: BorderRadius.all(Radius.circular(5)),
-              color: Colors.white,
-            ),
-            width: windowWidth,
-            height: windowHeight,
+          return AppOverlayPanel(
+            title: windowTitleCaption,
+            titleColorBackground: theme.colorScheme.primary,
             constraints: constraints,
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  AppOverlayPanel(
-                    title: wTitle,
-                    titleColorBackground: wColor,
-                    constraints: constraints,
-                    headerWidget: buildWindowHeader(),
-                    bodyWidget: buildWindowBody(
-                      constraints: constraints,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            bodyWidget: _buildOperationBody(context),
           );
         } catch (e, stacktrace) {
           return CatchMainScreen(
@@ -595,455 +685,11 @@ Por favor verifique para poder continuar y vuelva a intentar la operación.
             constraints: constraints,
             e: e,
             stacktrace: stacktrace,
-            debug: true,
+            debug: debug,
             pScreenMaxHeight: constraints.maxHeight,
             pScreenMaxWidth: constraints.maxWidth,
           );
         }
-
-        // try {
-        //   if (!_loading) {
-        //     periodoInstalaciones = CommonDateModel.fromDateTime(
-        //       tEnteDataModel.pPeriodoInstalaciones.date,
-        //       pType: 'periodo',
-        //     );
-        //     periodoInstalaciones.readOnly = false;
-        //     periodoInstalaciones.type = 'periodo';
-        //     showOnlyFiltered = tEnteDataModel.showOnlyFiltered;
-        //     periodoInstalaciones.isVisible = false;
-        //   }
-        //   final themeData = Theme.of(context);
-        //   double titleHeight = 30;
-        //   double bodyHeight = constraints.maxHeight - 4 - 4 - titleHeight;
-        //   var rMainScreen = _loading
-        //       ? LoadingGeneric()
-        //       : Stack(
-        //           children: [
-        //             Scrollbar(
-        //               controller: mainScroller,
-        //               thumbVisibility: true,
-        //               child: Card(
-        //                 semanticContainer: false,
-        //                 child: Column(
-        //                   crossAxisAlignment: CrossAxisAlignment.stretch,
-        //                   children: [
-        //                     /// Header Title
-        //                     ///
-        //                     Container(
-        //                       decoration: BoxDecoration(
-        //                         color: themeData.primaryColor,
-        //                         border: Border(
-        //                           bottom: BorderSide(
-        //                             color: themeData.primaryColorDark,
-        //                           ),
-        //                         ),
-        //                       ),
-        //                       height: titleHeight,
-        //                       child: Padding(
-        //                         padding: const EdgeInsets.fromLTRB(4, 0, 4, 0),
-        //                         child: Align(
-        //                           alignment: Alignment.centerLeft,
-        //                           child: RichText(
-        //                             textAlign: TextAlign.start,
-        //                             text: TextSpan(
-        //                               text: windowTitleCaption,
-        //                               style: TextStyle(
-        //                                 overflow: TextOverflow.ellipsis,
-        //                               ),
-        //                             ),
-        //                           ),
-        //                         ),
-        //                       ),
-        //                     ),
-
-        //                     /// Body
-        //                     ///
-        //                     SizedBox(
-        //                       /*
-        //                       decoration: BoxDecoration(
-        //                         color: Colors.blue.shade400,
-        //                       ),
-        //                       */
-        //                       height: bodyHeight,
-        //                       width: screenMaxWidth,
-        //                       child: SingleChildScrollView(
-        //                         controller: mainScroller,
-        //                         scrollDirection: Axis.horizontal,
-        //                         dragStartBehavior: DragStartBehavior.start,
-        //                         child: Column(
-        //                           children: [
-        //                             /// Separador
-        //                             SizedBox(
-        //                               height: 10,
-        //                             ),
-
-        //                             /// periodoInstalaciones
-        //                             Visibility(
-        //                               visible: periodoInstalaciones.isVisible,
-        //                               child: SizedBox(
-        //                                 width: 200,
-        //                                 height: 50,
-        //                                 child: Padding(
-        //                                   padding: const EdgeInsets.all(4.0),
-        //                                   child: TextFormField(
-        //                                     style: const TextStyle(
-        //                                       fontSize: 12,
-        //                                       height: 1,
-        //                                       overflow: TextOverflow.ellipsis,
-        //                                     ),
-        //                                     readOnly:
-        //                                         periodoInstalaciones.readOnly,
-        //                                     textAlign: TextAlign.end,
-        //                                     controller:
-        //                                         periodoInstalaciones.controller,
-        //                                     focusNode:
-        //                                         periodoInstalaciones.focusNode,
-        //                                     decoration: InputDecoration(
-        //                                         suffixIcon: AbsorbPointer(
-        //                                           absorbing:
-        //                                               periodoInstalaciones
-        //                                                   .readOnlyOnIcon,
-        //                                           child: IconButton(
-        //                                             icon: const Icon(
-        //                                               Icons.calendar_today,
-        //                                             ),
-        //                                             onPressed: () async {
-        //                                               await _validatePeriodoInstalaciones();
-        //                                             },
-        //                                           ),
-        //                                         ),
-        //                                         border:
-        //                                             const OutlineInputBorder(),
-        //                                         labelText:
-        //                                             'PERIODO DE INSTALACIONES'),
-        //                                   ),
-        //                                 ),
-        //                               ),
-        //                             ),
-
-        //                             /// showOnlyFiltered
-        //                             Visibility(
-        //                               visible: periodoInstalaciones.isVisible,
-        //                               child: Tooltip(
-        //                                 message:
-        //                                     'Filtra y muestra solos los comprobantes asociados al período seleccionado.',
-        //                                 child: Row(
-        //                                   children: [
-        //                                     Container(
-        //                                       decoration: BoxDecoration(
-        //                                         color: Colors.pink.shade100,
-        //                                       ),
-        //                                       //height: 40,
-        //                                       width: screenMaxWidth,
-        //                                       child: SwitchListTile(
-        //                                         title: const Text(
-        //                                           'SOLO los del período',
-        //                                           //style: TextStyle(fontSize: 14),
-        //                                         ),
-        //                                         value: showOnlyFiltered,
-        //                                         onChanged: (bool value) {
-        //                                           setState(() {
-        //                                             tEnteDataModel
-        //                                                     .showOnlyFiltered =
-        //                                                 value;
-        //                                             mustRefresh = true;
-        //                                           });
-        //                                         },
-        //                                         secondary: const Icon(
-        //                                             Icons.filter_alt),
-        //                                       ),
-        //                                     )
-        //                                   ],
-        //                                 ),
-        //                               ),
-        //                             ),
-
-        //                             /// ProgressBar
-        //                             Row(
-        //                               mainAxisAlignment:
-        //                                   MainAxisAlignment.center,
-        //                               children: [
-        //                                 Stack(
-        //                                   alignment:
-        //                                       AlignmentDirectional.center,
-        //                                   children: [
-        //                                     SizedBox(
-        //                                       width: screenMaxWidth,
-        //                                       height: 30,
-        //                                       child: LinearProgressIndicator(
-        //                                         value:
-        //                                             _progressController.value,
-        //                                         //semanticsLabel: 'Linear progress indicator',
-        //                                       ),
-        //                                     ),
-        //                                     RichText(
-        //                                       textAlign: TextAlign.start,
-        //                                       text: TextSpan(
-        //                                         text: _progressText,
-        //                                         style: const TextStyle(
-        //                                           overflow:
-        //                                               TextOverflow.ellipsis,
-        //                                         ),
-        //                                       ),
-        //                                     ),
-        //                                   ],
-        //                                 ),
-        //                               ],
-        //                             ),
-
-        //                             /// Separador
-        //                             const SizedBox(
-        //                               height: 10,
-        //                             ),
-
-        //                             /// ProgressTextInfoResponse
-        //                             SizedBox(
-        //                               height: 30,
-        //                               width: screenMaxWidth,
-        //                               child: SingleChildScrollView(
-        //                                 //controller: mainScroller,
-        //                                 scrollDirection: Axis.vertical,
-        //                                 dragStartBehavior:
-        //                                     DragStartBehavior.start,
-        //                                 child: RichText(
-        //                                   textAlign: TextAlign.center,
-        //                                   text: TextSpan(
-        //                                     text: _progressErrorTextInfo,
-        //                                     style: const TextStyle(
-        //                                       color: Colors.black54,
-        //                                       overflow: TextOverflow.ellipsis,
-        //                                     ),
-        //                                   ),
-        //                                 ),
-        //                               ),
-        //                             ),
-
-        //                             /// Continúa con errores
-        //                             Tooltip(
-        //                               message:
-        //                                   'Si ocurren errores durante el proceso de envío del mail\r\nel sistema continuará con el próximo registro.\r\nEsto permite que el proceso finalice y los registros con errores quedarán pendientes.',
-        //                               child: Row(
-        //                                 children: [
-        //                                   Container(
-        //                                     decoration: BoxDecoration(
-        //                                       color: Colors.pink.shade100,
-        //                                     ),
-        //                                     //height: 40,
-        //                                     width: screenMaxWidth,
-        //                                     child: SwitchListTile(
-        //                                       title: const Text(
-        //                                         'NO MOSTRAR ERRORES (CONTINUAR)',
-        //                                         //style: TextStyle(fontSize: 14),
-        //                                       ),
-        //                                       value: silenceMode,
-        //                                       onChanged: (bool value) {
-        //                                         setState(() {
-        //                                           silenceMode = value;
-        //                                         });
-        //                                       },
-        //                                       secondary: Icon(MdiIcons.doctor),
-        //                                     ),
-        //                                   )
-        //                                 ],
-        //                               ),
-        //                             ),
-
-        //                             /// Separador
-        //                             const SizedBox(
-        //                               height: 10,
-        //                             ),
-
-        //                             /// Iniciar
-        //                             Row(
-        //                               children: [
-        //                                 if (mustRefresh)
-        //                                   SizedBox(
-        //                                     width: screenMaxWidth * 0.5,
-        //                                     child: Padding(
-        //                                       padding:
-        //                                           const EdgeInsets.fromLTRB(
-        //                                               4, 0, 4, 0),
-        //                                       child: ElevatedButton(
-        //                                           style:
-        //                                               ElevatedButton.styleFrom(
-        //                                                   shape:
-        //                                                       RoundedRectangleBorder(
-        //                                                     borderRadius:
-        //                                                         BorderRadius
-        //                                                             .circular(
-        //                                                                 5.0), // Adjust the radius as needed
-        //                                                   ),
-        //                                                   elevation: 5),
-        //                                           child: const Column(
-        //                                             mainAxisAlignment:
-        //                                                 MainAxisAlignment
-        //                                                     .center,
-        //                                             children: [
-        //                                               Icon(Icons.refresh),
-        //                                               Text(
-        //                                                 'REFRESH',
-        //                                                 style: TextStyle(
-        //                                                     fontSize: 12),
-        //                                               ),
-        //                                             ],
-        //                                           ),
-        //                                           onPressed: () async {
-        //                                             _initWork();
-        //                                           }),
-        //                                     ),
-        //                                   ),
-        //                                 if (!mustRefresh)
-        //                                   SizedBox(
-        //                                     width: screenMaxWidth * 0.5,
-        //                                     child: Padding(
-        //                                       padding:
-        //                                           const EdgeInsets.fromLTRB(
-        //                                               4, 0, 4, 0),
-        //                                       child: ElevatedButton(
-        //                                           style:
-        //                                               ElevatedButton.styleFrom(
-        //                                                   shape:
-        //                                                       RoundedRectangleBorder(
-        //                                                     borderRadius:
-        //                                                         BorderRadius
-        //                                                             .circular(
-        //                                                                 5.0), // Adjust the radius as needed
-        //                                                   ),
-        //                                                   elevation: 5),
-        //                                           child: const Column(
-        //                                             mainAxisAlignment:
-        //                                                 MainAxisAlignment
-        //                                                     .center,
-        //                                             children: [
-        //                                               Icon(Icons.start),
-        //                                               Text(
-        //                                                 'Iniciar',
-        //                                                 style: TextStyle(
-        //                                                     fontSize: 12),
-        //                                               ),
-        //                                             ],
-        //                                           ),
-        //                                           onPressed: () async {
-        //                                             _doInitProcess();
-        //                                           }),
-        //                                     ),
-        //                                   ),
-        //                                 if (_showProgress && !_cancelProcess)
-        //                                   SizedBox(
-        //                                     width: screenMaxWidth * 0.5,
-        //                                     child: Padding(
-        //                                       padding:
-        //                                           const EdgeInsets.fromLTRB(
-        //                                               4, 0, 4, 0),
-        //                                       child: ElevatedButton(
-        //                                           style:
-        //                                               ElevatedButton.styleFrom(
-        //                                                   shape:
-        //                                                       RoundedRectangleBorder(
-        //                                                     borderRadius:
-        //                                                         BorderRadius
-        //                                                             .circular(
-        //                                                                 5.0), // Adjust the radius as needed
-        //                                                   ),
-        //                                                   elevation: 5),
-        //                                           child: const Column(
-        //                                             mainAxisAlignment:
-        //                                                 MainAxisAlignment
-        //                                                     .center,
-        //                                             children: [
-        //                                               Icon(Icons
-        //                                                   .cancel_outlined),
-        //                                               Text(
-        //                                                 'Cancelar',
-        //                                                 style: TextStyle(
-        //                                                     fontSize: 12),
-        //                                               ),
-        //                                             ],
-        //                                           ),
-        //                                           onPressed: () {
-        //                                             _doCancelProcess();
-        //                                           }),
-        //                                     ),
-        //                                   ),
-        //                                 if (!_showProgress ||
-        //                                     (_showProgress && _cancelProcess))
-        //                                   SizedBox(
-        //                                     width: screenMaxWidth * 0.5,
-        //                                     child: Padding(
-        //                                       padding:
-        //                                           const EdgeInsets.fromLTRB(
-        //                                               4, 0, 4, 0),
-        //                                       child: ElevatedButton(
-        //                                         style: ElevatedButton.styleFrom(
-        //                                             shape:
-        //                                                 RoundedRectangleBorder(
-        //                                               borderRadius:
-        //                                                   BorderRadius.circular(
-        //                                                       5.0), // Adjust the radius as needed
-        //                                             ),
-        //                                             elevation: 5),
-        //                                         child: const Column(
-        //                                           mainAxisAlignment:
-        //                                               MainAxisAlignment.center,
-        //                                           children: [
-        //                                             Icon(Icons.arrow_back),
-        //                                             Text(
-        //                                               'Volver',
-        //                                               style: TextStyle(
-        //                                                   fontSize: 12),
-        //                                             ),
-        //                                           ],
-        //                                         ),
-        //                                         onPressed: () =>
-        //                                             Navigator.of(context).pop(),
-        //                                       ),
-        //                                     ),
-        //                                   ),
-        //                               ],
-        //                             ),
-        //                           ],
-        //                         ),
-        //                       ),
-        //                     ),
-        //                   ],
-        //                 ),
-        //               ),
-        //             ),
-        //           ],
-        //         );
-        //   return rMainScreen;
-        // } catch (e, stacktrace) {
-        //   return Scrollbar(
-        //     child: Card(
-        //       child: Column(
-        //         children: [
-        //           Text(
-        //             e.toString(),
-        //           ),
-        //           Text(stacktrace.toString()),
-        //           SizedBox(
-        //             height: 63.75,
-        //             width: 85,
-        //             child: ElevatedButton(
-        //               style: ElevatedButton.styleFrom(elevation: 5),
-        //               child: const Column(
-        //                 mainAxisAlignment: MainAxisAlignment.center,
-        //                 children: [
-        //                   Icon(Icons.remove),
-        //                   Text(
-        //                     'Borrar',
-        //                     style: TextStyle(fontSize: 12),
-        //                   ),
-        //                 ],
-        //               ),
-        //               onPressed: () => Navigator.of(context).pop(),
-        //             ),
-        //           ),
-        //         ],
-        //       ),
-        //     ),
-        //   );
-        // }
       },
     );
   }
@@ -1076,36 +722,37 @@ class ScreenPoPUpCommonDownloadLocallyScreen<T extends CommonModel<T>>
   bool get barrierDismissible => false;
 
   @override
-  String? get barrierLabel => 'Dismissible Dialog';
+  String? get barrierLabel => 'Procesando comprobante';
 
   @override
-  Duration get transitionDuration => const Duration(milliseconds: 300);
-
-  double screenMaxWidth = 400;
-  double screenMaxHeight = 200;
+  Duration get transitionDuration => const Duration(milliseconds: 220);
 
   @override
-  Widget buildPage(BuildContext context, Animation<double> animation,
-      Animation<double> secondaryAnimation) {
+  Widget buildPage(
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+  ) {
     final Size mediaSize = MediaQuery.sizeOf(context);
-    final double effectiveWidth = (mediaSize.width - 32).clamp(320.0, 520.0);
-    final double effectiveHeight = (mediaSize.height - 32).clamp(220.0, 320.0);
-
-    screenMaxWidth = effectiveWidth;
-    screenMaxHeight = effectiveHeight;
+    final double availableWidth = (mediaSize.width - 32).clamp(0.0, 520.0);
+    final double availableHeight = (mediaSize.height - 32).clamp(0.0, 420.0);
 
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Center(
-          child: CommonDownloadLocallyScreen<T>(
-            pScreenMaxWidth: screenMaxWidth,
-            pScreenMaxHeight: screenMaxHeight,
-            pGlobalRequest: pGlobalRequest,
-            pActionRequest: pActionRequest,
-            pLocalActionRequest: pLocalActionRequest,
-            pParams: pParams,
-            autoStart: autoStart,
+          child: SizedBox(
+            width: availableWidth,
+            height: availableHeight,
+            child: CommonDownloadLocallyScreen<T>(
+              pScreenMaxWidth: availableWidth,
+              pScreenMaxHeight: availableHeight,
+              pGlobalRequest: pGlobalRequest,
+              pActionRequest: pActionRequest,
+              pLocalActionRequest: pLocalActionRequest,
+              pParams: pParams,
+              autoStart: autoStart,
+            ),
           ),
         ),
       ),
