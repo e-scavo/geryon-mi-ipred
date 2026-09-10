@@ -252,6 +252,25 @@ Result:
 - `AppOverlayPanel` now derives its shared surface, border, typography, title, and shadow treatment from the active theme
 - download business logic and DBVersion 10 behavior remain unchanged
 
+### 014 — Android 16 / API 36 Google Play Target Upgrade
+
+Document:
+
+- `docs/tasks/014_android_16_api36_google_play_target_upgrade.md`
+
+Status:
+
+- completed
+
+Result:
+
+- Android releases now compile explicitly against API 36
+- Android releases now explicitly target Android 16 / API 36
+- Android Gradle Plugin was raised from 8.7.0 to the API-36-compatible 8.9.1 baseline
+- Gradle wrapper was raised from 8.10.2 to 8.11.1 to match AGP 8.9.x requirements
+- `minSdk`, signing, versioning, and the existing `build_and_commit.dart` release workflow remain unchanged
+- Google Play's native debug-symbol warning remains a separate, non-blocking release-quality item
+
 ## Next Identifier
 
-- `014`
+- `015`

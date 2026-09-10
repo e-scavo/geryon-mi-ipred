@@ -868,4 +868,19 @@ Canonical document:
 
 - `docs/tasks/013_billing_document_download_overlay_theme_responsive_normalization.md`
 
-The next Phase X intervention must use task identifier `014`.
+### Phase X Task 014 — Android 16 / API 36 Google Play Target Upgrade
+
+The Android publication baseline was raised to the current Google Play target API requirement without changing the app's minimum supported Android version or release/versioning workflow.
+
+- Android compilation is explicitly pinned to `compileSdk = 36`
+- Android publication is explicitly pinned to `targetSdk = 36`
+- Android Gradle Plugin is now `8.9.1`, the minimum supported AGP baseline for API 36
+- Gradle wrapper is now `8.11.1`, matching AGP 8.9.x requirements
+- signing, `versionCode`/`versionName`, `minSdk`, and `build_and_commit.dart` remain unchanged
+- Android SDK Platform 36 must be installed on the release workstation before building
+
+Canonical document:
+
+- `docs/tasks/014_android_16_api36_google_play_target_upgrade.md`
+
+The next Phase X intervention must use task identifier `015`.
